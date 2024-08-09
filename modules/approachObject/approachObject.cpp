@@ -23,7 +23,7 @@ YARP_LOG_COMPONENT(APPROACH_OBJECT, "r1_obr.approachObject")
 
 
 /****************************************************************/
-ApproachObject::ApproachObject() : m_period(1.0) 
+ApproachObject::ApproachObject() : m_period(1.0)
 {
     m_input_port_name   = "/approachObject/input_coords:i";
 }
@@ -36,7 +36,7 @@ bool ApproachObject::configure(ResourceFinder &rf)
     if(rf.check("period")) {m_period = rf.find("period").asFloat32();}
 
     if(rf.check("input_port")) {m_input_port_name = rf.find("input_port").asString();}
-    
+
 
     // --------- Thread initialization --------- //
     double threadPeriod = 0.02;
@@ -44,6 +44,7 @@ bool ApproachObject::configure(ResourceFinder &rf)
     m_thread = new ApproachObjectThread(threadPeriod,rf);
     bool execOk = m_thread->start();
     if (!execOk){
+        yCError(APPROACH_OBJECT) << "Could not start thread. Look at the error messages above.";
         return false;
     }
 
@@ -55,7 +56,7 @@ bool ApproachObject::configure(ResourceFinder &rf)
     // ------------ Open ports ------------ //
     if(!m_input_port.open(m_input_port_name))
     {
-        yCError(APPROACH_OBJECT) << "Cannot open port" << m_input_port_name; 
+        yCError(APPROACH_OBJECT) << "Cannot open port" << m_input_port_name;
         return false;
     }
     else
@@ -72,9 +73,9 @@ bool ApproachObject::close()
     m_thread->stop();
     delete m_thread;
     m_thread =NULL;
-    
+
     if (!m_input_port.isClosed())
-        m_input_port.close(); 
+        m_input_port.close();
 
     return true;
 }
@@ -100,7 +101,7 @@ bool ApproachObject::updateModule()
 
 
 /****************************************************************/
-void ApproachObject::onRead(Bottle& b) 
+void ApproachObject::onRead(Bottle& b)
 {
     yCInfo(APPROACH_OBJECT,"Received:  %s",b.toString().c_str());
     if(b.size() == 2)

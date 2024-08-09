@@ -60,32 +60,32 @@ bool ApproachObjectThread::threadInit()
     // ------------ Open ports ------------ //
     if(m_rf.check("gaze_target_port")) {m_gaze_target_port_name = m_rf.find("gaze_target_port").asString();}
     if(!m_gaze_target_port.open(m_gaze_target_port_name))
-        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_gaze_target_port_name; 
+        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_gaze_target_port_name;
     else
         yCInfo(APPROACH_OBJECT_THREAD) << "opened port" << m_gaze_target_port_name;
 
 
     if(m_rf.check("object_finder_rpc_port")) {m_object_finder_rpc_port_name = m_rf.find("object_finder_rpc_port").asString();}
     if(!m_object_finder_rpc_port.open(m_object_finder_rpc_port_name))
-        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_object_finder_rpc_port_name; 
+        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_object_finder_rpc_port_name;
     else
         yCInfo(APPROACH_OBJECT_THREAD) << "opened port" << m_object_finder_rpc_port_name;
 
 
     if(m_rf.check("object_finder_result_port")) {m_object_finder_result_port_name = m_rf.find("object_finder_result_port").asString();}
     if(!m_object_finder_result_port.open(m_object_finder_result_port_name))
-        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_object_finder_result_port_name; 
+        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_object_finder_result_port_name;
     else
         yCInfo(APPROACH_OBJECT_THREAD) << "opened port" << m_object_finder_result_port_name;
 
 
     if(m_rf.check("output_coordinates_port")) {m_output_coordinates_port_name = m_rf.find("output_coordinates_port").asString();}
     if(!m_output_coordinates_port.open(m_output_coordinates_port_name))
-        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_output_coordinates_port_name; 
+        yCError(APPROACH_OBJECT_THREAD) << "Cannot open port" << m_output_coordinates_port_name;
     else
         yCInfo(APPROACH_OBJECT_THREAD) << "opened port" << m_output_coordinates_port_name;
-    
-    
+
+
     // ------------ TransformClient config ------------ //
     Property tcProp;
     //default
@@ -147,7 +147,7 @@ bool ApproachObjectThread::threadInit()
     nav2DProp.put("navigation_server", nav_config.check("navigation_server", Value("/navigation2D_nws_yarp")));
     nav2DProp.put("map_locations_server", nav_config.check("map_locations_server", Value("/map2D_nws_yarp")));
     nav2DProp.put("localization_server", nav_config.check("localization_server", Value("/localization2D_nws_yarp")));
-    
+
     m_nav2DPoly.open(nav2DProp);
     if(!m_nav2DPoly.isValid())
     {
@@ -203,10 +203,11 @@ bool ApproachObjectThread::threadInit()
         yCError(APPROACH_OBJECT_THREAD,"Error opening iRGBD interface. Device not available");
         return false;
     }
-   
+
     //get parameters data from the camera
     bool propintr  = m_iRgbd->getDepthIntrinsicParam(m_propIntrinsics);
     if(!propintr){
+        yCError(APPROACH_OBJECT_THREAD) << "Error getting depth intrinsics";
         return false;
     }
     yCInfo(APPROACH_OBJECT_THREAD) << "Depth Intrinsics:" << m_propIntrinsics.toString();
@@ -222,46 +223,46 @@ void ApproachObjectThread::threadRelease()
 {
     if(m_tcPoly.isValid())
         m_tcPoly.close();
-    
+
     if(m_nav2DPoly.isValid())
         m_nav2DPoly.close();
-    
+
     if(m_rgbdPoly.isValid())
         m_rgbdPoly.close();
 
     if (m_object_finder_rpc_port.asPort().isOpen())
-        m_object_finder_rpc_port.close();   
+        m_object_finder_rpc_port.close();
 
     if (!m_object_finder_result_port.isClosed())
-        m_object_finder_result_port.close();  
+        m_object_finder_result_port.close();
 
     if (!m_output_coordinates_port.isClosed())
-        m_output_coordinates_port.close();  
+        m_output_coordinates_port.close();
 
     if (!m_gaze_target_port.isClosed())
-        m_gaze_target_port.close(); 
+        m_gaze_target_port.close();
 }
 
 
 /****************************************************************/
-void ApproachObjectThread::exec(Bottle& b) 
+void ApproachObjectThread::exec(Bottle& b)
 {
     m_object = b.get(0).asString();
     m_coords = b.get(1).asList();
 
     m_ext_start = true;
-}   
+}
 
 
 /****************************************************************/
-void ApproachObjectThread::run() 
-{  
+void ApproachObjectThread::run()
+{
     if (m_ext_start && !m_ext_stop)
     {
         Map2DLocation locRobot, locObject, locTarget;
         m_iNav2D->getCurrentPosition(locRobot);
         yCInfo(APPROACH_OBJECT_THREAD,) << "Current location:"<< locRobot.toString();
-        
+
         yCInfo(APPROACH_OBJECT_THREAD,"Calculating approaching position");
         if (m_coords->size() == 2) //pixel coordinates in camera ref frame
         {
@@ -269,7 +270,7 @@ void ApproachObjectThread::run()
             double v = m_coords->get(1).asFloat32();
 
             //get depth image from camera
-            ImageOf<float>  depth_image;  
+            ImageOf<float>  depth_image;
             bool depth_ok = m_iRgbd->getDepthImage(depth_image);
             if (!depth_ok)
             {
@@ -347,9 +348,9 @@ void ApproachObjectThread::run()
                 {
                     yCInfo(APPROACH_OBJECT_THREAD,) << "New approach location:"<< locTarget.toString();
                     m_iNav2D->gotoTargetByAbsoluteLocation(locTarget);
-                    m_iNav2D->getNavigationStatus(currentStatus);   
-                } 
-                else 
+                    m_iNav2D->getNavigationStatus(currentStatus);
+                }
+                else
                 {
                     yCWarning(APPROACH_OBJECT_THREAD, "Cannot find a reachable approach location");
                     break;
@@ -360,14 +361,14 @@ void ApproachObjectThread::run()
         //look again for object
         if (!m_ext_stop)
         {
-            if (currentStatus == navigation_status_aborted) 
+            if (currentStatus == navigation_status_aborted)
                 yCWarning(APPROACH_OBJECT_THREAD, "Looking for object again from current position");
             else if (currentStatus == navigation_status_goal_reached)
                 yCInfo(APPROACH_OBJECT_THREAD,"Approaching location reached. Looking for object again");
-                
+
             if(lookAgain(m_object))
             {
-                Bottle* finderResult = m_object_finder_result_port.read(false); 
+                Bottle* finderResult = m_object_finder_result_port.read(false);
                 if(finderResult  != nullptr && !m_ext_stop)
                 {
                     Bottle* new_coords = new Bottle;
@@ -383,7 +384,7 @@ void ApproachObjectThread::run()
                         toSend = *new_coords;
                         m_output_coordinates_port.write();
                     }
-                             
+
                 }
             }
             else
@@ -394,8 +395,8 @@ void ApproachObjectThread::run()
                 toSend.addString("object lost");
                 m_output_coordinates_port.write();
             }
-        }   
-    } 
+        }
+    }
     else if (m_ext_resume && !m_ext_stop)
     {
         if (!m_ext_stop)
@@ -403,7 +404,7 @@ void ApproachObjectThread::run()
             yCInfo(APPROACH_OBJECT_THREAD,"Looking for object again");
             if(lookAgain(m_object))
             {
-                Bottle* finderResult = m_object_finder_result_port.read(false); 
+                Bottle* finderResult = m_object_finder_result_port.read(false);
                 if(finderResult  != nullptr)
                 {
                     m_coords = new Bottle;
@@ -449,7 +450,7 @@ void ApproachObjectThread::run()
 
 
 /****************************************************************/
-bool ApproachObjectThread::lookAgain(string object ) 
+bool ApproachObjectThread::lookAgain(string object )
 {
     vector<pair<double,double>> head_positions = {
         {0.0,  0.0 }  ,   //front
@@ -457,10 +458,17 @@ bool ApproachObjectThread::lookAgain(string object )
         {-35.0,0.0 }  ,   //right
         {0.0,  20.0}  ,   //up
         {0.0, -20.0} };   //down
+    bool effectively_not_found{true};
 
     for (int i=0; i<(int)head_positions.size(); i++)
-    {                        
-        if(m_ext_stop) break;
+    {
+        if(m_ext_stop)
+        {
+            yCInfo(APPROACH_OBJECT_THREAD,"Stopping looking for object");
+            effectively_not_found = false;
+            break;
+        }
+
 
         Bottle&  toSend1 = m_gaze_target_port.prepare();
         toSend1.clear();
@@ -472,14 +480,14 @@ bool ApproachObjectThread::lookAgain(string object )
         Bottle& targetList = targetLocationList.addList();
         targetList.addFloat32(head_positions[i].first);
         targetList.addFloat32(head_positions[i].second);
-        m_gaze_target_port.write(); //sending output command to gaze-controller 
-        
+        m_gaze_target_port.write(); //sending output command to gaze-controller
+
         Time::delay(m_wait_for_search);  //waiting for the robot to tilt its head
 
         //search for object
         Bottle request, reply;
         request.addString("where");
-        request.addString(object); 
+        request.addString(object);
         if (m_object_finder_rpc_port.write(request,reply))
         {
             if (reply.get(0).asString()!="not found")
@@ -493,7 +501,12 @@ bool ApproachObjectThread::lookAgain(string object )
             yCError(APPROACH_OBJECT_THREAD,"Unable to communicate with object finder");
             return false;
         }
-        
+
+    }
+
+    if(effectively_not_found)
+    {
+        yCError(APPROACH_OBJECT_THREAD) << "Object not found";
     }
 
     return false;
@@ -510,7 +523,7 @@ bool ApproachObjectThread::getObjCoordinates(Bottle* btl, Bottle* out)
         Bottle* b = btl->get(i).asList();
         if (b->get(0).asString() != m_object) //skip objects with another label
             continue;
-        
+
         if(b->get(1).asFloat32() > max_conf) //get the object with the max confidence
         {
             max_conf = b->get(1).asFloat32();
@@ -519,8 +532,11 @@ bool ApproachObjectThread::getObjCoordinates(Bottle* btl, Bottle* out)
         }
     }
     if (x<0)
+    {
+        yCError(APPROACH_OBJECT_THREAD) << "Object not found";
         return false;
-    
+    }
+
     out->addFloat32(x);
     out->addFloat32(y);
     return true;
@@ -530,24 +546,27 @@ bool ApproachObjectThread::getObjCoordinates(Bottle* btl, Bottle* out)
 /****************************************************************/
 bool ApproachObjectThread::calculateTargetLoc(Map2DLocation& locRobot, Map2DLocation& locObject, Map2DLocation& locTarget)
 {
-    //define target at safe distance from point 
+    //define target at safe distance from point
     // the target location will lie on a circumference around the object (r=m_safe_distance)
     // if the nearest point of the circumference to the robot is not reachable a new one is calculated
 
     if (m_deg_increase_count > ceil(180/m_deg_increase))
+    {
+        yCError(APPROACH_OBJECT_THREAD) << "Cannot find a reachable approach location";
         return false;
+    }
 
     double alfa_rad = atan2((locObject.y-locRobot.y), (locObject.x-locRobot.x)); //angle of the line connecting robot to object
     double alfa_deg = alfa_rad / M_PI * 180;
 
     locTarget.map_id = locRobot.map_id;
-    locTarget.theta = alfa_deg + m_deg_increase_sign*m_deg_increase_count*m_deg_increase; //orientation from a point of the circumefernce towards the center 
+    locTarget.theta = alfa_deg + m_deg_increase_sign*m_deg_increase_count*m_deg_increase; //orientation from a point of the circumefernce towards the center
     locTarget.x = locObject.x - m_safe_distance*cos(locTarget.theta / 180 * M_PI);
     locTarget.y = locObject.y - m_safe_distance*sin(locTarget.theta / 180 * M_PI);
 
     m_deg_increase_sign=m_deg_increase_sign*-1;
     m_deg_increase_count++;
-    
+
     return true;
 }
 
@@ -565,7 +584,7 @@ bool ApproachObjectThread::externalStop()
 
     return true;
 
-} 
+}
 
 
 /****************************************************************/
@@ -576,17 +595,17 @@ bool ApproachObjectThread::externalResume()
     m_ext_resume = true;
 
     return true;
-} 
+}
 
 
 /****************************************************************/
 string ApproachObjectThread::getObject()
-{return m_object;} 
+{return m_object;}
 
 
 /****************************************************************/
 Bottle* ApproachObjectThread::getCoords()
-{return m_coords;} 
+{return m_coords;}
 
 
 /****************************************************************/
