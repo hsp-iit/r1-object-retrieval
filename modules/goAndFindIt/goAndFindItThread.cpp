@@ -75,18 +75,18 @@ bool GoAndFindItThread::threadInit()
         yCError(GO_AND_FIND_IT_THREAD) << "Cannot open port" << m_objectFound_port_name;
     else
         yCInfo(GO_AND_FIND_IT_THREAD) << "opened port" << m_objectFound_port_name;
-    
+
     m_objectFound_port.useCallback(*this);
 
 
     if(m_rf.check("output_port"))
         m_output_port_name = m_rf.find("output_port").asString();
     if(!m_output_port.open(m_output_port_name))
-        yCError(GO_AND_FIND_IT_THREAD) << "Cannot open port" << m_output_port_name; 
+        yCError(GO_AND_FIND_IT_THREAD) << "Cannot open port" << m_output_port_name;
     else
         yCInfo(GO_AND_FIND_IT_THREAD) << "opened port" << m_output_port_name;
 
-    //Navigation2DClient config 
+    //Navigation2DClient config
     yarp::os::Property nav2DProp;
     //Defaults
     nav2DProp.put("device", "navigation2D_nwc_yarp");
@@ -107,7 +107,7 @@ bool GoAndFindItThread::threadInit()
         if(nav_config.check("map_locations_server")) {nav2DProp.put("map_locations_server", nav_config.find("map_locations_server").asString());}
         if(nav_config.check("localization_server")) {nav2DProp.put("localization_server", nav_config.find("localization_server").asString());}
         }
-   
+
     m_nav2DPoly.open(nav2DProp);
     if(!m_nav2DPoly.isValid())
     {
@@ -134,24 +134,24 @@ bool GoAndFindItThread::threadInit()
 /****************************************************************/
 void GoAndFindItThread::threadRelease()
 {
-       
+
     if (m_nextLoc_rpc_port.asPort().isOpen())
-        m_nextLoc_rpc_port.close();  
+        m_nextLoc_rpc_port.close();
 
     if (!m_lookObject_port.isClosed())
-        m_lookObject_port.close();   
+        m_lookObject_port.close();
 
     if (!m_objectFound_port.isClosed())
-        m_objectFound_port.close();  
-    
+        m_objectFound_port.close();
+
     if (!m_output_port.isClosed())
         m_output_port.close();
 
     if(m_nav2DPoly.isValid())
         m_nav2DPoly.close();
-    
+
     m_getReadyToNav->close();
-    
+
     yCInfo(GO_AND_FIND_IT_THREAD, "Thread released");
 
     return;
@@ -169,7 +169,7 @@ void GoAndFindItThread::run()
             lock_guard<mutex> lock(m_mutex);
             if(m_what != "")
                 nextWhere();
-            else 
+            else
             {
                 yCError(GO_AND_FIND_IT_THREAD,"Invalid object to search");
                 m_status = GaFI_IDLE;
@@ -180,8 +180,13 @@ void GoAndFindItThread::run()
         {
             lock_guard<mutex> lock(m_mutex);
             if(m_what != "")
-                goThere();
-            else 
+                if(!goThere())
+                {
+                    m_status = GaFI_IDLE;
+                    yCError(GO_AND_FIND_IT_THREAD,"Error trying to navigate to %s. Look at previous errors to find the cause",m_where.c_str());
+                    continue;
+                }
+            else
             {
                 yCError(GO_AND_FIND_IT_THREAD,"Invalid object to search");
                 m_status = GaFI_IDLE;
@@ -191,26 +196,26 @@ void GoAndFindItThread::run()
         else if (m_status == GaFI_ARRIVED)
         {
             lock_guard<mutex> lock(m_mutex);
-            search(); 
+            search();
         }
 
         else if (m_status == GaFI_SEARCHING && Time::now() - m_searching_time > m_max_search_time) //two minutes to find "m_what"
         {
             yCError(GO_AND_FIND_IT_THREAD,"Too much time has passed waiting for '%s' to be found.",m_what.c_str());
             m_status = GaFI_OBJECT_NOT_FOUND;
-        } 
+        }
 
         else if (m_status == GaFI_OBJECT_FOUND)
         {
             lock_guard<mutex> lock(m_mutex);
-            objFound();   
-        } 
+            objFound();
+        }
 
         else if (m_status == GaFI_OBJECT_NOT_FOUND)
         {
             lock_guard<mutex> lock(m_mutex);
-            objNotFound();   
-        } 
+            objNotFound();
+        }
 
         else if (m_status == GaFI_IDLE)
         {
@@ -230,13 +235,13 @@ void GoAndFindItThread::run()
 
 /****************************************************************/
 void GoAndFindItThread::setWhat(string& what)
-{ 
-    
+{
+
     if (what == m_what && m_status != GaFI_IDLE && m_where_specified == false)
     {
         yCWarning(GO_AND_FIND_IT_THREAD, "Already looking for %s. If you want to perform a new search, please send reset command.", m_what.c_str());
     }
-    else 
+    else
     {
         if (m_status == GaFI_NAVIGATING)
         {
@@ -245,19 +250,19 @@ void GoAndFindItThread::setWhat(string& what)
         }
         else
             resetSearch();
- 
+
         m_where_specified = false;
         m_where = "";
-        
-        m_status = GaFI_NEW_SEARCH;  
-        m_what = what;    
+
+        m_status = GaFI_NEW_SEARCH;
+        m_what = what;
 
         Time::delay(0.1);
         Bottle&  l = m_lookObject_port.prepare();
         l.clear();
         l.addString("label"); l.addString(what);
         m_lookObject_port.write();
-    }  
+    }
 }
 
 /****************************************************************/
@@ -267,7 +272,7 @@ void GoAndFindItThread::setWhatWhere(string& what, string& where)
     {
         yCWarning(GO_AND_FIND_IT_THREAD, "Already looking for %s in location %s. If you want to perform a new search, please send reset command.", m_what.c_str(), m_where.c_str());
     }
-    else 
+    else
     {
         if (m_status == GaFI_NAVIGATING)
         {
@@ -276,12 +281,12 @@ void GoAndFindItThread::setWhatWhere(string& what, string& where)
         }
         else
             resetSearch();
-        
+
         m_where_specified = true;
 
         m_status = GaFI_NAVIGATING;
         m_where = where;
-        m_what = what;   
+        m_what = what;
 
         Time::delay(0.1);
         Bottle&  l = m_lookObject_port.prepare();
@@ -291,7 +296,7 @@ void GoAndFindItThread::setWhatWhere(string& what, string& where)
 
         Bottle request,_rep_;
         request.fromString("set " + m_where + " checking");
-        m_nextLoc_rpc_port.write(request,_rep_); 
+        m_nextLoc_rpc_port.write(request,_rep_);
     }
 }
 
@@ -302,13 +307,13 @@ void GoAndFindItThread::nextWhere()
     request.addString("next");
     if(m_nextLoc_rpc_port.write(request,reply))
     {
-        string loc = reply.get(0).asString(); 
+        string loc = reply.get(0).asString();
         if (loc != "noLocation")
         {
             m_where = loc;
             m_status = GaFI_NAVIGATING;
         }
-        else 
+        else
         {
             yCWarning(GO_AND_FIND_IT_THREAD,"Nowhere else to go");
             m_nowhere_else = true;
@@ -330,14 +335,14 @@ bool GoAndFindItThread::setNavigationPosition()
     {
         if(!m_getReadyToNav->navPosition())
             return false;
-            
+
         Time::delay(m_setNavPos_time);
         m_in_nav_position = true;
         return true;
     }
     else
     {
-        yCError(GO_AND_FIND_IT_THREAD,"Cannot set robot navigation position");
+        yCError(GO_AND_FIND_IT_THREAD,"Cannot set robot navigation position. Robot's joints present some issues");
         m_status = GaFI_IDLE;
         return false;
     }
@@ -345,7 +350,7 @@ bool GoAndFindItThread::setNavigationPosition()
 
 /****************************************************************/
 bool GoAndFindItThread::goThere()
-{   
+{
     //check if "m_where" is a valid location
     Bottle request,reply;
     request.fromString("find " + m_where);
@@ -362,7 +367,7 @@ bool GoAndFindItThread::goThere()
             yCError(GO_AND_FIND_IT_THREAD,"Location specified is not valid. Terminating search.");
             m_status = GaFI_IDLE;
             return false;
-        }   
+        }
     }
 
     //setting navigation position, if needed
@@ -373,7 +378,10 @@ bool GoAndFindItThread::goThere()
     }
 
     if (m_status != GaFI_NAVIGATING)
+    {
+        yCError(GO_AND_FIND_IT) << "The system is not in the correct status (should be GaFI_NAVIGATING instead of" << m_status <<"). Cannot navigate to " << m_where;
         return false; //possible external stop during setNavigationPosition
+    }
 
     //navigating to "m_where"
     m_iNav2D->gotoTargetByLocationName(m_where);
@@ -399,7 +407,7 @@ bool GoAndFindItThread::goThere()
         }
         Time::delay(0.2);
         m_iNav2D->getNavigationStatus(currentStatus);
-        
+
     }
     m_status = GaFI_ARRIVED;
     yCInfo(GO_AND_FIND_IT_THREAD, "Arrived at location %s." , m_where.c_str() ) ;
@@ -414,13 +422,18 @@ bool GoAndFindItThread::search()
     Bottle&  ask = m_lookObject_port.prepare();
     ask.clear();
     ask.addString(m_what);
-    m_lookObject_port.write();
+    if(!m_lookObject_port.write())
+    {
+        yCError(GO_AND_FIND_IT_THREAD,"Error trying to contact lookForObject");
+        m_status = GaFI_IDLE;
+        return false;
+    }
     yCInfo(GO_AND_FIND_IT_THREAD, "Started looking for %s at location %s", m_what.c_str(), m_where.c_str());
 
     m_searching_time = Time::now();
     m_status = GaFI_SEARCHING;
 
-    return false;
+    return true;
 }
 
 /****************************************************************/
@@ -432,12 +445,12 @@ void GoAndFindItThread::onRead(Bottle& b)
     if (m_status == GaFI_SEARCHING)
     {
         if (result == "object not found")
-            m_status = GaFI_OBJECT_NOT_FOUND;   
-        else 
+            m_status = GaFI_OBJECT_NOT_FOUND;
+        else
         {
             m_coords = b.get(1).asList();
             m_status = GaFI_OBJECT_FOUND;
-        }    
+        }
     }
 }
 
@@ -445,16 +458,16 @@ void GoAndFindItThread::onRead(Bottle& b)
 bool GoAndFindItThread::objFound()
 {
     yCInfo(GO_AND_FIND_IT_THREAD,"%s found at %s!", m_what.c_str(), m_where.c_str());
-        
+
     Bottle&  toSend = m_output_port.prepare();     //Search successfull
     toSend.clear();
-    toSend.addString(m_what);  
+    toSend.addString(m_what);
     Bottle&  coords = toSend.addList();
-    coords = *m_coords;      
+    coords = *m_coords;
     m_output_port.write();
     m_status = GaFI_IDLE;
-    
-    
+
+
     Bottle request,_rep_;
     request.fromString("set " + m_where + " checked");
     m_nextLoc_rpc_port.write(request,_rep_);
@@ -484,11 +497,11 @@ bool GoAndFindItThread::objNotFound()
     else
     {
         yCInfo(GO_AND_FIND_IT_THREAD,"%s not found at %s. Continuing search", m_what.c_str(), m_where.c_str());
-        
+
         m_status = GaFI_NEW_SEARCH;
-        
+
     }
-    
+
     Bottle request,_rep_;
     request.fromString("set " + m_where + " checked");
     m_nextLoc_rpc_port.write(request,_rep_);
@@ -502,13 +515,13 @@ bool GoAndFindItThread::objNotFound()
 bool GoAndFindItThread::stopSearch()
 {
     if (m_status == GaFI_NAVIGATING)
-    {        
+    {
         Nav2D::NavigationStatusEnum currentStatus;
         m_iNav2D->getNavigationStatus(currentStatus);
         if (currentStatus == Nav2D::navigation_status_moving)
             m_iNav2D->stopNavigation();
         yCInfo(GO_AND_FIND_IT_THREAD, "Navigation and search stopped");
-    } 
+    }
     else if (m_status == GaFI_SEARCHING)
     {
         Bottle&  ask = m_lookObject_port.prepare();
@@ -527,24 +540,27 @@ bool GoAndFindItThread::stopSearch()
 bool GoAndFindItThread::resumeSearch()
 {
     yCInfo(GO_AND_FIND_IT_THREAD, "Resuming search");
-    
+
     if (m_status != GaFI_IDLE)
+    {
+        yCError(GO_AND_FIND_IT_THREAD) << "Resume is only allowed when the status is GaFI_IDLE. Current status is " << m_status;
         return false;
+    }
 
     if (m_where != "")
     {
         Bottle request,reply,btl;
         request.fromString("find " + m_where);
         m_nextLoc_rpc_port.write(request,reply);
-        
+
         btl.fromString("ok checking") ;
         if (reply == btl)
         {
             request.fromString("set " + m_where + " unchecked");
             m_nextLoc_rpc_port.write(request,reply);
-        } 
+        }
     }
-    
+
     m_status = GaFI_NEW_SEARCH;
 
     return true;

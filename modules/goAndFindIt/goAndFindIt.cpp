@@ -23,7 +23,7 @@ YARP_LOG_COMPONENT(GO_AND_FIND_IT, "r1_obr.goAndFindIt")
 
 
 /****************************************************************/
-GoAndFindIt::GoAndFindIt() : m_period(1.0) 
+GoAndFindIt::GoAndFindIt() : m_period(1.0)
 {
     m_input_port_name       = "/goAndFindIt/input:i";
     m_rpc_server_port_name  = "/goAndFindIt/rpc";
@@ -42,7 +42,7 @@ bool GoAndFindIt::configure(ResourceFinder &rf)
         m_input_port_name = rf.find("input_port").asString();
     m_input_port.useCallback(*this);
     if(!m_input_port.open(m_input_port_name))
-        yCError(GO_AND_FIND_IT) << "Cannot open port" << m_input_port_name; 
+        yCError(GO_AND_FIND_IT) << "Cannot open port" << m_input_port_name;
     else
         yCInfo(GO_AND_FIND_IT) << "opened port" << m_input_port_name;
 
@@ -64,6 +64,7 @@ bool GoAndFindIt::configure(ResourceFinder &rf)
     m_thread = new GoAndFindItThread(rf);
     bool threadOk = m_thread->start();
     if (!threadOk){
+        yCError(GO_AND_FIND_IT) << "Could not correctly initialize the inner thread";
         return false;
     }
 
@@ -75,11 +76,11 @@ bool GoAndFindIt::configure(ResourceFinder &rf)
 bool GoAndFindIt::close()
 {
     if (!m_input_port.isClosed())
-        m_input_port.close(); 
+        m_input_port.close();
 
     if (m_rpc_server_port.asPort().isOpen())
-        m_rpc_server_port.close();   
-    
+        m_rpc_server_port.close();
+
     m_thread->stop();
     delete m_thread;
 
@@ -99,9 +100,9 @@ bool GoAndFindIt::updateModule()
 }
 
 /****************************************************************/
-void GoAndFindIt::onRead(Bottle& b) 
+void GoAndFindIt::onRead(Bottle& b)
 {
-    
+
     yCInfo(GO_AND_FIND_IT,"Received:  %s",b.toString().c_str());
 
     if(b.size() == 2)           //expected "<object> <location>"
@@ -118,15 +119,19 @@ void GoAndFindIt::onRead(Bottle& b)
 
         if (what == "stop")
         {
-            m_thread->stopSearch();            
+            m_thread->stopSearch();
         }
         else if (what == "resume")
         {
-            m_thread->resumeSearch();            
+            if(!m_thread->resumeSearch())
+            {
+                yCError(GO_AND_FIND_IT,"Cannot resume search. Please send a stop command first");
+                return;
+            }
         }
         else if (what == "reset")
         {
-            m_thread->resetSearch();            
+            m_thread->resetSearch();
         }
         else if (what == "navpos")
         {
@@ -137,20 +142,20 @@ void GoAndFindIt::onRead(Bottle& b)
             else
             {
                 yCError(GO_AND_FIND_IT,"Doing something else now, cannot set navigation position. Please send a stop command first");
-            }           
+            }
         }
         else
         {
            m_thread->setWhat(what);
         }
-         
+
     }
     else
     {
         yCError(GO_AND_FIND_IT,"Error: wrong bottle format received");
         return;
     }
-    
+
 }
 
 /****************************************************************/
@@ -193,7 +198,12 @@ bool GoAndFindIt::respond(const Bottle &cmd, Bottle &reply)
         }
         else if (cmd_0=="resume")
         {
-            m_thread->resumeSearch();
+            if(!m_thread->resumeSearch())
+            {
+                yCError(GO_AND_FIND_IT,"Cannot resume search. Please send a stop command first");
+                reply.addString("search not resumed");
+                return true;
+            }
             reply.addString("search resumed");
         }
         else if (cmd_0=="reset")
@@ -215,7 +225,7 @@ bool GoAndFindIt::respond(const Bottle &cmd, Bottle &reply)
                 yCError(GO_AND_FIND_IT,"Doing something else now, cannot set navigation position. Please send a stop command first");
                 reply.addVocab32(Vocab32::encode("nack"));
             }
-            
+
         }
         else
         {
@@ -259,7 +269,7 @@ bool GoAndFindIt::respond(const Bottle &cmd, Bottle &reply)
     }
 
     if (reply.size()==0)
-        reply.addVocab32(yarp::os::Vocab32::encode("ack")); 
+        reply.addVocab32(yarp::os::Vocab32::encode("ack"));
 
     return true;
 }
