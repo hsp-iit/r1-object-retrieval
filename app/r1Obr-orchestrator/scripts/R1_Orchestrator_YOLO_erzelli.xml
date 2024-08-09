@@ -10,6 +10,30 @@
    <!--                -->
 
 
+   <!-- orchestrator -->
+   <application>
+      <name>R1_goAndFindIt_YOLO_erzelli</name>
+      <prefix></prefix>
+   </application>
+
+   <!-- positive outcome -->
+   <application>
+      <name>R1_approachObject_YOLO</name>
+      <prefix></prefix>
+   </application>
+
+   <application>
+      <name>R1_handPointing_orchestrator</name>
+      <prefix></prefix>
+   </application>
+
+   <module>
+      <name>r1Obr-orchestrator</name>
+      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_erzelli.ini</parameters>
+      <environment>YARP_PORTNUMBER_r1Obr_orchestrator_voice_command_i=3000</environment>
+      <node>console</node>
+   </module>
+
    <!-- chat bot -->
    <module>
       <name>yarprobotinterface</name>
@@ -24,34 +48,13 @@
       <node>console</node>
    </module>
 
-   <!-- orchestrator -->
-   <application>
-      <name>R1_goAndFindIt_YOLO_erzelli</name>
-      <prefix></prefix>
-   </application>
-   <module>
-      <name>r1Obr-orchestrator</name>
-      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_erzelli.ini</parameters>
-      <environment>YARP_PORTNUMBER_r1Obr_orchestrator_voice_command_i=3000</environment>
-      <node>console</node>
-   </module>
-
-   <!-- positive outcome -->
-   <application>
-      <name>R1_approachObject_YOLO</name>
-      <prefix></prefix>
-   </application>
-   <application>
-      <name>R1_handPointing_orchestrator</name>
-      <prefix></prefix>
-   </application>
-
    <!-- face expressions -->
    <module>
       <name>faceExpressionImage5GTour</name>
       <parameters></parameters>
       <node>console</node>
    </module>
+
    <module>
       <name>yarprobotinterface </name>
       <parameters>--context headSynchronizer --from faceDisplay.ini</parameters>
