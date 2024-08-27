@@ -31,7 +31,7 @@ TinyDancer::TinyDancer(ResourceFinder &_rf) : m_rf(_rf)
 bool TinyDancer::configure()
 {
     if(m_rf.check("robot")) {m_robot = m_rf.find("robot").asString();}
-    
+
     // Polydriver config
     Property prop;
 
@@ -108,12 +108,12 @@ bool TinyDancer::configure()
 bool TinyDancer::areJointsOk()
 {
     int mode=0;
-    for (int i = 0 ; i<4 ; i++) 
+    for (int i = 0 ; i<4 ; i++)
     {
         int NUMBER_OF_JOINTS;
         m_iposctrl[i]->getAxes(&NUMBER_OF_JOINTS);
         for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-        { 
+        {
             m_ictrlmode[i]->getControlMode(i_joint, &mode);
             if (mode == VOCAB_CM_HW_FAULT)
             {
@@ -139,10 +139,10 @@ bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
     vector<int> modes;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
+    {
         joints.push_back(i_joint);
         modes.push_back(ctrlMode);
-    } 
+    }
 
     m_ictrlmode[part]->setControlModes(NUMBER_OF_JOINTS, joints.data(), modes.data());
 
@@ -168,7 +168,7 @@ bool TinyDancer::setJointsSpeed(const int part, const double time, Bottle* joint
     vector<double> speeds;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
+    {
         double start, goal;
         m_iencoder[part]->getEncoder(i_joint,&start);
         goal = joint_pos->get(i_joint).asFloat32();
@@ -177,7 +177,7 @@ bool TinyDancer::setJointsSpeed(const int part, const double time, Bottle* joint
 
         joints.push_back(i_joint);
         speeds.push_back(disp/time);
-    } 
+    }
 
     return m_iposctrl[part]->setRefSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
 }
@@ -191,10 +191,10 @@ bool TinyDancer::movePart(const int part, Bottle* joint_pos)
     std::vector<double> positions;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
+    {
         joints.push_back(i_joint);
         positions.push_back(joint_pos->get(i_joint).asFloat32());
-    } 
+    }
 
     return m_iposctrl[part]->positionMove(NUMBER_OF_JOINTS, joints.data(), positions.data());
 }
@@ -202,9 +202,12 @@ bool TinyDancer::movePart(const int part, Bottle* joint_pos)
 
 // --------------------------------------------------------------- //
 bool TinyDancer::doDance(string& dance_name)
-{      
+{
     if (!areJointsOk())
+    {
+        yCError(TINY_DANCER) << "An error occurred occured while checking joints";
         return false;
+    }
 
 
     string dance_file = "dances/" + (dance_name.find(".ini") == string::npos ? dance_name + ".ini" : dance_name);
@@ -219,14 +222,14 @@ bool TinyDancer::doDance(string& dance_name)
         return false;
     }
 
-    
+
     for (string line; getline(file, line);)
     {
         if (!line.empty() && line[0] != ';' && line[0] != '#') // if not empty and not
         {
             /* must be a key[=: ]value pair */
             size_t endKey = line.find_first_of("=: ");
-            if (endKey != string::npos) 
+            if (endKey != string::npos)
             {
                 string line_cmd = line.substr(endKey + 1);
                 Bottle cmd;
@@ -239,7 +242,7 @@ bool TinyDancer::doDance(string& dance_name)
                 else if (cmd.get(0).asString() == "move")
                 {
                     Bottle* motion = cmd.get(1).asList();
-                    
+
                     double time = -1.0;
                     if (motion->check("time"))
                         time = motion->find("time").asFloat32();
@@ -303,8 +306,8 @@ bool TinyDancer::doDance(string& dance_name)
                 }
             }
         }
-    }  
-    
+    }
+
 
     return true;
 }
