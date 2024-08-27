@@ -40,11 +40,11 @@ bool ChatBot::configure(ResourceFinder &rf)
     {
         yCWarning(CHAT_BOT_ORCHESTRATOR,"CHAT_BOT section missing in ini file. Using the default values");
     }
-    
-    Searchable& config = rf.findGroup("CHAT_BOT");
-     
 
-    // ------------------  out ------------------ //  
+    Searchable& config = rf.findGroup("CHAT_BOT");
+
+
+    // ------------------  out ------------------ //
     if(config.check("rpc_orchestrator_port")) {orchestratorRPCPortName = config.find("rpc_orchestrator_port").asString();}
     if(!m_orchestratorRPCPort.open(orchestratorRPCPortName))
     {
@@ -67,7 +67,7 @@ bool ChatBot::configure(ResourceFinder &rf)
     }
 
     // ------------------  in  ------------------ //
-    
+
     // Voice Command Port
     if(config.check("voice_command_port")) {voiceCommandPortName = config.find("voice_command_port").asString();}
     if (!m_voiceCommandPort.open(voiceCommandPortName))
@@ -96,16 +96,16 @@ bool ChatBot::configure(ResourceFinder &rf)
             yCError(CHAT_BOT_ORCHESTRATOR,"Error opening IChatBot interface. Device not available");
             return false;
         }
-        
+
         m_iChatBot->resetBot();
         string msgIn,msgOut;
         m_iChatBot->interact(msgIn = "skip_language_set", msgOut);
         yCInfo(CHAT_BOT_ORCHESTRATOR,"ChatBot: wrote: %s . replied: %s",msgIn.c_str(),msgOut.c_str());
-        
-        if(config.check("language")) 
+
+        if(config.check("language"))
             m_language_chatbot = config.find("language").asString();
         m_iChatBot->setLanguage(m_language_chatbot);
-        
+
 
     }
 
@@ -158,25 +158,25 @@ bool ChatBot::configure(ResourceFinder &rf)
     return true;
 }
 
-    
+
 // ****************************************************** //
 void ChatBot::close()
-{    
+{
     if(!m_voiceCommandPort.isClosed())
         m_voiceCommandPort.close();
 
     if (m_orchestratorRPCPort.asPort().isOpen())
-        m_orchestratorRPCPort.close(); 
+        m_orchestratorRPCPort.close();
 
     if (m_audiorecorderRPCPort.asPort().isOpen())
         m_audiorecorderRPCPort.close();
-    
+
     if (!m_audioPlayPort.isClosed())
         m_audioPlayPort.close();
-    
+
     if(m_PolyCB.isValid())
         m_PolyCB.close();
-    
+
     if(m_polyLLM.isValid())
         m_polyLLM.close();
 
@@ -197,7 +197,10 @@ void ChatBot::onRead(Bottle& b)
     string str = b.get(0).asString();
 
     if(str == "")
+    {
+        yCError(CHAT_BOT_ORCHESTRATOR, "Empty string received");
         return;
+    }
 
     if(m_chatBot_active)
         interactWithChatBot(str);
@@ -213,12 +216,16 @@ void ChatBot::onRead(Bottle& b)
 // ****************************************************** //
 void ChatBot::interactWithChatBot(const string& msgIn)
 {
-    if (msgIn == "") return;
+    if (msgIn == "")
+    {
+        yCError(CHAT_BOT_ORCHESTRATOR, "Empty message in received");
+        return;
+    }
 
     if(m_chatBot_active)
     {
         yCInfo(CHAT_BOT_ORCHESTRATOR,"ChatBot received: %s",msgIn.c_str());
-        
+
         string msgOut;
         m_iChatBot->interact(msgIn, msgOut); //msgOut should be something like "(say <....>) (<other command 1>) (<other command 2>) ..."
         yCInfo(CHAT_BOT_ORCHESTRATOR,"ChatBot replied: %s",msgOut.c_str());
@@ -226,9 +233,9 @@ void ChatBot::interactWithChatBot(const string& msgIn)
         Bottle msg_btl; msg_btl.fromString(msgOut);
 
         for (int i=0; i<(int)msg_btl.size(); i++)
-        {     
+        {
             Bottle* cmd=msg_btl.get(i).asList();
-            
+
             if(cmd->get(0).asString()=="dialogReset")
             {
                 m_iChatBot->resetBot();
@@ -252,18 +259,18 @@ void ChatBot::interactWithChatBot(const string& msgIn)
                 //wait until finish speaking
                 Time::delay(0.5);
                 bool audio_is_playing{true};
-                while (audio_is_playing) 
+                while (audio_is_playing)
                 {
                     Bottle* player_status = m_audioPlayPort.read(false);
                     if (player_status)
                     {
                         audio_is_playing = (unsigned int)player_status->get(1).asInt64() > 0;
                     }
-                    Time::delay(0.1);                    
+                    Time::delay(0.1);
                 }
 
                 //re-open microphone
-                req.clear(); 
+                req.clear();
                 req.addString("startRecording_RPC");
                 m_audiorecorderRPCPort.write(req);
             }
@@ -276,7 +283,7 @@ void ChatBot::interactWithChatBot(const string& msgIn)
                 yCInfo(CHAT_BOT_ORCHESTRATOR, "Language set to: %s", lang.c_str());
             }
             else if(cmd->get(0).asString()=="no_command") {}
-            else if(cmd->get(0).asString()=="cmd_unk") 
+            else if(cmd->get(0).asString()=="cmd_unk")
             {
                 Bottle reply;
                 if(m_llm_active)
@@ -311,7 +318,7 @@ void ChatBot::interactWithChatBot(const string& msgIn)
 
                 yCInfo(CHAT_BOT_ORCHESTRATOR, "Replied from orchestrator: %s", reply.toString().c_str() );
 
-            } 
+            }
             else
             {
                 Bottle reply;
@@ -320,5 +327,5 @@ void ChatBot::interactWithChatBot(const string& msgIn)
             }
         }
     }
-    
+
 }
