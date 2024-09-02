@@ -180,12 +180,14 @@ void GoAndFindItThread::run()
         {
             lock_guard<mutex> lock(m_mutex);
             if(m_what != "")
+            {
                 if(!goThere())
                 {
                     m_status = GaFI_IDLE;
                     yCError(GO_AND_FIND_IT_THREAD,"Error trying to navigate to %s. Look at previous errors to find the cause",m_where.c_str());
                     continue;
                 }
+            }
             else
             {
                 yCError(GO_AND_FIND_IT_THREAD,"Invalid object to search");
