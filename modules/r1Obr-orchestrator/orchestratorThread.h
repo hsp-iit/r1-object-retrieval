@@ -31,7 +31,7 @@ using namespace std;
 class OrchestratorThread : public Thread, public TypedReaderCallback<Bottle>
 {
 private:
-    enum R1_status 
+    enum R1_status
     {
         R1_IDLE,
         R1_ASKING_NETWORK,
@@ -40,17 +40,18 @@ private:
         R1_OBJECT_FOUND,
         R1_OBJECT_NOT_FOUND,
         R1_GOING,
-        R1_STOP      
+        R1_STOP
     };
 
 public:
-    enum R1_says 
+    enum R1_says
     {
         object_found_maybe,
         object_found_true,
         object_found_false,
         object_not_found,
         something_bad_happened,
+        location_not_valid,
         go_target_reached,
         go_target_not_reached,
         hardware_failure,
@@ -59,7 +60,7 @@ public:
     };
 
 private:
-    
+
     // Ports
     string                  m_sensor_network_rpc_port_name;
     RpcClient               m_sensor_network_rpc_port;
@@ -137,16 +138,16 @@ public:
     string      resume();
     void        objectFound();
     void        objectActuallyNotFound();
-    
+
     void        setObject(string obj);
     bool        setNavigationPosition();
     string      getWhat();
     string      getWhere();
     string      getStatus();
     void        info(Bottle& reply);
-    
+
     void        setEmotion();
-    
+
     bool        askChatBotToSpeak(R1_says stat);
 
     bool        go(string loc);

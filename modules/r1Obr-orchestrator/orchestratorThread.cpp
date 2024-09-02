@@ -818,6 +818,13 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         else if(m_sn_language == "eng")
             feedback = "I encountered an error. Please wait some moments for me to fix the problem";
         break;
+    case location_not_valid:
+        str = "location_not_valid";
+        if(m_sn_language == "ita")
+            feedback = "La posizione specificata non è valida.";
+        else if(m_sn_language == "eng")
+            feedback = "The specified location is not valid.";
+        break;
     case go_target_reached:
         str = "go_target_reached";
         if(m_sn_language == "ita")
@@ -888,7 +895,7 @@ bool OrchestratorThread::go(string loc)
         if (rep.get(0).asString() != "ok")
         {
             yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
-            askChatBotToSpeak(something_bad_happened);
+            askChatBotToSpeak(location_valid);
             return false;
         }
     }
