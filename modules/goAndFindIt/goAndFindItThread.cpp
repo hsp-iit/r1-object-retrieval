@@ -379,7 +379,7 @@ bool GoAndFindItThread::goThere()
 
     if (m_status != GaFI_NAVIGATING)
     {
-        yCError(GO_AND_FIND_IT) << "The system is not in the correct status (should be GaFI_NAVIGATING instead of" << m_status <<"). Cannot navigate to " << m_where;
+        yCError(GO_AND_FIND_IT_THREAD) << "The system is not in the correct status (should be GaFI_NAVIGATING instead of" << m_status <<"). Cannot navigate to " << m_where;
         return false; //possible external stop during setNavigationPosition
     }
 
@@ -422,12 +422,8 @@ bool GoAndFindItThread::search()
     Bottle&  ask = m_lookObject_port.prepare();
     ask.clear();
     ask.addString(m_what);
-    if(!m_lookObject_port.write())
-    {
-        yCError(GO_AND_FIND_IT_THREAD,"Error trying to contact lookForObject");
-        m_status = GaFI_IDLE;
-        return false;
-    }
+    m_lookObject_port.write();
+
     yCInfo(GO_AND_FIND_IT_THREAD, "Started looking for %s at location %s", m_what.c_str(), m_where.c_str());
 
     m_searching_time = Time::now();
