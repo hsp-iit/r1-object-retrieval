@@ -1,3 +1,4 @@
+source /home/user1/.entrypoint.sh
 cd ${ROBOT_CODE}/ycm && git pull && cd build && cmake .. && make -j11 && \
     cd ${ROBOT_CODE}/yarp && git pull && cd build && cmake .. && make -j11 && \
     cd ${ROBOT_CODE}/icub-main && git pull && cd build && cmake .. && make -j11 && \
