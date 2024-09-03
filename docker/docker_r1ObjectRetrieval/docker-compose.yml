@@ -216,6 +216,16 @@ services:
           llm_branch: master
 
 # Containers for the robot
+  raise-demo-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *light
+    container_name: raise-demo-container
+    command: terminator -g /home/user1/.config/terminator/config
+  raise-demo-test-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *heavy
+    container_name: raise-demo-test-container
+    command: terminator -g /home/user1/.config/terminator/config
   r1-object-retrieval-default-container:
     image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
     <<: *light
