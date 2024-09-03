@@ -261,7 +261,7 @@ void OrchestratorThread::run()
                 else if( goandfindit_status == "idle")
                 {
                     m_status = R1_IDLE;
-                    askChatBotToSpeak(something_bad_happened);
+                    askChatBotToSpeak(gafi_idle);
                 }
             }
         }
@@ -478,7 +478,7 @@ bool OrchestratorThread::resizeSearchBottle(const Bottle& btl)
             {
                 yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
                 m_request.clear();
-                askChatBotToSpeak(something_bad_happened);
+                askChatBotToSpeak(location_not_valid);
                 return false;
             }
             m_request.addString(loc);
@@ -497,7 +497,7 @@ bool OrchestratorThread::resizeSearchBottle(const Bottle& btl)
 bool OrchestratorThread::askNetwork()
 {
 
-    // NOT IMPLEMENTED YET
+    yCWarning(R1OBR_ORCHESTRATOR_THREAD) << "Method askNetwork not implemented yet";
 
     return false;
 }
@@ -671,7 +671,8 @@ bool OrchestratorThread::setNavigationPosition()
     Bottle request{"navpos"};
     if(forwardRequest(request).get(0).asString() != "robot set in navigation position")
     {
-        askChatBotToSpeak(hardware_failure);
+        askChatBotToSpeak(nav_pos_fail);
+        yCError(R1OBR_ORCHESTRATOR_THREAD) << "Error in setting the navigation position";
         return false;
     }
 
@@ -825,6 +826,13 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         else if(m_sn_language == "eng")
             feedback = "The specified location is not valid.";
         break;
+    case gafi_idle:
+        str = "gafi_idle";
+        if(m_sn_language == "ita")
+            feedback = "Il modulo di ricerca, go and find it, pare essere inattivo. Posso aiutarti in altro modo?";
+        else if(m_sn_language == "eng")
+            feedback = "The go and find it module seems to be in its idle state. Can I help you in another way?";
+        break;
     case go_target_reached:
         str = "go_target_reached";
         if(m_sn_language == "ita")
@@ -845,6 +853,13 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
             feedback = "Ho riscontrato un problema al mio hardware. Ti chiedo di aspettare qualche minuto per sistemare il problema";
         else if(m_sn_language == "eng")
             feedback = "I encountered an hardware error. Please wait some moments for me to fix the problem";
+        break;
+    case nav_pos_fail:
+        str = "nav_pos_fail";
+        if(m_sn_language == "ita")
+            feedback = "Mi é stato impossibile assumere la posizione di navigazione";
+        else if(m_sn_language == "eng")
+            feedback = "Could not set the navigation position";
         break;
     case cmd_unknown:
         if(m_sn_language == "ita")
@@ -895,7 +910,7 @@ bool OrchestratorThread::go(string loc)
         if (rep.get(0).asString() != "ok")
         {
             yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
-            askChatBotToSpeak(location_valid);
+            askChatBotToSpeak(location_not_valid);
             return false;
         }
     }

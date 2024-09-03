@@ -52,9 +52,11 @@ public:
         object_not_found,
         something_bad_happened,
         location_not_valid,
+        gafi_idle,
         go_target_reached,
         go_target_not_reached,
         hardware_failure,
+        nav_pos_fail,
         fallback,
         cmd_unknown
     };
