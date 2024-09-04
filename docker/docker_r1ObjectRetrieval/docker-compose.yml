@@ -54,6 +54,66 @@ x-demo: &demo
             - driver: nvidia
               count: all
               capabilities: [gpu]
+x-light: &light
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/home/user1/.Xauthority
+    - QT_X11_NO_MITSHM=1
+    - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
+    - LIBGL_ALWAYS_INDIRECT=0
+    - YARP_COLORED_OUTPUT=1
+    - NVIDIA_DRIVER_CAPABILITIES=all
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/etc/hosts:/etc/hosts"
+    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+    - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
+    - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+    - "./entrypoints/entrypoint_light.sh:/home/user1/.entrypoint_light.sh"
+  network_mode: host
+  entrypoint: ["sh", "/home/user1/.entrypoint_light.sh"]
+  ipc: host
+  pid: host
+  privileged: true
+  security_opt:
+    - apparmor:unconfined
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+x-heavy: &heavy
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/home/user1/.Xauthority
+    - QT_X11_NO_MITSHM=1
+    - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
+    - LIBGL_ALWAYS_INDIRECT=0
+    - YARP_COLORED_OUTPUT=1
+    - NVIDIA_DRIVER_CAPABILITIES=all
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/etc/hosts:/etc/hosts"
+    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+    - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
+    - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+    - "./entrypoints/entrypoint_heavy.sh:/home/user1/.entrypoint_heavy.sh"
+  network_mode: host
+  entrypoint: ["sh", "/home/user1/.entrypoint_heavy.sh"]
+  ipc: host
+  pid: host
+  privileged: true
+  security_opt:
+    - apparmor:unconfined
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
 services:
 
@@ -78,7 +138,7 @@ services:
     image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_demo
       args:
           base_img: elandini84/r1images:r1ObjectRetrieval_iron_stable
           robot_code: /usr/local/src/robot
@@ -158,6 +218,26 @@ services:
           llm_branch: master
 
 # Containers for the robot
+  raise-demo-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *light
+    container_name: raise-demo-container
+    command: terminator -g /home/user1/.config/terminator/config
+  raise-demo-test-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *heavy
+    container_name: raise-demo-test-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-default-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    <<: *light
+    container_name: r1-object-retrieval-default-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-test-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    <<: *heavy
+    container_name: r1-object-retrieval-test-container
+    command: terminator -g /home/user1/.config/terminator/config
   r1-object-retrieval-stable-container:
     image: elandini84/r1images:r1ObjectRetrieval_iron_stable
     <<: *general
