@@ -69,8 +69,9 @@ x-light: &light
     - "${HOME}/.config/yarp:/home/user1/.config/yarp"
     - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
     - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+    - "./entrypoints/entrypoint_light.sh:/home/user1/.entrypoint_light.sh"
   network_mode: host
-  entrypoint: ["./entrypoints/entrypoint_light.sh"]
+  entrypoint: ["sh", "/home/user1/.entrypoint_light.sh"]
   ipc: host
   pid: host
   privileged: true
@@ -98,8 +99,9 @@ x-heavy: &heavy
     - "${HOME}/.config/yarp:/home/user1/.config/yarp"
     - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
     - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+    - "./entrypoints/entrypoint_heavy.sh:/home/user1/.entrypoint_heavy.sh"
   network_mode: host
-  entrypoint: ["./entrypoints/entrypoint_heavy.sh"]
+  entrypoint: ["sh", "/home/user1/.entrypoint_heavy.sh"]
   ipc: host
   pid: host
   privileged: true
@@ -136,7 +138,7 @@ services:
     image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_demo
       args:
           base_img: elandini84/r1images:r1ObjectRetrieval_iron_stable
           robot_code: /usr/local/src/robot
