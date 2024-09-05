@@ -105,6 +105,21 @@ bool Nav2Loc::go(string loc)
     if (loc == "home")
         return goHome();
 
+    // This piece of code will work with a specific locations.ini configuration
+    // Forcing a specific path following if we want to go to the laboratory from outside
+    if(loc == "laboratory")
+    {
+        if(!m_iNav2D->checkInsideArea("lab_area"))
+        {
+            if(!m_iNav2D->gotoTargetByLocationName("path_to_laboratory"))
+            {
+                yCError(NAV_2_LOC, "Error with navigation to lab area from outside");
+                return false;
+            }
+        }
+        // If we are inside the lab area, we swap to the default behaviour
+    }
+
     if(!m_iNav2D->gotoTargetByLocationName(loc))
     {
         yCError(NAV_2_LOC, "Error with navigation to home location");
