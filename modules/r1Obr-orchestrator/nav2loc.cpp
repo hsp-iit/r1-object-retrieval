@@ -109,9 +109,9 @@ bool Nav2Loc::go(string loc)
     // Forcing a specific path following if we want to go to the laboratory from outside
     if(loc == "laboratory")
     {
-        if(!m_iNav2D->checkInsideArea("lab_area"))
+        if(!m_iNav2D->checkInsideArea("laboratory_area"))
         {
-            if(!m_iNav2D->gotoTargetByLocationName("path_to_laboratory"))
+            if(!m_iNav2D->gotoTargetByLocationName("laboratory_path"))
             {
                 yCError(NAV_2_LOC, "Error with navigation to lab area from outside");
                 return false;
