@@ -1,4 +1,6 @@
-source /home/user1/.entrypoint.sh
+. /opt/ros/iron/setup.bash
+. ${ROBOT_CODE}/yarp-devices-ros2/ros2_interfaces_ws/install/setup.bash
+. ${ROBOT_CODE}/tour-guide-robot/app/navigation2/scripts/evaluate_ip.sh
 cd ${ROBOT_CODE}/ycm && git pull && cd build && cmake .. && make -j11 && \
     cd ${ROBOT_CODE}/yarp && git pull && cd build && cmake .. && make -j11 && \
     cd ${ROBOT_CODE}/icub-main && git pull && cd build && cmake .. && make -j11 && \

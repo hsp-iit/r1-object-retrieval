@@ -143,7 +143,7 @@ services:
           base_img: elandini84/r1images:r1ObjectRetrieval_iron_stable
           robot_code: /usr/local/src/robot
           grcp_version: v1.60.0
-          google_cloud_version: v2.22.0
+          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
           open_telemetry_version: v1.13.0
           nlohmann_json_version: v3.11.3
           crc32c_version: 1.1.2
