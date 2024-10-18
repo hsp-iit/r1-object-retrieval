@@ -212,14 +212,15 @@ void DisappointmentPose::setPosition()
     m_iposctrl[0]->positionMove(7, m_right_arm_pos.get(7).asFloat32());
     
     //left arm
-    m_iposctrl[1]->positionMove(0, m_left_arm_pos.get(0).asFloat32());
-    m_iposctrl[1]->positionMove(1, m_left_arm_pos.get(1).asFloat32());
-    m_iposctrl[1]->positionMove(2, m_left_arm_pos.get(2).asFloat32());
-    m_iposctrl[1]->positionMove(3, m_left_arm_pos.get(3).asFloat32());
-    m_iposctrl[1]->positionMove(4, m_left_arm_pos.get(4).asFloat32());
-    m_iposctrl[1]->positionMove(5, m_left_arm_pos.get(5).asFloat32());
-    m_iposctrl[1]->positionMove(6, m_left_arm_pos.get(6).asFloat32());
-    m_iposctrl[1]->positionMove(7, m_left_arm_pos.get(7).asFloat32());
+    // m_iposctrl[1]->positionMove(0, m_left_arm_pos.get(0).asFloat32());
+    // m_iposctrl[1]->positionMove(1, m_left_arm_pos.get(1).asFloat32());
+    // m_iposctrl[1]->positionMove(2, m_left_arm_pos.get(2).asFloat32());
+    // m_iposctrl[1]->positionMove(3, m_left_arm_pos.get(3).asFloat32());
+    // m_iposctrl[1]->positionMove(4, m_left_arm_pos.get(4).asFloat32());
+    // m_iposctrl[1]->positionMove(5, m_left_arm_pos.get(5).asFloat32());
+    // m_iposctrl[1]->positionMove(6, m_left_arm_pos.get(6).asFloat32());
+    // m_iposctrl[1]->positionMove(7, m_left_arm_pos.get(7).asFloat32());
+    yCWarning(DISAPPOINTMENT_POSE) << "Left arm disabled";
     
     //head
     m_iposctrl[2]->positionMove(0, m_head_pos.get(0).asFloat32());

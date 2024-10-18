@@ -245,7 +245,11 @@ bool TinyDancer::doDance(string& dance_name)
                         time = motion->find("time").asFloat32();
 
                     Bottle* armR_joints=motion->find("right_arm").asList();
-                    Bottle* armL_joints=motion->find("left_arm").asList();
+                    
+                    yCWarning(TINY_DANCER) << "Left arm disabled";
+                    //Bottle* armL_joints=motion->find("left_arm").asList();
+                    Bottle* armL_joints=nullptr;
+
                     Bottle* head_joints=motion->find("head").asList();
                     Bottle* torso_joints=motion->find("torso").asList();
 
@@ -259,9 +263,11 @@ bool TinyDancer::doDance(string& dance_name)
                     }
                     if (armL_joints)
                     {
-                        ok = ok && setCtrlMode(1, VOCAB_CM_POSITION);
-                        if (time >= 0)
-                            ok = ok && setJointsSpeed(1, time, armL_joints);
+                        yCWarning(TINY_DANCER) << "Left arm disabled";
+                        ok = true;
+                        // ok = ok && setCtrlMode(1, VOCAB_CM_POSITION);
+                        // if (time >= 0)
+                        //     ok = ok && setJointsSpeed(1, time, armL_joints);
                     }
                     if (head_joints)
                     {
@@ -287,7 +293,7 @@ bool TinyDancer::doDance(string& dance_name)
                     if (armR_joints)
                         ok = ok && movePart(0, armR_joints);
                     if (armL_joints)
-                        ok = ok && movePart(1, armL_joints);
+                        ok = ok; //ok && movePart(1, armL_joints);
                     if (head_joints)
                         ok = ok && movePart(2, head_joints);
                     if (torso_joints)

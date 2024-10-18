@@ -476,7 +476,7 @@ bool OrchestratorThread::resizeSearchBottle(const Bottle& btl)
             m_nextLoc_rpc_port.write(req,rep); //check if location name is valid
             if (rep.get(0).asString() != "ok")
             {
-                yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
+                yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid: %s",loc.c_str());
                 m_request.clear();
                 askChatBotToSpeak(something_bad_happened);
                 return false;
@@ -887,7 +887,7 @@ bool OrchestratorThread::go(string loc)
         m_nextLoc_rpc_port.write(req,rep); //check if location name is valid
         if (rep.get(0).asString() != "ok")
         {
-            yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
+            yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid: %s",loc.c_str());
             askChatBotToSpeak(something_bad_happened);
             return false;
         }

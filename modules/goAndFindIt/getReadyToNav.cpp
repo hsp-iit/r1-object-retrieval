@@ -171,6 +171,11 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
         tmpLeftArmRPC.close();
     }
 
+    if(part==1)
+    {
+        yCWarning(GET_READY_TO_NAV) << "Left arm not enabled at the moment";
+        return true;
+    }
     m_ictrlmode[part]->setControlModes(NUMBER_OF_JOINTS, joints.data(), modes.data());
 
     yarp::os::Time::delay(0.01);  // give time to update control modes value
@@ -196,6 +201,11 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
 
 bool GetReadyToNav::setJointsSpeed(const int part)
 {
+    if(part==1)
+    {
+        yCWarning(GET_READY_TO_NAV) << "Left arm not enabled";
+        return true;
+    }
     int NUMBER_OF_JOINTS;
     std::vector<int>    joints;
     std::vector<double> speeds;
@@ -227,6 +237,11 @@ bool GetReadyToNav::setJointsSpeed(const int part)
 
 bool GetReadyToNav::movePart(const int part)
 {
+    if(part==1)
+    {
+        yCWarning(GET_READY_TO_NAV) << "Left arm not enabled";
+        return true;
+    }
     int NUMBER_OF_JOINTS;
     std::vector<int>    joints;
     std::vector<double> positions;
