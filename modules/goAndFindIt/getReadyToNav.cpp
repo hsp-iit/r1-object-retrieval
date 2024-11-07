@@ -17,6 +17,7 @@
  */
 
 #include "getReadyToNav.h"
+#include <math.h>
 
 YARP_LOG_COMPONENT(GET_READY_TO_NAV, "r1_obr.goAndFindIt.getReadyToNav")
 
@@ -231,22 +232,40 @@ bool GetReadyToNav::movePart(const int part)
     std::vector<int>    joints;
     std::vector<double> positions;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
+
+    //check all joints are in position
+    bool joints_are_in_position = true;
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
-        joints.push_back(i_joint);
+    {
+        double current_pos = 0;
+        m_iencoder[part]->getEncoder(i_joint, &current_pos);
+             if (part == 0 && fabs(current_pos-m_right_arm_pos.get(i_joint).asFloat32()) > 2.0) { joints_are_in_position = false; }
+        else if (part == 1 && fabs(current_pos-m_left_arm_pos.get(i_joint).asFloat32()) > 2.0)  { joints_are_in_position = false; }
+        else if (part == 2 && fabs(current_pos-m_head_pos.get(i_joint).asFloat32()) > 2.0)      { joints_are_in_position = false; }
+        else if (part == 3 && fabs(current_pos-m_torso_pos.get(i_joint).asFloat32()) > 2.0)     { joints_are_in_position = false; }
+    }
 
-        if (part == 0)
-            positions.push_back(m_right_arm_pos.get(i_joint).asFloat32());
-        else if (part == 1)
-            positions.push_back(m_left_arm_pos.get(i_joint).asFloat32());
-        else if (part == 2)
-            positions.push_back(m_head_pos.get(i_joint).asFloat32());
-        else if (part == 3)
-            positions.push_back(m_torso_pos.get(i_joint).asFloat32());
+    //if at least one joint is not in position, send command to all
+    if (joints_are_in_position==false)
+    {
+        for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+        {
+            joints.push_back(i_joint);
 
-    } 
+            if (part == 0)
+                positions.push_back(m_right_arm_pos.get(i_joint).asFloat32());
+            else if (part == 1)
+                positions.push_back(m_left_arm_pos.get(i_joint).asFloat32());
+            else if (part == 2)
+                positions.push_back(m_head_pos.get(i_joint).asFloat32());
+            else if (part == 3)
+                positions.push_back(m_torso_pos.get(i_joint).asFloat32());
+        } 
+        m_iposctrl[part]->positionMove(NUMBER_OF_JOINTS, joints.data(), positions.data());
+        yarp::os::Time::delay(3.0); //wait for movement accomplished
+    }
 
-    return m_iposctrl[part]->positionMove(NUMBER_OF_JOINTS, joints.data(), positions.data());
+    return true;
 }
 
 

@@ -38,7 +38,6 @@ GoAndFindItThread::GoAndFindItThread(yarp::os::ResourceFinder &rf) :
     m_output_port_name      = "/goAndFindIt/output:o";
     m_max_nav_time          = 300.0;
     m_max_search_time       = 120.0;
-    m_setNavPos_time        = 3.0;
 }
 
 /****************************************************************/
@@ -49,8 +48,6 @@ bool GoAndFindItThread::threadInit()
         m_max_nav_time = m_rf.find("max_nav_time").asFloat32();
     if(m_rf.check("max_search_time"))
         m_max_search_time = m_rf.find("max_search_time").asFloat32();
-    if(m_rf.check("set_nav_pos_time"))
-        m_setNavPos_time = m_rf.find("set_nav_pos_time").asFloat32();
 
     //Open ports
     if(m_rf.check("nextLoc_rpc_port"))
@@ -331,7 +328,6 @@ bool GoAndFindItThread::setNavigationPosition()
         if(!m_getReadyToNav->navPosition())
             return false;
             
-        Time::delay(m_setNavPos_time);
         m_in_nav_position = true;
         return true;
     }

@@ -76,7 +76,6 @@ private:
 
     GetReadyToNav*          m_getReadyToNav;
     bool                    m_in_nav_position;
-    double                  m_setNavPos_time;
 
 public:
     //Contructor and distructor
