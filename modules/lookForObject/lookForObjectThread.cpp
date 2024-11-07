@@ -44,7 +44,7 @@ bool LookForObjectThread::threadInit()
     if (m_rf.check("out_port")) {m_outPortName = m_rf.find("out_port").asString();}
     if (m_rf.check("find_object_port_rpc")) {m_findObjectPortName = m_rf.find("find_object_port_rpc").asString();}
     if (m_rf.check("gaze_target_point_port")) {m_gazeTargetOutPortName = m_rf.find("gaze_target_point_port").asString();}
-    if (m_rf.check("object_coords_port")) {m_objectCoordsPortName = m_rf.find("object_coords_port").asString();}    
+    if (m_rf.check("object_coords_port")) {m_objectCoordsPortName = m_rf.find("object_coords_port").asString();}
 
     // --------- Next Head Orient initialization --------- //
     m_robotOrient = new RobotOrient(m_rf);
@@ -52,9 +52,9 @@ bool LookForObjectThread::threadInit()
     if (!headOrientOk){
         return false;
     }
-    
+
     if (m_rf.check("wait_for_search")) {m_wait_for_search = m_rf.find("wait_for_search").asFloat32();}
-    
+
     // --------- Navigation2DClient config --------- //
     yarp::os::Property nav2DProp;
     //Defaults
@@ -76,7 +76,7 @@ bool LookForObjectThread::threadInit()
         if(nav_config.check("map_locations_server")) {nav2DProp.put("map_locations_server", nav_config.find("map_locations_server").asString());}
         if(nav_config.check("localization_server")) {nav2DProp.put("localization_server", nav_config.find("localization_server").asString());}
         }
-   
+
     m_nav2DPoly.open(nav2DProp);
     if(!m_nav2DPoly.isValid())
     {
@@ -87,7 +87,7 @@ bool LookForObjectThread::threadInit()
         yCError(LOOK_FOR_OBJECT_THREAD,"Error opening INavigation2D interface. Device not available");
         return false;
     }
-    
+
     // --------- open ports --------- //
     if(!m_outPort.open(m_outPortName)){
         yCError(LOOK_FOR_OBJECT_THREAD) << "Cannot open Out port with name" << m_outPortName;
@@ -108,7 +108,7 @@ bool LookForObjectThread::threadInit()
         yCError(LOOK_FOR_OBJECT_THREAD) << "Cannot open port with name" << m_objectCoordsPortName;
         return false;
     }
-    
+
 
     return true;
 }
@@ -120,18 +120,18 @@ void LookForObjectThread::threadRelease()
         m_outPort.close();
 
     if (m_findObjectPort.asPort().isOpen())
-        m_findObjectPort.close(); 
-    
+        m_findObjectPort.close();
+
     if(!m_gazeTargetOutPort.isClosed()){
         m_gazeTargetOutPort.close();
     }
-    
+
     if(!m_objectCoordsPort.isClosed()){
         m_objectCoordsPort.close();
     }
 
     m_robotOrient->close();
-    
+
     yCInfo(LOOK_FOR_OBJECT_THREAD, "Thread released");
 
     return;
@@ -145,23 +145,23 @@ void LookForObjectThread::run()
 
         if (m_status == LfO_SEARCHING)
         {
-            lookAround(m_object);   
+            lookAround(m_object);
         }
 
         else if (m_status == LfO_TURNING)
         {
-            turn();   
+            turn();
         }
 
-        else if (m_status == LfO_OBJECT_FOUND)
-        {
-            writeResult(true);   
+        // else if (m_status == LfO_OBJECT_FOUND)
+        // {
+        //     writeResult(true);
 
-        } 
+        // }
         else if (m_status == LfO_OBJECT_NOT_FOUND)
         {
             writeResult(false);
-        } 
+        }
 
         else if (m_status == LfO_IDLE)
         {
@@ -187,10 +187,10 @@ void LookForObjectThread::onRead(yarp::os::Bottle &b)
     {
         yCError(LOOK_FOR_OBJECT_THREAD,"The input bottle has the wrong number of elements");
     }
-    else 
+    else
     {
         std::string obj {b.get(0).asString()};
-        
+
         if(b.size() > 1)
         {
             if (obj=="label")
@@ -201,13 +201,13 @@ void LookForObjectThread::onRead(yarp::os::Bottle &b)
             else
                 yCWarning(LOOK_FOR_OBJECT_THREAD,"The input bottle has the wrong number of elements. Using only the first element.");
         }
-        
-        if (obj=="stop") 
-        { 
-            externalStop(); 
+
+        if (obj=="stop")
+        {
+            externalStop();
         }
-        else if (obj=="detect") 
-        { 
+        else if (obj=="detect")
+        {
             m_findObjectPort.write(b);
         }
         else
@@ -215,14 +215,14 @@ void LookForObjectThread::onRead(yarp::os::Bottle &b)
             if (m_status == LfO_SEARCHING)
             {
                 m_ext_stop = true;
-                yarp::os::Time::delay(m_wait_for_search + 0.25); 
+                yarp::os::Time::delay(m_wait_for_search + 0.25);
             }
             m_ext_stop = false;
             m_robotOrient->resetTurns();
             m_object = obj;
             m_status = LfO_SEARCHING;
         }
-        
+
     }
 }
 
@@ -246,7 +246,7 @@ bool LookForObjectThread::lookAround(std::string& ob)
         //retrieve next head orientation
         Bottle replyOrient;
         if (m_robotOrient->next(replyOrient))
-        {                        
+        {
             yCInfo(LOOK_FOR_OBJECT_THREAD) << "Checking head orientation: pos" + (std::string)(idx<10?"0":"") + std::to_string(idx);
             //gaze target output
             yarp::os::Bottle&  toSend1 = m_gazeTargetOutPort.prepare();
@@ -260,14 +260,14 @@ bool LookForObjectThread::lookAround(std::string& ob)
             yarp::os::Bottle* tmpBottle = replyOrient.get(0).asList();
             targetList1.addFloat32(tmpBottle->get(0).asFloat32());
             targetList1.addFloat32(tmpBottle->get(1).asFloat32());
-            m_gazeTargetOutPort.write(); //sending output command to gaze-controller 
+            m_gazeTargetOutPort.write(); //sending output command to gaze-controller
 
             yarp::os::Time::delay(m_wait_for_search);  //waiting for the robot tilting its head
 
             //search for object
             Bottle request, reply;
             request.addString("where");
-            request.addString(ob); 
+            request.addString(ob);
             yCDebug(LOOK_FOR_OBJECT_THREAD, "Request to object finder: %s", request.toString().c_str());
             if (m_findObjectPort.write(request,reply))
             {
@@ -290,23 +290,26 @@ bool LookForObjectThread::lookAround(std::string& ob)
         {
             m_robotOrient->home();
             break;
-        }  
+        }
     }
-    
 
-    
+
+
     if (objectFound)
-        m_status = LfO_OBJECT_FOUND;
+    {
+        // m_status = LfO_OBJECT_FOUND;
+        writeResult(true);
+    }
     else if (!m_ext_stop)
         m_status = LfO_TURNING;
-    
+
     return true;
 }
 
 
 /****************************************************************/
 bool LookForObjectThread::turn()
-{  
+{
     yarp::os::Bottle reply;
     m_robotOrient->turn(reply);
     if (reply.get(0).asString()=="noTurn")
@@ -330,10 +333,10 @@ bool LookForObjectThread::turn()
         if (!m_ext_stop)
             m_status = LfO_SEARCHING;
     }
-    
+
     return true;
-            
-}    
+
+}
 
 /****************************************************************/
 bool LookForObjectThread::getObjCoordinates(Bottle* btl, Bottle& out)
@@ -345,7 +348,7 @@ bool LookForObjectThread::getObjCoordinates(Bottle* btl, Bottle& out)
         Bottle* b = btl->get(i).asList();
         if (b->get(0).asString() != m_object) //skip objects with another label
             continue;
-        
+
         if(b->get(1).asFloat32() > max_conf) //get the object with the max confidence
         {
             max_conf = b->get(1).asFloat32();
@@ -356,7 +359,7 @@ bool LookForObjectThread::getObjCoordinates(Bottle* btl, Bottle& out)
 
     if (x<0)
         return false;
-    
+
     out.addFloat32(x);
     out.addFloat32(y);
     return true;
@@ -372,7 +375,7 @@ bool LookForObjectThread::writeResult(bool objFound)
         toSendOut.addString(m_object);
         Bottle& coordList = toSendOut.addList();
 
-        Bottle* finderResult= m_objectCoordsPort.read(false); 
+        Bottle* finderResult= m_objectCoordsPort.read(false);
         if(finderResult != nullptr)
         {
             if (!getObjCoordinates(finderResult, coordList))
@@ -389,14 +392,14 @@ bool LookForObjectThread::writeResult(bool objFound)
 
     m_object = "";
     m_status = LfO_IDLE;
-    
+
     return true;
 }
 
 /****************************************************************/
 void LookForObjectThread::externalStop()
 {
-    
+
     yCWarning(LOOK_FOR_OBJECT_THREAD, "External stop command received");
     m_ext_stop = true;
     m_status = LfO_IDLE;
