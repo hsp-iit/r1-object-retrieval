@@ -22,7 +22,7 @@
 #include <yarp/os/all.h>
 #include "nav2loc.h"
 #include "continuousSearch.h"
-#include "chatBot.h"
+#include "DialogueManager.h"
 #include "tinyDancer.h"
 
 using namespace yarp::os;
@@ -92,7 +92,7 @@ private:
     ContinuousSearch*       m_continuousSearch;
 
     //Chat Bot
-    ChatBot*                m_chat_bot;
+    DialogueManager*                m_dialogueManager;
 
     //TinyDancer
     TinyDancer*             m_tiny_dancer;

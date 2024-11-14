@@ -121,10 +121,10 @@ bool OrchestratorThread::threadInit()
         return false;
     }
 
-    // --------- Chat Bot initialization --------- //
-    m_chat_bot = new ChatBot();
-    if (!m_chat_bot->configure(m_rf)){
-        yCError(R1OBR_ORCHESTRATOR_THREAD,"ChatBot configuration failed");
+    // --------- Dialogue Manager initialization --------- //
+    m_dialogueManager = new DialogueManager();
+    if (!m_dialogueManager->configure(m_rf)){
+        yCError(R1OBR_ORCHESTRATOR_THREAD,"DialogueManager configuration failed");
         return false;
     }
 
@@ -188,8 +188,8 @@ if (m_sensor_network_rpc_port.asPort().isOpen())
     m_continuousSearch->close();
     delete m_continuousSearch;
 
-    m_chat_bot->close();
-    delete m_chat_bot;
+    m_dialogueManager->close();
+    delete m_dialogueManager;
 
     m_tiny_dancer->close();
     delete m_tiny_dancer;
@@ -873,7 +873,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     };
 
-    m_chat_bot->interactWithChatBot(str);
+    m_dialogueManager->interactWithDialogMng(str);
 
 
     if (m_sn_active && feedback != "")

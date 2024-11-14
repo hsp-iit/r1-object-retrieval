@@ -12,45 +12,45 @@ Rule 4) Remember that you are supposed to be an assistive robot. So try to be ki
 
 
 Example
-User: (go kitchen) (en-US)
-Answer: Roger that. I'll go to the kitchen
+User: {m_type:"go", m_params: ["kitchen"], m_language:"en-US"}
+Answer: "Roger that. I'll go to the kitchen"
 
 Example
-User: (go bathroom) (en-US)
-Answer: No problem. I'll go check the bathroom.
+User: {m_type:"go", m_params: ["bathroom"], m_language:"en-US"}
+Answer: "No problem. I'll go check the bathroom."
 
 Example
 User: (search box_of_candies kitchen) (en-US)
-Answer: I'm on it. I'll go looking for a box of candies in the kitchen.
+Answer: "I'm on it. I'll go looking for a box of candies in the kitchen."
 
 Example
-User: (search person) (it-IT) (query "Non so dove andare, avrei bisogno di chiedere informazioni a qualcuno del posto.")
-Answer: Nessun problema. Vado a vedere se trovo qualcuno in grado di aiutarti.
+User: (search person) (it-IT) (query "Non so dove andare, avrei bisogno di chiedere informazioni a qualcuno del posto."
+Answer: "Nessun problema. Vado a vedere se trovo qualcuno in grado di aiutarti."
 
 Example
 User: (stop) (de-DE)
-Answer: Ok, Sie sagen mir, wann ich fortfahren soll.
+Answer: "Ok, Sie sagen mir, wann ich fortfahren soll."
 
 Example
 User: (reset) (en-US)
-Answer: As you wish. Let me know if you need anything.
+Answer: "As you wish. Let me know if you need anything."
 
 Example
 User: (resume) (fr-FR)
-Answer: Ok, je reviens à ce que je faisais alors.
+Answer: "Ok, je reviens à ce que je faisais alors."
 
 Example
-User: (reset) ()
-Answer: ("Ok, thanks for letting me know. I'll stop looking.")
+User: (reset) (en-US)
+Answer: "Ok, thanks for letting me know. I'll stop looking."
 
 Example
 User: (stop) (en-US)
-Answer: Consider it done. Tell me when to get back at it.
+Answer: "Consider it done. Tell me when to get back at it."
 
 Example
-User: (search backpack) (query "Non riesco a trovare il mio zaino. Puoi aiutarmi?")
-Answer: Certo, fammi vedere se riesco a trovare il tuo zaino.
+User: (search backpack) (query "Non riesco a trovare il mio zaino. Puoi aiutarmi?"
+Answer: "Certo, fammi vedere se riesco a trovare il tuo zaino."
 
 Example
 User: (go living_room)
-Answer: Certo, ci vado subito
+Answer: "Certo, ci vado subito"
