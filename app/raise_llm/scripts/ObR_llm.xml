@@ -14,14 +14,14 @@
   </module>
 
   <module>
-    <name>LLMStream</name>
-    <parameters>--context raise_llm --from obrStream.ini</parameters>
+    <name>yarprobotinterface</name>
+    <parameters>--context raise_llm --from obrReplierChat.ini</parameters>
     <node>console-llm</node>
   </module>
 
   <module>
-    <name>yarprobotinterface</name>
-    <parameters>--context raise_llm --from obrReplierChat.ini</parameters>
+    <name>LLMStream</name>
+    <parameters>--context raise_llm --from obrStream.ini</parameters>
     <node>console-llm</node>
   </module>
 

@@ -872,8 +872,8 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         feedback = "no command";
         break;
     };
-
-    m_dialogueManager->interactWithDialogMng(str);
+    DialogueMessage toReplier{CmdTypes::SAY, {str}, m_dialogueManager->getLanguage()};
+    m_dialogueManager->interactWithReplier(toReplier,true);
 
 
     if (m_sn_active && feedback != "")

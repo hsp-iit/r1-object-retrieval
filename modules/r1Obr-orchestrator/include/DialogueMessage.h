@@ -38,6 +38,8 @@ enum CmdTypes
     SAY,
     WHERE,
     WHAT,
+    STATUS,
+    NAVPOS,
     INVALID = -1
 };
 
@@ -50,6 +52,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, nullptr},
                                         {RESET, "reset"},
                                         {WHERE, "where"},
                                         {WHAT, "what"},
+                                        {STATUS, "status"},
+                                        {NAVPOS, "navpos"},
                                         {SAY, "say"}})
 
 class DialogueMessage
@@ -59,9 +63,10 @@ protected:
     std::vector<std::string> m_params;
     std::string m_language;
     std::string m_query;
+    std::string m_comment;
 
 public:
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DialogueMessage, m_type, m_params, m_language, m_query)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DialogueMessage, m_type, m_params, m_language, m_query, m_comment)
 
     /**
      * Invalid constructor
@@ -74,14 +79,21 @@ public:
      * @param params
      * @param language
      * @param query
+     * @param comment
      */
-    DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query="");
+    DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query="", const std::string& comment="");
 
     /**
      * @brief Move constructor
      * @param movingCommand the command to move
      */
     DialogueMessage(DialogueMessage&& movingCommand) noexcept = default;
+
+    /**
+     * @brief Copy constructor
+     * @param copiedCommand the command to copy
+     */
+    DialogueMessage(DialogueMessage& copiedCommand) noexcept = default;
 
     /**
      * Copy operator
@@ -95,6 +107,12 @@ public:
      * @return the command type
      */
     [[nodiscard]] CmdTypes getType() const;
+
+    /**
+     * @brief Get command as a string
+     * @return the command as a string
+     */
+    [[nodiscard]] std::string getTypeAsString() const;
 
     /**
      * @brief Get command parameters
@@ -113,6 +131,12 @@ public:
      * @return the command query
      */
     [[nodiscard]] const std::string& getQuery() const;
+
+    /**
+     * @brief Get command comment
+     * @return the command comment
+     */
+    [[nodiscard]] const std::string& getComment() const;
 
     /**
      * @brief Set command type
@@ -141,6 +165,13 @@ public:
      * @return true if the query is set, false otherwise - TODO: Decide if the return value is useful
      */
     bool setQuery(const std::string& query);
+
+    /**
+     * @brief Set command comment
+     * @param comment the command comment
+     * @return true if the comment is set, false otherwise - TODO: Decide if the return value is useful
+     */
+    bool setComment(const std::string& comment);
 };
 
 #endif //R1_OBR_DIALOG_MSG_H

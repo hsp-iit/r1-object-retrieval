@@ -74,16 +74,16 @@ public:
     Orchestrator();
 
     //RFModule
-    virtual bool configure(ResourceFinder &rf);
-    virtual bool close();
-    virtual double getPeriod();
-    virtual bool updateModule();
+    virtual bool configure(ResourceFinder &rf) override;
+    virtual bool close() override;
+    virtual double getPeriod() override;
+    virtual bool updateModule() override;
 
     //inherited from TypedReaderCallback
     using TypedReaderCallback<Bottle>::onRead;
     void onRead(Bottle& b) override;
 
-    bool respond(const Bottle &cmd, Bottle &reply);
+    bool respond(const Bottle &cmd, Bottle &reply) override;
 
     //inherited from r1OrchestratorRPC
     bool searchObject(const string& what)  override;

@@ -24,6 +24,7 @@
 #include "speechSynthesizer.h"
 #include <yarp/sig/AudioPlayerStatus.h>
 #include <yarp/dev/ILLM.h>
+#include <yarp/dev/ISpeechTranscription.h>
 #include "DialogueMessage.h"
 
 class DialogueManager : public yarp::os::TypedReaderCallback<yarp::os::Bottle>
@@ -31,22 +32,25 @@ class DialogueManager : public yarp::os::TypedReaderCallback<yarp::os::Bottle>
 
 private:
 
-    yarp::os::BufferedPort<Bottle>  m_voiceCommandPort;
-    yarp::os::RpcClient             m_orchestratorRPCPort;
-    yarp::os::RpcClient             m_audiorecorderRPCPort;
-    yarp::os::BufferedPort<Bottle>  m_audioPlayPort;
+    yarp::os::BufferedPort<Bottle>    m_voiceCommandPort;
+    yarp::os::RpcClient               m_orchestratorRPCPort;
+    yarp::os::RpcClient               m_audiorecorderRPCPort;
+    yarp::os::BufferedPort<Bottle>    m_audioPlayPort;
 
-    yarp::dev::PolyDriver           m_polyLLM;
-    yarp::dev::ILLM*                m_iLlm = nullptr;
+    yarp::dev::PolyDriver             m_polyLLM;
+    yarp::dev::ILLM*                  m_iLlm = nullptr;
 
-    yarp::dev::PolyDriver           m_polyLLMReplier;
-    yarp::dev::ILLM*                m_iLlmReplier = nullptr;
+    yarp::dev::PolyDriver             m_polyLLMReplier;
+    yarp::dev::ILLM*                  m_iLlmReplier = nullptr;
 
-    SpeechSynthesizer*              m_speaker;
+    yarp::dev::PolyDriver             m_polyTranscrption;
+    yarp::dev::ISpeechTranscription*  m_iTranscription = nullptr;
 
-    std::string                     m_currentLanguage;
-    std::string                     m_currentQuestion;
-    DialogueMessage                 m_currentLLMAnswer;
+    SpeechSynthesizer*                m_speaker;
+
+    std::string                       m_currentLanguage;
+    std::string                       m_currentQuestion;
+    DialogueMessage                   m_currentLLMAnswer;
 
     DialogueMessage coreLLM(const std::string& msgIn);
     yarp::os::Bottle fromMsgToBottle(const DialogueMessage& msg);
@@ -65,9 +69,10 @@ public:
     virtual void onRead(yarp::os::Bottle& b) override;
 
     void interactWithDialogMng(const std::string& msgIn);
-    void interactWithReplier(const std::string& msgIn, bool keepContext = false);
+    void interactWithReplier(const DialogueMessage& msgIn, bool keepContext = false);
     void speak(const std::string& toSay);
     bool audioIsPlaying(bool& audio_is_playing);
+    [[nodiscard]] const std::string& getLanguage() const;
 };
 
 #endif //DIALOG_MNG_ORCHESTRATOR_H

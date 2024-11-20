@@ -19,7 +19,7 @@
 #include "DialogueMessage.h"
 #include <utility>
 
-DialogueMessage::DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query):
+DialogueMessage::DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query, const std::string& comment) :
         m_type(type),
         m_params(params),
         m_language(language)
@@ -45,6 +45,25 @@ CmdTypes DialogueMessage::getType() const
     return m_type;
 }
 
+std::string DialogueMessage::getTypeAsString() const
+{
+    static const std::map<CmdTypes, std::string> cmdTypeToString = {
+            {CmdTypes::GO, "go"},
+            {CmdTypes::SEARCH, "search"},
+            {CmdTypes::STOP, "stop"},
+            {CmdTypes::RESUME, "resume"},
+            {CmdTypes::RESET, "reset"},
+            {CmdTypes::WHERE, "where"},
+            {CmdTypes::WHAT, "what"},
+            {CmdTypes::STATUS, "status"},
+            {CmdTypes::NAVPOS, "navpos"},
+            {CmdTypes::SAY, "say"},
+            {CmdTypes::INVALID, "invalid"}
+    };
+
+    return cmdTypeToString.at(m_type);
+}
+
 const std::string& DialogueMessage::getLanguage() const
 {
     return m_language;
@@ -53,6 +72,11 @@ const std::string& DialogueMessage::getLanguage() const
 const std::string& DialogueMessage::getQuery() const
 {
     return m_query;
+}
+
+const std::string& DialogueMessage::getComment() const
+{
+    return m_comment;
 }
 
 bool DialogueMessage::setType(CmdTypes type)
@@ -76,5 +100,11 @@ bool DialogueMessage::setLanguage(const std::string& language)
 bool DialogueMessage::setQuery(const std::string& query)
 {
     m_query = query;
+    return true;
+}
+
+bool DialogueMessage::setComment(const std::string& comment)
+{
+    m_comment = comment;
     return true;
 }

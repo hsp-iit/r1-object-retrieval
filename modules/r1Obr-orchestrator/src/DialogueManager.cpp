@@ -133,6 +133,23 @@ bool DialogueManager::configure(ResourceFinder &rf)
         return false;
     }
 
+    // --------- SpeechTranscription_nwc config --------- //
+    std::string transcription_local{"/r1Obr-orchestrator/dialogMng/transcription/rpc"}, transcription_remote{"/speechTranscription_nws/rpc"};
+    Property propTranscription;
+    if(config.check("transcription_local")) { transcription_local = config.find("transcription_local").asString();}
+    if(config.check("transcription_remote")) { transcription_remote = config.find("transcription_remote").asString();}
+    propTranscription.put("device", "speechTranscription_nwc_yarp");
+    propTranscription.put("local", transcription_local);
+    propTranscription.put("remote", transcription_remote);
+    if (!m_polyTranscrption.open(propTranscription)) {
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "Cannot open speechTranscription_nwc_yarp";
+        return false;
+    }
+    if (!m_polyTranscrption.view(m_iTranscription)) {
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "Cannot open interface from transcription driver";
+        return false;
+    }
+
     return true;
 }
 
@@ -193,6 +210,7 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
     {
         m_currentLanguage = language;
         m_speaker->setLanguage(m_currentLanguage);
+        m_iTranscription->setLanguage(m_currentLanguage);
     }
     CmdTypes cmdType = replyMsg.getType();
     switch(cmdType){
@@ -208,6 +226,10 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
         default: {
             toOrchestrator = fromMsgToBottle(replyMsg);
             m_orchestratorRPCPort.write(toOrchestrator, reply);
+            DialogueMessage orchMsg = replyMsg;
+            orchMsg.setQuery(msgIn);
+            orchMsg.setComment(reply.toString());
+            interactWithReplier(orchMsg);
             break;
         }
     }
@@ -236,37 +258,7 @@ yarp::os::Bottle DialogueManager::fromMsgToBottle(const DialogueMessage& msg)
     std::vector<std::string> params = msg.getParams();
     std::string args;
     std::string command;
-    switch(msg.getType())
-    {
-        case CmdTypes::GO: {
-            command = "go";
-            break;
-        }
-        case CmdTypes::SEARCH: {
-            command = "search";
-            break;
-        }
-        case CmdTypes::STOP: {
-            command = "stop";
-            break;
-        }
-        case CmdTypes::RESET: {
-            command = "reset";
-            break;
-        }
-        case CmdTypes::RESUME: {
-            command = "resume";
-            break;
-        }
-        case CmdTypes::WHERE: {
-            command = "where";
-            break;
-        }
-        case CmdTypes::WHAT: {
-            command = "what";
-            break;
-        }
-    }
+    command = msg.getTypeAsString();
     for(int i = 0; i < params.size(); i++)
     {
         std::string param = params[i];
@@ -274,7 +266,7 @@ yarp::os::Bottle DialogueManager::fromMsgToBottle(const DialogueMessage& msg)
         args += " " + param;
     }
     toOrchestrator.clear();
-    toOrchestrator.fromString(command+" "+args);
+    toOrchestrator.fromString(command+args);
 
     return toOrchestrator;
 }
@@ -360,11 +352,11 @@ bool DialogueManager::audioIsPlaying(bool& audio_is_playing)
 }
 
 
-void DialogueManager::interactWithReplier(const std::string& msgIn, bool keepContext)
+void DialogueManager::interactWithReplier(const DialogueMessage& msgIn, bool keepContext)
 {
-    yCInfo(DIALOG_MNG_ORCHESTRATOR, "Seeding replier with: %s", msgIn.c_str());
-    nlohmann::json replyJson = nlohmann::json::parse(msgIn);
-    DialogueMessage replyMsg = replyJson.get<DialogueMessage>();
+    nlohmann::json replyJson = msgIn;
+    yCInfo(DIALOG_MNG_ORCHESTRATOR, "Seeding replier with: %s", replyJson.dump().c_str());
+    DialogueMessage replyMsg{msgIn.getType(), msgIn.getParams(), msgIn.getLanguage()};
     if (replyMsg.getType() == CmdTypes::INVALID)
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithReplier. Unexpected answer type from LLM.");
@@ -390,4 +382,9 @@ void DialogueManager::interactWithReplier(const std::string& msgIn, bool keepCon
     speak(answer.content);
 
     return;
+}
+
+const std::string& DialogueManager::getLanguage() const
+{
+    return m_currentLanguage;
 }
