@@ -20,7 +20,7 @@
 
 YARP_LOG_COMPONENT(CONTINUOUS_SEARCH, "r1_obr.orchestrator.continousSearch")
 
-ContinuousSearch::ContinuousSearch() 
+ContinuousSearch::ContinuousSearch()
 {
     m_object_finder_result_port_name= "/r1Obr-orchestrator/continousSearch/object_finder_result:i";
 }
@@ -39,23 +39,23 @@ bool ContinuousSearch::configure(ResourceFinder& rf)
 
     if(!m_object_finder_result_port.open(m_object_finder_result_port_name))
     {
-        yCError(CONTINUOUS_SEARCH) << "Cannot open port" << m_object_finder_result_port_name; 
+        yCError(CONTINUOUS_SEARCH) << "Cannot open port" << m_object_finder_result_port_name;
         return false;
     }
     else
         yCInfo(CONTINUOUS_SEARCH) << "opened port" << m_object_finder_result_port_name;
-    
-    
+
+
 
     return true;
 }
-    
+
 
 /****************************************************************/
 void ContinuousSearch::close()
-{  
+{
     if (!m_object_finder_result_port.isClosed())
-        m_object_finder_result_port.close();  
+        m_object_finder_result_port.close();
 
     yCInfo(CONTINUOUS_SEARCH, "Continuous search thread released");
 }
@@ -65,30 +65,39 @@ void ContinuousSearch::close()
 bool ContinuousSearch::seeObject(string& obj)
 {
     if (!m_active)
-        return false;
-    
-    Bottle* finderResult = m_object_finder_result_port.read(false); 
-    if(finderResult != nullptr)
     {
-        if(finderResult->check(obj))   
-            return true;
+        yCError(CONTINUOUS_SEARCH,"Continuous search is not active");
+        return false;
     }
 
+    Bottle* finderResult = m_object_finder_result_port.read(false);
+    if(finderResult != nullptr)
+    {
+        if(finderResult->check(obj))
+        {
+            return true;
+        }
+    }
+
+    yCWarning(CONTINUOUS_SEARCH, "The Object Finder is not seeing any %s", obj.c_str());
     return false;
 }
 
 
 /****************************************************************/
-bool ContinuousSearch::whereObject(string& obj, Bottle& coords) 
+bool ContinuousSearch::whereObject(string& obj, Bottle& coords)
 {
     if (!m_active)
+    {
+        yCError(CONTINUOUS_SEARCH,"Continuous search is not active");
         return false;
-    
+    }
+
     // we repeat the same as seeObject for two reasons:
     // - to be sure that the robot has really seen the object while navigating
     // - the first time the robot hasn't stopped the navigation
-    
-    Bottle* finderResult = m_object_finder_result_port.read(false); 
+
+    Bottle* finderResult = m_object_finder_result_port.read(false);
     if(finderResult != nullptr)
     {
         if (getObjCoordinates(finderResult, obj, coords))
@@ -111,7 +120,7 @@ bool ContinuousSearch::getObjCoordinates(Bottle* inputBtl, string& object, Bottl
         Bottle* b = inputBtl->get(i).asList();
         if (b->get(0).asString() != object) //skip objects with another label
             continue;
-        
+
         if(b->get(1).asFloat32() > max_conf) //get the object with the max confidence
         {
             max_conf = b->get(1).asFloat32();
@@ -120,8 +129,11 @@ bool ContinuousSearch::getObjCoordinates(Bottle* inputBtl, string& object, Bottl
         }
     }
     if (x<0)
+    {
+        yCError(CONTINUOUS_SEARCH, "Object %s not found", object.c_str());
         return false;
-    
+    }
+
     outputBtl.addFloat32(x);
     outputBtl.addFloat32(y);
 

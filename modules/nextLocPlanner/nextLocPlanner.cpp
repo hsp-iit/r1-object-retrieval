@@ -24,12 +24,12 @@ YARP_LOG_COMPONENT(NEXT_LOC_PLANNER, "r1_obr.nextLocPlanner")
 NextLocPlanner::NextLocPlanner() :
     m_period(1.0),
     m_area("")
-{  
+{
 }
 
 /****************************************************************/
-bool NextLocPlanner::configure(ResourceFinder &rf) 
-{   
+bool NextLocPlanner::configure(ResourceFinder &rf)
+{
     m_period = rf.check("period")  ? rf.find("period").asFloat32() : 1.0;
     m_area   = rf.check("area")    ? rf.find("area").asString()    : "";
 
@@ -46,7 +46,7 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
         return false;
     }
 
-    //Navigation2DClient config 
+    //Navigation2DClient config
     Property nav2DProp;
         //Defaults
     nav2DProp.put("device", "navigation2D_nwc_yarp");
@@ -67,7 +67,7 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
         if(nav_config.check("map_locations_server")) {nav2DProp.put("map_locations_server", nav_config.find("map_locations_server").asString());}
         if(nav_config.check("localization_server")) {nav2DProp.put("localization_server", nav_config.find("localization_server").asString());}
         }
-   
+
     m_nav2DPoly.open(nav2DProp);
     if(!m_nav2DPoly.isValid())
     {
@@ -88,14 +88,14 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
 
     //Load all the locations in m_all_locations
     vector<string> all_locations;
-    if (!m_iNav2D->getLocationsList(all_locations)) 
+    if (!m_iNav2D->getLocationsList(all_locations))
     {
         yCError(NEXT_LOC_PLANNER,"Error getting locations list from map server");
         return false;
     }
 
 
-    if(!all_locations.empty()) 
+    if(!all_locations.empty())
     {
         for (string & loc_name : all_locations)
         {
@@ -104,25 +104,25 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
             if(loc.map_id == m_map_name)
                 m_all_locations.push_back(loc_name);
         }
-        if(m_all_locations.empty()) 
+        if(m_all_locations.empty())
         {
             yCWarning(NEXT_LOC_PLANNER,"Error: no locations from map server for the area specified");
             return false;
         }
-        
+
         if (m_area != "")
         {
             //remove elements not belonging to the area defined in .ini file (i.e. whose name starts with the name of the area)
             auto new_end = remove_if(m_all_locations.begin(), m_all_locations.end(), [this](string& str){return (str.find(m_area) == string::npos);} );
             m_all_locations.erase(new_end, m_all_locations.end());
 
-            if(m_all_locations.empty()) 
+            if(m_all_locations.empty())
             {
                 yCWarning(NEXT_LOC_PLANNER,"Warning: no locations from map server for the area specified");
                 return false;
             }
         }
-        
+
         m_locations_unchecked.insert(m_locations_unchecked.end(), m_all_locations.begin(), m_all_locations.end());
 
     }
@@ -130,7 +130,7 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
     {
         yCWarning(NEXT_LOC_PLANNER,"Warning: no locations from map server");
     }
-    
+
     return true;
 }
 
@@ -143,7 +143,7 @@ bool NextLocPlanner::close()
 
     if(m_nav2DPoly.isValid())
         m_nav2DPoly.close();
-       
+
     return true;
 }
 
@@ -160,8 +160,8 @@ bool NextLocPlanner::setLocationStatus(const string location_name, const string&
     bool uncheckedOk = (location_status == "unchecked" || location_status == "Unchecked" || location_status == "UNCHECKED" );
     bool checkingOk  = (location_status == "checking" || location_status == "Checking"  || location_status == "CHECKING"   );
     bool checkedOk   = (location_status == "checked"  || location_status == "Checked"   || location_status == "CHECKED"    );
-    if ( !(uncheckedOk || checkedOk || checkingOk)  ) 
-    { 
+    if ( !(uncheckedOk || checkedOk || checkingOk)  )
+    {
         yCError(NEXT_LOC_PLANNER,"Error: wrong location status specified. You should use: unchecked, checking or checked.");
         return false;
     }
@@ -171,38 +171,38 @@ bool NextLocPlanner::setLocationStatus(const string location_name, const string&
     vector<string>::iterator findChecked {find(m_locations_checked.begin(), m_locations_checked.end(), location_name)};
     bool locFound { findUnchecked != m_locations_unchecked.end() || findChecking != m_locations_checking.end() || findChecked != m_locations_checked.end()};
 
-    if (locFound) 
+    if (locFound)
     {
         if (findUnchecked != m_locations_unchecked.end())   { m_locations_unchecked.erase(findUnchecked);}
         else if(findChecking != m_locations_checking.end()) { m_locations_checking.erase(findChecking);  }
         else if(findChecked != m_locations_checked.end())   { m_locations_checked.erase(findChecked);    }
 
 
-        if (uncheckedOk)  
+        if (uncheckedOk)
             {m_locations_unchecked.push_back(location_name); }
-        else if (checkingOk)  
+        else if (checkingOk)
             {m_locations_checking.push_back(location_name); }
-        else if (checkedOk)  
+        else if (checkedOk)
             {m_locations_checked.push_back(location_name); }
     }
     else if (location_name=="all")
     {
-        
-        if (uncheckedOk)   
+
+        if (uncheckedOk)
         {
             m_locations_unchecked.insert(m_locations_unchecked.end(), m_locations_checked.begin(), m_locations_checked.end());
             m_locations_unchecked.insert(m_locations_unchecked.end(), m_locations_checking.begin(), m_locations_checking.end());
             m_locations_checking.clear();
             m_locations_checked.clear();
         }
-        else if (checkingOk)    
+        else if (checkingOk)
         {
             m_locations_checking.insert(m_locations_checking.end(), m_locations_checked.begin(), m_locations_checked.end());
             m_locations_checking.insert(m_locations_checking.end(), m_locations_unchecked.begin(), m_locations_unchecked.end());
             m_locations_unchecked.clear();
             m_locations_checked.clear();
         }
-        else if (checkedOk)    
+        else if (checkedOk)
         {
             m_locations_checked.insert(m_locations_checked.end(), m_locations_checking.begin(), m_locations_checking.end());
             m_locations_checked.insert(m_locations_checked.end(), m_locations_unchecked.begin(), m_locations_unchecked.end());
@@ -218,7 +218,7 @@ bool NextLocPlanner::setLocationStatus(const string location_name, const string&
     }
 
     sortUncheckedLocations();
-    
+
     return true;
 }
 
@@ -232,28 +232,29 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
     if (cmd.size()==1)
     {
         if (cmd_0=="next")
-        {      
+        {
+            // If "next" arrived while the robot is still checking a location, the location is set as "unchecked"
             if (m_locations_checking.size()>0)
             {
                 vector<string>::iterator it;
                 for(it = m_locations_checking.begin(); it != m_locations_checking.end(); it++)
                 {
                     //setting all the "checking" locations as "unchecked"
-                    setLocationStatus(*it, "checking");
+                    setLocationStatus(*it, "unchecked");
                 }
             }
 
             if (m_locations_unchecked.size()>0)
-            {                
+            {
                 //reading the first unchecked location
-                reply.addString(m_locations_unchecked[0]); 
+                reply.addString(m_locations_unchecked[0]);
                 //setting that location as "checking"
                 setLocationStatus(m_locations_unchecked[0], "checking");
             }
             else
             {
                 reply.addString("noLocation");
-            }      
+            }
         }
         else if (cmd_0=="help")
         {
@@ -287,13 +288,13 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
                     Bottle& tempList = tempList1.addList();
                     tempList.addString(*it);
 
-                    if (find(m_locations_unchecked.begin(), m_locations_unchecked.end(), *it) != m_locations_unchecked.end()) 
+                    if (find(m_locations_unchecked.begin(), m_locations_unchecked.end(), *it) != m_locations_unchecked.end())
                         tempList.addString("Unchecked");
-                    else if (find(m_locations_checking.begin(), m_locations_checking.end(), *it) != m_locations_checking.end()) 
+                    else if (find(m_locations_checking.begin(), m_locations_checking.end(), *it) != m_locations_checking.end())
                         tempList.addString("Checking");
-                    else if (find(m_locations_checked.begin(), m_locations_checked.end(), *it) != m_locations_checked.end()) 
+                    else if (find(m_locations_checked.begin(), m_locations_checked.end(), *it) != m_locations_checked.end())
                         tempList.addString("Checked");
-                    else 
+                    else
                         tempList.addString("NotValid or Removed");
                 }
             }
@@ -302,7 +303,7 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
         {
             reply.addVocab32("many");
             Bottle& tempList = reply.addList();
-            
+
             tempList.addString("Unchecked: ");
             if (m_locations_unchecked.size()!=0)
             {
@@ -342,7 +343,7 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
     else if (cmd.size()==2)    //expected 'find <location>', 'add <location>' or 'remove <location>'
     {
         string loc=cmd.get(1).asString();
-        
+
         if (cmd_0=="find")
         {
             if (find(m_locations_unchecked.begin(), m_locations_unchecked.end(), loc) != m_locations_unchecked.end())
@@ -351,7 +352,7 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
                 reply.fromString("ok checking");
             else if(find(m_locations_checked.begin(), m_locations_checked.end(), loc) != m_locations_checked.end())
                 reply.fromString("ok checked");
-            else 
+            else
                 reply.addString("notValid");
 
         }
@@ -401,7 +402,7 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
     }
     else if (cmd.size()==5)    //expected 'add <location> <x> <y> <th>'
     {
-        
+
         string locName = cmd.get(1).asString();
         double x = cmd.get(2).asFloat32();
         double y = cmd.get(3).asFloat32();
@@ -421,16 +422,16 @@ bool NextLocPlanner::respond(const Bottle &cmd, Bottle &reply)
             reply.addString(locName + " NOT added");
             yCWarning(NEXT_LOC_PLANNER,"Cannot add %s", locName.c_str());
         }
-            
+
     }
     else
     {
         reply.addVocab32(Vocab32::encode("nack"));
         yCWarning(NEXT_LOC_PLANNER,"Error: input RPC command bottle has a wrong number of elements.");
     }
-    
+
     if (reply.size()==0)
-        reply.addVocab32(Vocab32::encode("ack")); 
+        reply.addVocab32(Vocab32::encode("ack"));
 
     return true;
 }
@@ -500,12 +501,12 @@ double NextLocPlanner::distRobotLocation(const string& location_name)
 
 /****************************************************************/
 bool NextLocPlanner::updateModule()
-{   
-    
+{
+
     lock_guard<mutex> lock(m_mutex);
 
     sortUncheckedLocations();
-    
+
     return true;
 }
 
@@ -524,7 +525,7 @@ void NextLocPlanner::sortUncheckedLocations()
     zip(m_locations_unchecked, m_unchecked_dist, zipped);
 
     // Sort the vector of pairs
-    sort(begin(zipped), end(zipped), 
+    sort(begin(zipped), end(zipped),
         [&](const auto& a, const auto& b)
         {
             return a.second < b.second;
@@ -541,13 +542,13 @@ bool NextLocPlanner::removeLocation(string& location_name)
     vector<string>::iterator findUnchecked {find(m_locations_unchecked.begin(), m_locations_unchecked.end(), location_name)};
     vector<string>::iterator findChecking {find(m_locations_checking.begin(), m_locations_checking.end(), location_name)};
     vector<string>::iterator findChecked {find(m_locations_checked.begin(), m_locations_checked.end(), location_name)};
-    
+
     if (findUnchecked != m_locations_unchecked.end())   { m_locations_unchecked.erase(findUnchecked);}
     else if(findChecking != m_locations_checking.end()) { m_locations_checking.erase(findChecking);  }
     else if(findChecked != m_locations_checked.end())   { m_locations_checked.erase(findChecked);    }
-    else 
+    else
         return false;
-    
+
     return true;
 }
 
@@ -556,12 +557,12 @@ bool NextLocPlanner::removeLocation(string& location_name)
 bool NextLocPlanner::addLocation(string& location_name)
 {
     vector<string>::iterator findLoc {find(m_all_locations.begin(), m_all_locations.end(), location_name)};
-    
-    if (findLoc != m_all_locations.end())   
+
+    if (findLoc != m_all_locations.end())
         m_locations_unchecked.push_back(location_name);
-    else 
+    else
         return false;
-    
+
     return true;
 }
 

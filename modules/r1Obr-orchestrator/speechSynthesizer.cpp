@@ -42,7 +42,7 @@ bool SpeechSynthesizer::configure(ResourceFinder &rf, string suffix)
     }
     Searchable& speech_config = rf.findGroup("SPEECH_SYNTHESIZER");
     m_active = speech_config.check("active") ? (speech_config.find("active").asString() == "true") : false;
-    
+
     if(m_active)
     {
         if(speech_config.check("audio_out_port")) audioOutPort_name = speech_config.find("audio_out_port").asString() + suffix;
@@ -75,26 +75,26 @@ bool SpeechSynthesizer::configure(ResourceFinder &rf, string suffix)
         if(speech_config.check("voice")) voice = speech_config.find("voice").asString();
         if(speech_config.check("pitch")) pitch = speech_config.find("pitch").asFloat32();
         if(speech_config.check("speed")) speed = speech_config.find("speed").asFloat32();
-           
+
         m_iSpeech->setLanguage(language);
         m_iSpeech->setVoice(voice);
         m_iSpeech->setPitch(pitch);
         m_iSpeech->setSpeed(speed);
     }
-    
+
     return true;
 }
 
 
 // ------------------------------------------------------ //
 void SpeechSynthesizer::close()
-{    
+{
     if(m_PolySpeech.isValid())
         m_PolySpeech.close();
-    
+
     if(!m_audioOutPort.isClosed())
         m_audioOutPort.close();
-    
+
     if(!m_textOutPort.isClosed())
         m_textOutPort.close();
 
@@ -106,8 +106,11 @@ void SpeechSynthesizer::close()
 bool SpeechSynthesizer::say(const string& sentence)
 {
     if (!m_active)
+    {
+        yCWarning(SPEECH_SYNTHESIZER, "Speech synthesizer is not active");
         return false;
-    
+    }
+
     Sound& soundToSend = m_audioOutPort.prepare();
     soundToSend.clear();
     if(!m_iSpeech->synthesize(sentence,soundToSend))
