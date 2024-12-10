@@ -5,7 +5,7 @@
 #define BEHAVIOR_TOUR_ROBOT_AUDIOPROCESSORCREATOR_H
 
 #include <yarp/os/RFModule.h>
-#include <yarp/dev/AudioRecorderStatus.h>
+#include <yarp/sig/AudioRecorderStatus.h>
 #include "AudioProcessor.h"
 #include "Interfaces/IAudioProcessorMicrophoneCloser.h"
 #include "AudioCallback.h"

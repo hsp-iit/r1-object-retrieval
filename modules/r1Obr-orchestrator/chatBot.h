@@ -22,7 +22,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/IChatBot.h>
 #include "speechSynthesizer.h"
-#include <yarp/dev/AudioPlayerStatus.h>
+#include <yarp/sig/AudioPlayerStatus.h>
 #include <yarp/dev/ILLM.h>
 
 using namespace yarp::os;
@@ -33,7 +33,7 @@ class ChatBot : public TypedReaderCallback<Bottle>
 {
 
 private:
-    
+
     BufferedPort<Bottle>    m_voiceCommandPort;
     RpcClient               m_orchestratorRPCPort;
     RpcClient               m_audiorecorderRPCPort;
@@ -52,7 +52,7 @@ private:
     string                  m_language_chatbot;
 
 public:
-    
+
     ChatBot() = default;
     ~ChatBot() = default;
 
@@ -62,7 +62,7 @@ public:
     //Port inherited from TypedReaderCallback
     using TypedReaderCallback<Bottle>::onRead;
     virtual void onRead(Bottle& b) override;
-    
+
     void interactWithChatBot(const string& msgIn);
 
 };

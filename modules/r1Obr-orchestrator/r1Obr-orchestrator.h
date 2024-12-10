@@ -20,7 +20,7 @@
 #define R1OBR_ORCHESTRATOR_H
 
 #include <yarp/os/all.h>
-#include <yarp/dev/AudioPlayerStatus.h>
+#include <yarp/sig/AudioPlayerStatus.h>
 
 #include "orchestratorThread.h"
 #include "speechSynthesizer.h"
@@ -41,11 +41,11 @@ private:
     //RPC Server
     RpcServer                   m_rpc_server_port;
     string                      m_rpc_server_port_name;
-    
+
     //Input command port
     BufferedPort<Bottle>        m_input_port;
     string                      m_input_port_name;
-    
+
     //Feedback port from positive outcome of the search
     BufferedPort<Bottle>        m_positive_feedback_port;
     string                      m_positive_feedback_port_name;
