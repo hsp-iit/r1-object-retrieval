@@ -41,13 +41,8 @@ ENV PATH=${PATH}:${robot_code}/funny-things/build/bin
 RUN sudo apt-get install -y curl zip unzip tar
 
 WORKDIR /home/${user_name}/Downloads
-# # Install openai c++ dependencies
-# RUN git clone https://github.com/Microsoft/vcpkg.git && \
-#     cd vcpkg && ./bootstrap-vcpkg.sh -disableMetrics && \
-#     ./vcpkg integrate install && ./vcpkg install curl[tool] && \
-#     ./vcpkg install nlohmann-json
 
-    # Install openai c++ community library
+# Install openai c++ community library
 RUN git clone https://github.com/D7EAD/liboai.git && \
     cd liboai && cd liboai && \
     cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=/home/${user_name}/Downloads/vcpkg/scripts/buildsystems/vcpkg.cmake \

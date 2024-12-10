@@ -190,7 +190,7 @@ services:
     image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_stable
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_demo
       args:
           base_img: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
           robot_code: /usr/local/src/robot
