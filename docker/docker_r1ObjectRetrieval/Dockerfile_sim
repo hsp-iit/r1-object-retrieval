@@ -31,11 +31,11 @@ WORKDIR ${robotology_install_folder}
 USER ${user_name}
 RUN git clone https://github.com/hsp-iit/r1-object-retrieval && \
     cd r1-object-retrieval && mkdir build && cd build && cmake .. && sudo make -j11
-ENV PYTHONPATH=$PYTHONPATH:${user1_home}/r1-object-retrieval
-ENV YARP_DATA_DIRS=$YARP_DATA_DIRS:${user1_home}/r1-object-retrieval/build/share/R1_OBJECT_RETRIEVAL
+ENV PYTHONPATH=$PYTHONPATH:${robotology_install_folder}/r1-object-retrieval
+ENV YARP_DATA_DIRS=$YARP_DATA_DIRS:${robotology_install_folder}/r1-object-retrieval/build/share/R1_OBJECT_RETRIEVAL
 ENV PATH=${PATH}:${user1_home}/.local/bin
-ENV PATH=$PATH:${user1_home}/r1-object-retrieval/build/bin
-ENV R1_OBR_SOURCE_DIR=${user1_home}/r1-object-retrieval
+ENV PATH=$PATH:${robotology_install_folder}/r1-object-retrieval/build/bin
+ENV R1_OBR_SOURCE_DIR=${robotology_install_folder}/r1-object-retrieval
 ENV R1_OBR_BUILD_DIR=${R1_OBR_SOURCE_DIR}/build
 
 

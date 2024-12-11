@@ -275,6 +275,11 @@ services:
     command: terminator -g /home/user1/.config/terminator/config
 
 # Containers for the simulation
+  raise-demo-sim-container:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_devel
+    <<: *light
+    container_name: raise-demo-sim-container
+    command: terminator -g /home/user1/.config/terminator/config
   r1-object-retrieval-sim-stable-container:
     image: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
     <<: *general

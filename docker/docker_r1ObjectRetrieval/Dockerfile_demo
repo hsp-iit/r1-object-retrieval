@@ -33,7 +33,7 @@ RUN git clone https://github.com/robotology/yarp-devices-google-cloud && \
    cd yarp-devices-google-cloud && cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=/home/${user_name}/Downloads/vcpkg/scripts/buildsystems/vcpkg.cmake && \
    cmake --build build
 RUN git clone https://github.com/robotology/funny-things && cd funny-things && \
-    mkdir build && cd build && cmake .. -DENABLE_R1_APPS=ON -DCREATE_R1_GESTICULATE=ON -DCREATE_R1_IDLEMANAGER=ON &&\
+    mkdir build && cd build && cmake .. -DENABLE_R1_APPS=ON -DCREATE_R1_GESTICULATE=ON -DCREATE_R1_IDLEMANAGER=OFF &&\
     make -j8 && make install
 ENV YARP_DATA_DIRS=${YARP_DATA_DIRS}:${robot_code}/yarp-devices-google-cloud/build/share/yarp:${robot_code}/yarp-devices-google-cloud/build/share/
 ENV PATH=${PATH}:${robot_code}/funny-things/build/bin
