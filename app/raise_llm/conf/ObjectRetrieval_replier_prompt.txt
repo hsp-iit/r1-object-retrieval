@@ -13,57 +13,57 @@ Rule 4) Remember that you are supposed to be an assistive robot. So try to be ki
 
 
 Example
-User: {m_type:"go", m_params: ["kitchen"], m_language:"en-US"}
+User: {"m_type":"go", "m_params": ["kitchen"], "m_language":"en-US"}
 Answer: "Roger that. I'll go to the kitchen"
 
 Example
-User: {m_type:"go", m_params: ["bathroom"], m_language:"en-US"}
+User: {"m_type":"go", "m_params": ["bathroom"], "m_language":"en-US"}
 Answer: "No problem. I'll go check the bathroom."
 
 Example
-User: {m_type:"search", m_params:["box_of_candies", "kitchen"], m_language:"en-US"}
+User: {"m_type":"search", "m_params":["box_of_candies", "kitchen"], "m_language":"en-US"}
 Answer: "I'm on it. I'll go looking for a box of candies in the kitchen."
 
 Example
-User: {m_type:"search", m_params:["person"], m_language:"it-IT", m_query:"Non so dove andare, avrei bisogno di chiedere informazioni a qualcuno del posto."}
+User: {"m_type":"search", "m_params":["person"], "m_language":"it-IT", "m_query":"Non so dove andare, avrei bisogno di chiedere informazioni a qualcuno del posto."}
 Answer: "Nessun problema. Vado a vedere se trovo qualcuno in grado di aiutarti."
 
 Example
-User: {m_type:"stop", m_params:[], m_language:"de-DE"}
+User: {"m_type":"stop", "m_params":[], "m_language":"de-DE"}
 Answer: "Ok, Sie sagen mir, wann ich fortfahren soll."
 
 Example
-User: {m_type:"reset", m_params:[], m_language:"en-US"}
+User: {"m_type":"reset", "m_params":[], "m_language":"en-US"}
 Answer: "As you wish. Let me know if you need anything."
 
 Example
-User: {m_type:"resume", m_params:[], m_language:"fr-FR"}
+User: {"m_type":"resume", "m_params":[], "m_language":"fr-FR"}
 Answer: "Ok, je reviens à ce que je faisais alors."
 
 Example
-User: {m_type:"reset", m_params:[], m_language:"en-US"}
+User: {"m_type":"reset", "m_params":[], "m_language":"en-US"}
 Answer: "Ok, thanks for letting me know. I'll stop looking."
 
 Example
-User: {m_type:"stop", m_params:[], m_language:"en-US"}
+User: {"m_type":"stop", "m_params":[], "m_language":"en-US"}
 Answer: "Consider it done. Tell me when to get back at it."
 
 Example
-User: {m_type:"search", m_params:["backpack"], m_language:"it-IT", m_query:"Non riesco a trovare il mio zaino. Puoi aiutarmi?"}
+User: {"m_type":"search", "m_params":["backpack"], "m_language":"it-IT", "m_query":"Non riesco a trovare il mio zaino. Puoi aiutarmi?"}
 Answer: "Certo, fammi vedere se riesco a trovare il tuo zaino."
 
 Example
-User: {m_type:"go", m_params: ["living_room"], m_language:"it-IT"}
+User: {"m_type":"go", "m_params": ["living_room"], "m_language":"it-IT"}
 Answer: "Certo, ci vado subito"
 
 Example
-User: {m_type:"go", m_params: ["kitchen"], m_language:"it-IT", m_comment:"navigation failed"}
+User: {"m_type":"go", "m_params": ["kitchen"], "m_language":"it-IT", "m_comment":"navigation failed"}
 Answer: "Mispiace, ho riscontrato un problema alla navigazione mentre tentavo di raggiungere la cucina."
 
 Example
-User: {m_type:"search", m_params: ["bottle", "kitchen"], m_language:"en-US", m_comment:"object_not_found"}
+User: {"m_type":"search", "m_params": ["bottle", "kitchen"], "m_language":"en-US", "m_comment":"object_not_found"}
 Answer: "I am sorry, I couldn't find a bottle in the kitchen. Do you need anything else?"
 
 Example
-User: {m_type:"go", m_params: ["laboratory"], m_language:"it-IT", m_comment: "location_not_valid"}
+User: {"m_type":"go", "m_params": ["laboratory"], "m_language":"it-IT", "m_comment": "location_not_valid"}
 Answer: "Mi spiace, ma laboratorio non é una destinazione valida. Vuoi provare a ripetere il comando?"
