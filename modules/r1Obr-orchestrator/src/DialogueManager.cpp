@@ -24,6 +24,7 @@ YARP_LOG_COMPONENT(DIALOG_MNG_ORCHESTRATOR, "r1_obr.orchestrator.DialogueManager
 
 
 // ****************************************************** //
+
 bool DialogueManager::configure(ResourceFinder &rf)
 {
     // Defaults
@@ -180,7 +181,7 @@ void DialogueManager::close()
 // ****************************************************** //
 void DialogueManager::onRead(Bottle& b)
 {
-    std::string str = b.get(0).asString();
+    std::string str = b.toString();
 
     if(str == "")
     {
@@ -204,7 +205,7 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
     yarp::os::Bottle toOrchestrator;
     yarp::os::Bottle reply;
 
-    DialogueMessage replyMsg = coreLLM(msgIn);
+    dlgmsg::DialogueMessage replyMsg = coreLLM(msgIn);
     std::string language = replyMsg.getLanguage();
     if (language != m_currentLanguage)
     {
@@ -212,21 +213,23 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
         m_speaker->setLanguage(m_currentLanguage);
         m_iTranscription->setLanguage(m_currentLanguage);
     }
-    CmdTypes cmdType = replyMsg.getType();
+    dlgmsg::CmdTypes cmdType = replyMsg.getType();
     switch(cmdType){
-        case CmdTypes::INVALID: {
+        case dlgmsg::CmdTypes::INVALID: {
             manageInvalidCmd();
             break;
         }
-        case CmdTypes::SAY: {
+        case dlgmsg::CmdTypes::SAY: {
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "SAY is the way";
             std::string toSay = replyMsg.getParams()[0];
             speak(toSay);
             break;
         }
         default: {
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way";
             toOrchestrator = fromMsgToBottle(replyMsg);
             m_orchestratorRPCPort.write(toOrchestrator, reply);
-            DialogueMessage orchMsg = replyMsg;
+            dlgmsg::DialogueMessage orchMsg = replyMsg;
             orchMsg.setQuery(msgIn);
             orchMsg.setComment(reply.toString());
             interactWithReplier(orchMsg);
@@ -242,9 +245,9 @@ void DialogueManager::manageInvalidCmd()
 {
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Unknown command received from LLM.");
     std::string notify = "notify user: \"Unknown command received from LLM.\" Use language code: " + m_currentLanguage;
-    DialogueMessage replyMsg = coreLLM(notify);
+    dlgmsg::DialogueMessage replyMsg = coreLLM(notify);
 
-    while(replyMsg.getType() != CmdTypes::SAY)
+    while(replyMsg.getType() != dlgmsg::CmdTypes::SAY)
     {
         replyMsg = coreLLM(notify);
         yarp::os::Time::delay(0.5);
@@ -252,7 +255,7 @@ void DialogueManager::manageInvalidCmd()
     speak(replyMsg.getParams()[0]);
 }
 
-yarp::os::Bottle DialogueManager::fromMsgToBottle(const DialogueMessage& msg)
+yarp::os::Bottle DialogueManager::fromMsgToBottle(const dlgmsg::DialogueMessage& msg)
 {
     yarp::os::Bottle toOrchestrator;
     std::vector<std::string> params = msg.getParams();
@@ -271,20 +274,21 @@ yarp::os::Bottle DialogueManager::fromMsgToBottle(const DialogueMessage& msg)
     return toOrchestrator;
 }
 
-DialogueMessage DialogueManager::coreLLM(const std::string& msgIn)
+dlgmsg::DialogueMessage DialogueManager::coreLLM(const std::string& msgIn)
 {
     yarp::dev::LLM_Message answer;
     m_iLlm->ask(msgIn, answer);
-    DialogueMessage replyMsg;
+    dlgmsg::DialogueMessage replyMsg;
     if(answer.type != "assistant")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Unexpected answer type from LLM.");
-        replyMsg.setType(CmdTypes::INVALID);
+        replyMsg.setType(dlgmsg::CmdTypes::INVALID);
         return replyMsg;
     }
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "Contacting LLM. LLM answered: %s", answer.content.c_str());
+    
     nlohmann::json replyJson = nlohmann::json::parse(answer.content);
-    replyMsg = replyJson.get<DialogueMessage>();
+    dlgmsg::from_json(replyJson, replyMsg);
 
     return replyMsg;
 }
@@ -352,12 +356,13 @@ bool DialogueManager::audioIsPlaying(bool& audio_is_playing)
 }
 
 
-void DialogueManager::interactWithReplier(const DialogueMessage& msgIn, bool keepContext)
+void DialogueManager::interactWithReplier(const dlgmsg::DialogueMessage& msgIn, bool keepContext)
 {
-    nlohmann::json replyJson = msgIn;
+    nlohmann::json replyJson;
+    dlgmsg::to_json(replyJson, msgIn);
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "Seeding replier with: %s", replyJson.dump().c_str());
-    DialogueMessage replyMsg{msgIn.getType(), msgIn.getParams(), msgIn.getLanguage()};
-    if (replyMsg.getType() == CmdTypes::INVALID)
+    dlgmsg::DialogueMessage replyMsg{msgIn.getType(), msgIn.getParams(), msgIn.getLanguage()};
+    if (replyMsg.getType() == dlgmsg::CmdTypes::INVALID)
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithReplier. Unexpected answer type from LLM.");
         manageInvalidCmd();

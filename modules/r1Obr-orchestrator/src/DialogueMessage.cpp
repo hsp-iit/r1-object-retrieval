@@ -19,33 +19,38 @@
 #include "DialogueMessage.h"
 #include <utility>
 
-DialogueMessage::DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query, const std::string& comment) :
+
+dlgmsg::DialogueMessage::DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query, const std::string& comment) :
         m_type(type),
         m_params(params),
-        m_language(language)
+        m_language(language),
+        m_query(query),
+        m_comment(comment)
 {
 }
 
-DialogueMessage& DialogueMessage::operator=(const DialogueMessage& anotherCommand)
+dlgmsg::DialogueMessage& dlgmsg::DialogueMessage::operator=(const dlgmsg::DialogueMessage& anotherCommand)
 {
     m_type = anotherCommand.m_type;
     m_params = anotherCommand.m_params;
     m_language = anotherCommand.m_language;
+    m_query = anotherCommand.m_query;
+    m_comment = anotherCommand.m_comment;
 
     return *this;
 }
 
-const std::vector<std::string>& DialogueMessage::getParams() const
+const std::vector<std::string>& dlgmsg::DialogueMessage::getParams() const
 {
     return m_params;
 }
 
-CmdTypes DialogueMessage::getType() const
+dlgmsg::CmdTypes dlgmsg::DialogueMessage::getType() const
 {
     return m_type;
 }
 
-std::string DialogueMessage::getTypeAsString() const
+std::string dlgmsg::DialogueMessage::getTypeAsString() const
 {
     static const std::map<CmdTypes, std::string> cmdTypeToString = {
             {CmdTypes::GO, "go"},
@@ -64,46 +69,46 @@ std::string DialogueMessage::getTypeAsString() const
     return cmdTypeToString.at(m_type);
 }
 
-const std::string& DialogueMessage::getLanguage() const
+const std::string& dlgmsg::DialogueMessage::getLanguage() const
 {
     return m_language;
 }
 
-const std::string& DialogueMessage::getQuery() const
+const std::string& dlgmsg::DialogueMessage::getQuery() const
 {
     return m_query;
 }
 
-const std::string& DialogueMessage::getComment() const
+const std::string& dlgmsg::DialogueMessage::getComment() const
 {
     return m_comment;
 }
 
-bool DialogueMessage::setType(CmdTypes type)
+bool dlgmsg::DialogueMessage::setType(dlgmsg::CmdTypes type)
 {
     m_type = type;
     return true;
 }
 
-bool DialogueMessage::setParams(const std::vector<std::string>& params)
+bool dlgmsg::DialogueMessage::setParams(const std::vector<std::string>& params)
 {
     m_params = params;
     return true;
 }
 
-bool DialogueMessage::setLanguage(const std::string& language)
+bool dlgmsg::DialogueMessage::setLanguage(const std::string& language)
 {
     m_language = language;
     return true;
 }
 
-bool DialogueMessage::setQuery(const std::string& query)
+bool dlgmsg::DialogueMessage::setQuery(const std::string& query)
 {
     m_query = query;
     return true;
 }
 
-bool DialogueMessage::setComment(const std::string& comment)
+bool dlgmsg::DialogueMessage::setComment(const std::string& comment)
 {
     m_comment = comment;
     return true;

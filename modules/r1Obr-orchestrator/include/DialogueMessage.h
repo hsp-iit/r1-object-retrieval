@@ -16,8 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef R1_OBR_DIALOG_MSG_H
-#define R1_OBR_DIALOG_MSG_H
+#pragma once
 
 #include <vector>
 #include <map>
@@ -27,6 +26,7 @@
 
 using json = nlohmann::json;
 
+namespace dlgmsg {
 // example enum type declaration
 enum CmdTypes
 {
@@ -44,7 +44,7 @@ enum CmdTypes
 };
 
 // map TaskState values to JSON as strings
-NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, nullptr},
+NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, "invalid"},
                                         {GO, "go"},
                                         {SEARCH, "search"},
                                         {STOP, "stop"},
@@ -66,7 +66,7 @@ protected:
     std::string m_comment;
 
 public:
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DialogueMessage, m_type, m_params, m_language, m_query, m_comment)
+    //NLOHMANN_DEFINE_TYPE_INTRUSIVE(DialogueMessage, m_type, m_params, m_language, m_query, m_comment)
 
     /**
      * Invalid constructor
@@ -172,6 +172,52 @@ public:
      * @return true if the comment is set, false otherwise - TODO: Decide if the return value is useful
      */
     bool setComment(const std::string& comment);
+
 };
 
-#endif //R1_OBR_DIALOG_MSG_H
+inline void from_json(const json& j, DialogueMessage& msg) {
+    printf("Ciaomeeeerdeeeeee");
+    CmdTypes type;
+    j.at("m_type").get_to(type);
+    msg.setType(type);
+
+    std::vector<std::string> params;
+    j.at("m_params").get_to(params);
+    msg.setParams(params);
+
+    std::string language;
+    j.at("m_language").get_to(language);
+    msg.setLanguage(language);
+
+    if (j.contains("m_query")) {
+        std::string query;
+        j.at("m_query").get_to(query);
+        msg.setQuery(query);
+    }
+    if (j.contains("m_comment")) {
+        std::string comment;
+        j.at("m_comment").get_to(comment);
+        msg.setComment(comment);
+    }
+};
+
+inline void to_json(json& j, const DialogueMessage& msg) {
+    j = json{
+        {"m_type", msg.getType()},  
+        {"m_params", msg.getParams()},
+        {"m_language", msg.getLanguage()}
+    };
+
+    // Conditionally add m_query if not empty
+    if (!msg.getQuery().empty()) {
+        j["m_query"] = msg.getQuery();
+    }
+
+    // Conditionally add m_comment if not empty
+    if (!msg.getComment().empty()) {
+        j["m_comment"] = msg.getComment();
+    }
+};
+
+}
+

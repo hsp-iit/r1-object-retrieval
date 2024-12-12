@@ -50,10 +50,10 @@ private:
 
     std::string                       m_currentLanguage;
     std::string                       m_currentQuestion;
-    DialogueMessage                   m_currentLLMAnswer;
+    dlgmsg::DialogueMessage           m_currentLLMAnswer;
 
-    DialogueMessage coreLLM(const std::string& msgIn);
-    yarp::os::Bottle fromMsgToBottle(const DialogueMessage& msg);
+    dlgmsg::DialogueMessage coreLLM(const std::string& msgIn);
+    yarp::os::Bottle fromMsgToBottle(const dlgmsg::DialogueMessage& msg);
     void manageInvalidCmd();
 
 public:
@@ -69,7 +69,7 @@ public:
     virtual void onRead(yarp::os::Bottle& b) override;
 
     void interactWithDialogMng(const std::string& msgIn);
-    void interactWithReplier(const DialogueMessage& msgIn, bool keepContext = false);
+    void interactWithReplier(const dlgmsg::DialogueMessage& msgIn, bool keepContext = false);
     void speak(const std::string& toSay);
     bool audioIsPlaying(bool& audio_is_playing);
     [[nodiscard]] const std::string& getLanguage() const;
