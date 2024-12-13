@@ -36,7 +36,7 @@
    </module>
    <module>
       <name>yarprobotinterface</name>
-      <parameters>--context google --from googleSpeechToText.ini</parameters>
+      <parameters>--context google --from googleTranscription.ini</parameters>
       <node>console1</node>
    </module>
 
@@ -142,7 +142,7 @@
    </connection>
 
    <connection>
-      <from>/r1Obr-orchestrator/chatBot/microphone:rpc</from>
+      <from>/r1Obr-orchestrator/dialogMng/microphone:rpc</from>
       <to>/audioRecorder_nws/rpc</to>
       <protocol>fast_tcp</protocol>
    </connection>
@@ -191,7 +191,7 @@
 
    <connection>
       <from>/audioPlayerWrapper/status:o</from>
-      <to>/r1Obr-orchestrator/chatBot/audioplayerStatus:i</to>
+      <to>/r1Obr-orchestrator/dialogMng/audioplayerStatus:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
