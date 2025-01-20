@@ -40,6 +40,8 @@ enum CmdTypes
     WHAT,
     STATUS,
     NAVPOS,
+    GUIDE,
+    DIRECTIONS,
     INVALID = -1
 };
 
@@ -54,6 +56,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, "invalid"},
                                         {WHAT, "what"},
                                         {STATUS, "status"},
                                         {NAVPOS, "navpos"},
+                                        {GUIDE, "guide"},
+                                        {DIRECTIONS, "directions"},
                                         {SAY, "say"}})
 
 class DialogueMessage
@@ -203,7 +207,7 @@ inline void from_json(const json& j, DialogueMessage& msg) {
 
 inline void to_json(json& j, const DialogueMessage& msg) {
     j = json{
-        {"m_type", msg.getType()},  
+        {"m_type", msg.getType()},
         {"m_params", msg.getParams()},
         {"m_language", msg.getLanguage()}
     };

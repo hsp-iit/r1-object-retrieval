@@ -316,6 +316,18 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
         m_inner_thread->dance(dance_name);
         reply.addString("dancing");
     }
+    else if(cmd=="guide")
+    {
+        string location_name = request.get(1).asString();
+        /// TODO: implement guiding
+        reply.addString("guiding to '" + location_name + "'");
+    }
+    else if(cmd=="directions")
+    {
+        string location_name = request.get(1).asString();
+        /// TODO: implement getting directions
+        reply.addString("getting directions to '" + location_name + "'");
+    }
     else
     {
         reply.addVocab32(Vocab32::encode("nack"));

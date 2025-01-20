@@ -62,6 +62,8 @@ std::string dlgmsg::DialogueMessage::getTypeAsString() const
             {CmdTypes::WHAT, "what"},
             {CmdTypes::STATUS, "status"},
             {CmdTypes::NAVPOS, "navpos"},
+            {CmdTypes::GUIDE, "guide"},
+            {CmdTypes::DIRECTIONS, "directions"},
             {CmdTypes::SAY, "say"},
             {CmdTypes::INVALID, "invalid"}
     };
