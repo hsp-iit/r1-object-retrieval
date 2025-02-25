@@ -29,14 +29,19 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <vector>
 
+#define RIGHT_ARM 0
+#define LEFT_ARM 1
+#define HEAD 2
+#define TORSO 3
+
 class GetReadyToNav
 {
 private:
     //Polydriver
     yarp::dev::PolyDriver           m_drivers[4];
-    yarp::dev::IControlMode*        m_ictrlmode[4];     //to set the Position control mode
-    yarp::dev::IPositionControl*    m_iposctrl[4];      //to retrieve the number of joints of each part
-    yarp::dev::IEncoders*           m_iencoder[4];      //to retrieve joint position
+    yarp::dev::IControlMode*        m_ictrlmode[4]{nullptr,nullptr,nullptr,nullptr};     //to set the Position control mode
+    yarp::dev::IPositionControl*    m_iposctrl[4]{nullptr,nullptr,nullptr,nullptr};      //to retrieve the number of joints of each part
+    yarp::dev::IEncoders*           m_iencoder[4]{nullptr,nullptr,nullptr,nullptr};      //to retrieve joint position
 
     std::string                     m_set_nav_position_file;
     yarp::os::Bottle                m_right_arm_pos;
@@ -45,6 +50,7 @@ private:
     yarp::os::Bottle                m_torso_pos;
 
     double                          m_time;
+    bool                            m_parts_on[4]{true,true,true,true};
 
 public:
     //Constructor/Distructor
