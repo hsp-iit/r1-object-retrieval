@@ -25,12 +25,20 @@
 #include <vector>
 #include <fstream>
 
+#ifndef PARTS_NAMES
+#define PARTS_NAME 255
+#define RIGHT_ARM 0
+#define LEFT_ARM 1
+#define HEAD 2
+#define TORSO 3
+#endif
+
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
 
-class TinyDancer 
+class TinyDancer
 {
 
 private:
@@ -41,7 +49,8 @@ private:
 
     string              m_robot;
     ResourceFinder&     m_rf;
-    
+    bool                m_parts_on[4]{true, true, true, true};
+
 public:
     TinyDancer(ResourceFinder &_rf);
     ~TinyDancer() = default;

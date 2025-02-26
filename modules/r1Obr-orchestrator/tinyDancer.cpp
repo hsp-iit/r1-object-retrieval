@@ -32,70 +32,101 @@ bool TinyDancer::configure()
 {
     if(m_rf.check("robot")) {m_robot = m_rf.find("robot").asString();}
 
+    // --------- Parts enable/disable ---------- //
+    if(m_rf.check("right_arm"))
+        m_parts_on[RIGHT_ARM] = m_rf.find("right_arm_on").asInt16() == 1;
+    if(m_rf.check("left_arm"))
+        m_parts_on[LEFT_ARM] = m_rf.find("left_arm_on").asInt16() == 1;
+    if(m_rf.check("head"))
+        m_parts_on[HEAD] = m_rf.find("head_on").asInt16() == 1;
+    if(m_rf.check("torso"))
+        m_parts_on[TORSO] = m_rf.find("torso_on").asInt16() == 1;
+
     // Polydriver config
     Property prop;
 
     prop.put("device","remote_controlboard");
     prop.put("local","/r1Obr-orchestrator/tinyDancer/right_arm");
     prop.put("remote","/"+m_robot+"/right_arm");
-    if (!m_drivers[0].open(prop))
+
+
+    if(m_parts_on[RIGHT_ARM])
     {
-        yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/right_arm").c_str());
-        return false;
+        prop.put("device","remote_controlboard");
+        prop.put("local","/r1Obr-orchestrator/tinyDancer/right_arm");
+        prop.put("remote","/"+m_robot+"/right_arm");
+        if (!m_drivers[RIGHT_ARM].open(prop))
+        {
+            yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/right_arm").c_str());
+            close();
+            return false;
+        }
+        m_drivers[RIGHT_ARM].view(m_iposctrl[RIGHT_ARM]);
+        m_drivers[RIGHT_ARM].view(m_ictrlmode[RIGHT_ARM]);
+        m_drivers[RIGHT_ARM].view(m_iencoder[RIGHT_ARM]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/r1Obr-orchestrator/tinyDancer/left_arm");
-    prop.put("remote","/"+m_robot+"/left_arm");
-    if (!m_drivers[1].open(prop))
+    if(m_parts_on[LEFT_ARM])
     {
-        yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/left_arm").c_str());
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/r1Obr-orchestrator/tinyDancer/left_arm");
+        prop.put("remote","/"+m_robot+"/left_arm");
+        if (!m_drivers[LEFT_ARM].open(prop))
+        {
+            yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/left_arm").c_str());
+            close();
+            return false;
+        }
+        m_drivers[LEFT_ARM].view(m_iposctrl[LEFT_ARM]);
+        m_drivers[LEFT_ARM].view(m_ictrlmode[LEFT_ARM]);
+        m_drivers[LEFT_ARM].view(m_iencoder[LEFT_ARM]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/r1Obr-orchestrator/tinyDancer/head");
-    prop.put("remote","/"+m_robot+"/head");
-    if (!m_drivers[2].open(prop))
+    if(m_parts_on[HEAD])
     {
-        yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/head").c_str());
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/r1Obr-orchestrator/tinyDancer/head");
+        prop.put("remote","/"+m_robot+"/head");
+        if (!m_drivers[HEAD].open(prop))
+        {
+            yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/head").c_str());
+            close();
+            return false;
+        }
+        m_drivers[HEAD].view(m_iposctrl[HEAD]);
+        m_drivers[HEAD].view(m_ictrlmode[HEAD]);
+        m_drivers[HEAD].view(m_iencoder[HEAD]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/r1Obr-orchestrator/tinyDancer/torso");
-    prop.put("remote","/"+m_robot+"/torso");
-    if (!m_drivers[3].open(prop))
+    if(m_parts_on[TORSO])
     {
-        yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/torso").c_str());
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/r1Obr-orchestrator/tinyDancer/torso");
+        prop.put("remote","/"+m_robot+"/torso");
+        if (!m_drivers[TORSO].open(prop))
+        {
+            yCError(TINY_DANCER,"Unable to connect to %s",("/"+m_robot+"/torso").c_str());
+            close();
+            return false;
+        }
+        m_drivers[TORSO].view(m_iposctrl[TORSO]);
+        m_drivers[TORSO].view(m_ictrlmode[TORSO]);
+        m_drivers[TORSO].view(m_iencoder[TORSO]);
     }
 
-    m_drivers[0].view(m_iposctrl[0]);
-    m_drivers[1].view(m_iposctrl[1]);
-    m_drivers[2].view(m_iposctrl[2]);
-    m_drivers[3].view(m_iposctrl[3]);
-    if(!m_iposctrl[0] || !m_iposctrl[1] || !m_iposctrl[2] || !m_iposctrl[3] )
+    if((!m_iposctrl[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_iposctrl[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_iposctrl[HEAD] && m_parts_on[HEAD]) || (!m_iposctrl[TORSO] && m_parts_on[TORSO]))
     {
         yCError(TINY_DANCER,"Error opening iPositionControl interfaces. Devices not available");
         return false;
     }
 
-    m_drivers[0].view(m_ictrlmode[0]);
-    m_drivers[1].view(m_ictrlmode[1]);
-    m_drivers[2].view(m_ictrlmode[2]);
-    m_drivers[3].view(m_ictrlmode[3]);
-    if(!m_ictrlmode[0] || !m_ictrlmode[1] || !m_ictrlmode[2] || !m_ictrlmode[3])
+    if((!m_ictrlmode[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_ictrlmode[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_ictrlmode[HEAD] && m_parts_on[HEAD]) || (!m_ictrlmode[TORSO] && m_parts_on[TORSO]))
     {
         yCError(TINY_DANCER,"Error opening iControlMode interfaces. Devices not available");
         return false;
     }
 
-    m_drivers[0].view(m_iencoder[0]);
-    m_drivers[1].view(m_iencoder[1]);
-    m_drivers[2].view(m_iencoder[2]);
-    m_drivers[3].view(m_iencoder[3]);
-    if(!m_iencoder[0] || !m_iencoder[1] || !m_iencoder[2] || !m_iencoder[3])
+    if((!m_iencoder[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_iencoder[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_iencoder[HEAD] && m_parts_on[HEAD]) || (!m_iencoder[TORSO] && m_parts_on[TORSO]))
     {
         yCError(TINY_DANCER,"Error opening IEncoders interfaces. Devices not available");
         return false;
@@ -110,6 +141,11 @@ bool TinyDancer::areJointsOk()
     int mode=0;
     for (int i = 0 ; i<4 ; i++)
     {
+        if(!m_parts_on[i])
+        {
+            yCWarning(TINY_DANCER, "Part %d is not available", i);
+            continue;
+        }
         int NUMBER_OF_JOINTS;
         m_iposctrl[i]->getAxes(&NUMBER_OF_JOINTS);
         for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
@@ -134,6 +170,12 @@ bool TinyDancer::areJointsOk()
 // --------------------------------------------------------------- //
 bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
 {
+    if(!m_parts_on[part])
+    {
+        yCWarning(TINY_DANCER, "Part %d is not available", part);
+        return true;
+    }
+
     int NUMBER_OF_JOINTS;
     vector<int> joints;
     vector<int> modes;
@@ -163,6 +205,11 @@ bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
 // --------------------------------------------------------------- //
 bool TinyDancer::setJointsSpeed(const int part, const double time, Bottle* joint_pos)
 {
+    if(!m_parts_on[part])
+    {
+        yCWarning(TINY_DANCER, "Part %d is not available", part);
+        return true;
+    }
     int NUMBER_OF_JOINTS;
     vector<int>    joints;
     vector<double> speeds;
@@ -186,6 +233,11 @@ bool TinyDancer::setJointsSpeed(const int part, const double time, Bottle* joint
 // --------------------------------------------------------------- //
 bool TinyDancer::movePart(const int part, Bottle* joint_pos)
 {
+    if(!m_parts_on[part])
+    {
+        yCWarning(TINY_DANCER, "Part %d is not available", part);
+        return true;
+    }
     int NUMBER_OF_JOINTS;
     std::vector<int>    joints;
     std::vector<double> positions;
@@ -316,24 +368,24 @@ bool TinyDancer::doDance(string& dance_name)
 // --------------------------------------------------------------- //
 void TinyDancer::close()
 {
-    if(m_drivers[0].isValid())
+    if(m_drivers[RIGHT_ARM].isValid())
     {
-        m_drivers[0].close();
+        m_drivers[RIGHT_ARM].close();
     }
 
-    if(m_drivers[1].isValid())
+    if(m_drivers[LEFT_ARM].isValid())
     {
-        m_drivers[1].close();
+        m_drivers[LEFT_ARM].close();
     }
 
-    if(m_drivers[2].isValid())
+    if(m_drivers[HEAD].isValid())
     {
-        m_drivers[2].close();
+        m_drivers[HEAD].close();
     }
 
-    if(m_drivers[3].isValid())
+    if(m_drivers[TORSO].isValid())
     {
-        m_drivers[3].close();
+        m_drivers[TORSO].close();
     }
 
     yCInfo(TINY_DANCER, "Thread released");
