@@ -30,9 +30,13 @@
 
 YARP_LOG_COMPONENT(DISAPPOINTMENT_POSE, "r1_obr.disappointmentPose")
 
+#ifndef PARTS_NAMES
+#define PARTS_NAME 127
 #define RIGHT_ARM 0
 #define LEFT_ARM 1
 #define HEAD 2
+#endif
+
 
 using namespace yarp::os;
 using namespace yarp::dev;

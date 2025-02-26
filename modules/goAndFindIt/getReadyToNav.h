@@ -29,10 +29,14 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <vector>
 
+#ifndef PARTS_NAMES
+#define PARTS_NAME 63
 #define RIGHT_ARM 0
 #define LEFT_ARM 1
 #define HEAD 2
 #define TORSO 3
+#endif
+
 
 class GetReadyToNav
 {
