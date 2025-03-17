@@ -1,4 +1,4 @@
-name: Docker Images CI
+name: Docker build
 
 on:
   workflow_dispatch:
