@@ -1,0 +1,19 @@
+<application>
+   <name>R1_disappointmentPose</name>
+
+   <dependencies>
+   </dependencies>
+
+   <module>
+      <name>disappointmentPose</name>
+      <parameters>--context disappointmentPose --from disappointmentPose.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <connection>
+      <from>/r1Obr-orchestrator/negative_outcome:o</from>
+      <to>/disappointmentPose/input:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+</application>

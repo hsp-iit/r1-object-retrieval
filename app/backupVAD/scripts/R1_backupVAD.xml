@@ -1,0 +1,43 @@
+<application>
+  <name>R1_backupVAD</name>
+
+  <dependencies>
+  </dependencies>
+
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context vadModule --from audioRecorderAutoStart.ini</parameters>
+    <node>r1-torso</node>
+  </module>
+
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context vadModule --from audioPlayer.ini</parameters>
+    <node>r1-face</node>
+  </module>
+
+  <module>
+    <name>backupVAD</name>
+    <parameters></parameters>
+    <node>r1-torso</node>
+  </module>
+
+  <connection>
+    <from>/audioRecorderWrapper/audio:o</from>
+    <to>/vad/audio:i</to>
+    <protocol>fast_tcp+recv.portmonitor+file.soundfilter_resample+type.dll+channel.0+frequency.16000</protocol>
+  </connection>
+
+  <connection>
+    <from>/vad/audio:o</from>
+    <to>/audioPlayerWrapper/audio:i</to>
+    <protocol>tcp+recv.portmonitor+file.soundfilter_resample+type.dll+channel.0+frequency.16000</protocol>
+  </connection>
+
+  <connection>
+    <from>/audioRecorderWrapper/status:o</from>
+    <to>/vad/microphone/status:i </to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+</application>

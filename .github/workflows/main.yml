@@ -1,0 +1,60 @@
+name: Docker build
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build-tour-docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+         config:
+         - {
+            ros2_distro: "humble",
+            base_image: "nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04",
+            base_image_label: "cuda.11.7.1-cudnn8",
+           }
+    steps:
+    - name: Info
+      run: |
+       echo "Event type: ${{github.event_name}}"
+    - name: Change docker to experimental mode
+      run: |
+       sudo rm -rf /etc/docker/daemon.json
+       echo '{"experimental": true}' | sudo tee -a /etc/docker/daemon.json
+    - name: Restart docker daemon
+      run: sudo systemctl restart docker
+    - uses: actions/checkout@v3
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build the r1ObjectRetrievalSim Docker image
+      working-directory: docker/docker_r1ObjectRetrievalSim/
+      run: |
+       if [ ${{ github.event_name }} == 'schedule' ]; then
+          echo "Building r1ObjectRetrievalSim image"
+          sudo rm -rf /opt/hostedtoolcache
+          sudo docker build --build-arg ros_distro=${{matrix.config.ros2_distro}} -t colombraf/r1images:r1ObjectRetrievalSim .
+       elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+          echo "Building r1ObjectRetrievalSim image"
+          sudo rm -rf /opt/hostedtoolcache
+          sudo docker build --build-arg ros_distro=${{matrix.config.ros2_distro}} -t colombraf/r1images:r1ObjectRetrievalSim .
+       else
+          echo "Failure!"
+          exit 1
+       fi
+    - name: Push r1ObjectRetrievalSim image
+      run: |
+       if [ ${{ github.event_name }} == 'schedule' ]; then
+          echo "Pushing r1ObjectRetrievalSim image"
+          docker push colombraf/r1images:r1ObjectRetrievalSim
+       elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+          echo "Pushing r1ObjectRetrievalSim image"
+          docker push colombraf/r1images:r1ObjectRetrievalSim
+       else
+          echo "Failure!"
+          exit 1
+       fi

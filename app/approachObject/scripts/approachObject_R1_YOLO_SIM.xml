@@ -1,0 +1,43 @@
+<application>
+   <name>R1_approachObject_YOLO_SIM</name>
+
+   <dependencies>
+   </dependencies>
+
+   <module>
+      <name>approachObject</name>
+      <parameters>--context approachObject --from approachObject_R1_SIM.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <connection>
+      <from>/approachObject/gaze_target:o</from>
+      <to>/cer_gaze-controller/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/approachObject/object_finder/rpc</from>
+      <to>/yarpYolo/command/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpYolo/where_coords:o</from>
+      <to>/approachObject/object_finder_result:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/positive_outcome:o</from>
+      <to>/approachObject/input_coords:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/approachObject/output_coords:o</from>
+      <to>/handPointing/clicked_point:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+</application>

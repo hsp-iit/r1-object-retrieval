@@ -1,0 +1,66 @@
+<application>
+   <name>R1_handPointing_orchestrator</name>
+
+   <dependencies>
+   </dependencies>
+
+   <module>
+      <name>handPointing</name>
+      <parameters>--context handPointing --from handPointing_R1.ini</parameters>
+      <environment></environment>
+      <node>console</node>
+   </module>   
+   <module>
+      <name>cer_reaching-solver</name>
+      <parameters>--robot cer --arm-type right --verbosity 1</parameters>
+      <node>console</node>
+   </module>
+   <module>
+      <name>cer_reaching-controller</name>
+      <parameters>--robot cer --arm-type right --verbosity 1 --T 1.0</parameters>
+      <node>console</node>
+   </module>
+   <module>
+      <name>cer_reaching-solver</name>
+      <parameters>--robot cer --arm-type left --verbosity 1</parameters>
+      <node>console</node>
+   </module>
+   <module>
+      <name>cer_reaching-controller</name>
+      <parameters>--robot cer --arm-type left --verbosity 1 --T 1.0</parameters>
+      <node>console</node>
+   </module>
+
+
+  <connection>
+      <from>/cer_reaching-controller/right/solver:rpc</from>
+      <to>/cer_reaching-solver/right/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+   <connection>
+      <from>/cer_reaching-controller/left/solver:rpc</from>
+      <to>/cer_reaching-solver/left/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+   <connection>
+      <from>/handPointing/r_target:o</from>
+      <to>/cer_reaching-controller/right/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+   <connection>
+      <from>/handPointing/l_target:o</from>
+      <to>/cer_reaching-controller/left/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+   <connection>
+      <from>/handPointing/gazeTarget:o</from>
+      <to>/cer_gaze-controller/target:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+   <connection>
+      <from>/handPointing/get_arm_home:o</from>
+      <to>/handPointing/go_home:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+      
+</application>

@@ -1,0 +1,222 @@
+<application>
+   <name>R1_Orchestrator_YOLO_noMap_noNav</name>
+
+   <dependencies>
+   </dependencies>
+
+
+   <!--                -->
+   <!--    MODULES     -->
+   <!--                -->
+
+
+   <!-- audio recorder -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--config yarp_audio_from_mic.xml</parameters>
+      <workdir>/home/r1-user</workdir>
+      <node>r1-torso</node>
+    </module>
+   <module>
+      <name>yarpaudiocontrolgui</name>
+      <parameters>--remote-rec /audioRecorder_nws</parameters>
+   </module>
+
+   <!-- Speech transcription -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context whisperTranscribe_demo --config yarp_transcribe.xml --model ggml-small3.it.bin </parameters>
+      <node>pc</node>
+   </module>
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleSpeechToText.ini</parameters>
+      <node>console1</node>
+   </module>
+
+   <!-- LLM device -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--config LLMDevice.xml</parameters>
+      <workdir>$ENV{ROBOT_CODE}/yarp-devices-llm/assets</workdir>
+      <node>console</node>
+   </module>
+
+   <!-- chat bot -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleChatBot.ini</parameters>
+      <node>console1</node>
+   </module>
+
+   <!-- speech synthesizer -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleSynthesizer.ini</parameters>
+      <node>console1</node>
+   </module>
+
+   <!-- orchestrator -->
+   <application>
+      <name>R1_goAndFindIt_YOLO_noMap</name>
+      <prefix></prefix>
+   </application>
+   <module>
+      <name>r1Obr-orchestrator</name>
+      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_noMap.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <!-- positive outcome -->
+   <module>
+      <name>look_and_point</name>
+      <parameters>--context look_and_point</parameters>
+      <node>console</node>
+   </module>
+   <application>
+      <name>R1_handPointing_orchestrator</name>
+      <prefix></prefix>
+   </application>
+
+   <!-- negative outcome -->
+
+
+   <!-- face expressions -->
+   <module>
+      <name>faceExpressionImage5GTour</name>
+      <parameters></parameters>
+      <node>console</node>
+   </module>
+   <module>
+      <name>yarprobotinterface </name>
+      <parameters>--context headSynchronizer --from faceDisplay.ini</parameters>
+      <node>r1-face</node>
+   </module>
+
+   <!-- audio player -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context vadModule --from audioPlayer.ini</parameters>
+      <node>r1-face</node>
+   </module>
+
+   <!-- microphone button trigger -->
+   <module>
+      <name>joystickCtrl</name>
+      <parameters>--from joystick_trigger_8bitdo.ini --silent</parameters>
+      <workdir>/usr/local/src/robot/assistive-rehab/build/share/ICUBcontrib/contexts/AssistiveRehab</workdir>
+      <node>pc</node>
+   </module>
+   <module>
+      <name>micActivation</name>
+      <node>console</node>
+   </module>
+
+
+  <!--                -->
+  <!--  CONNECTIONS   -->
+  <!--                -->
+
+   <connection>
+      <from>/audioRecorder_nws/audio:o</from>
+      <to>/speechTranscription_nws/sound:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/speechTranscription_nws/text:o</from>
+      <to>/r1Obr-orchestrator/voice_command:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/nextLocPlanner/request:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/goAndFindIt/request:rpc</from>
+      <to>/goAndFindIt/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/output:o</from>
+      <to>/r1Obr-orchestrator/goAndFindIt/result:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/faceExpressionImage/image:o</from>
+      <to>/robot/faceDisplay/image:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/faceExpression:rpc</from>
+      <to>/faceExpressionImage/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpYolo/where_coords:o</from>
+      <to>/r1Obr-orchestrator/continousSearch/object_finder_result:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/positive_outcome:o</from>
+      <to>/look_and_point/in:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/look_and_point/out:o</from>
+      <to>/handPointing/clicked_point:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/look_and_point/out:o</from>
+      <to>/r1Obr-orchestrator/positive_outcome_feedback:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/speech_sythesizer/audio:o</from>
+      <to>/audioPlayerWrapper/audio:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/speech_sythesizer/second/audio:o</from>
+      <to>/audioPlayerWrapper/audio:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/r1Obr-orchestrator/chatBot/audioplayerStatus:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/r1Obr-orchestrator/audioplayerStatus:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/joystickCtrl/raw_axis:o</from>
+      <to>/micActivation/joystick:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/faceExpressionImage/mouthAudioData:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+</application>

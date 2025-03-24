@@ -1,0 +1,282 @@
+version: "3.7"
+
+x-general: &general
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/home/user1/.Xauthority
+    - QT_X11_NO_MITSHM=1
+    - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
+    - LIBGL_ALWAYS_INDIRECT=0
+    - YARP_COLORED_OUTPUT=1
+    - NVIDIA_DRIVER_CAPABILITIES=all
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/etc/hosts:/etc/hosts"
+    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+  network_mode: host
+  ipc: host
+  pid: host
+  privileged: true
+  security_opt:
+    - apparmor:unconfined
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+x-demo: &demo
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/home/user1/.Xauthority
+    - QT_X11_NO_MITSHM=1
+    - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
+    - LIBGL_ALWAYS_INDIRECT=0
+    - YARP_COLORED_OUTPUT=1
+    - NVIDIA_DRIVER_CAPABILITIES=all
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/etc/hosts:/etc/hosts"
+    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+    - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
+    - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+  network_mode: host
+  ipc: host
+  pid: host
+  privileged: true
+  security_opt:
+    - apparmor:unconfined
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+x-light: &light
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/home/user1/.Xauthority
+    - QT_X11_NO_MITSHM=1
+    - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
+    - LIBGL_ALWAYS_INDIRECT=0
+    - YARP_COLORED_OUTPUT=1
+    - NVIDIA_DRIVER_CAPABILITIES=all
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/etc/hosts:/etc/hosts"
+    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+    - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
+    - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+    - "./entrypoints/entrypoint_light.sh:/home/user1/.entrypoint_light.sh"
+  network_mode: host
+  entrypoint: ["sh", "/home/user1/.entrypoint_light.sh"]
+  ipc: host
+  pid: host
+  privileged: true
+  security_opt:
+    - apparmor:unconfined
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+x-heavy: &heavy
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/home/user1/.Xauthority
+    - QT_X11_NO_MITSHM=1
+    - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
+    - LIBGL_ALWAYS_INDIRECT=0
+    - YARP_COLORED_OUTPUT=1
+    - NVIDIA_DRIVER_CAPABILITIES=all
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/etc/hosts:/etc/hosts"
+    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+    - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
+    - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+    - "./entrypoints/entrypoint_heavy.sh:/home/user1/.entrypoint_heavy.sh"
+  network_mode: host
+  entrypoint: ["sh", "/home/user1/.entrypoint_heavy.sh"]
+  ipc: host
+  pid: host
+  privileged: true
+  security_opt:
+    - apparmor:unconfined
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+services:
+
+# Images for the robot
+  r1-object-retrieval-stable:
+    image: elandini84/r1images:r1ObjectRetrieval_iron_stable
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+          base_img: elandini84/r1images:tourCore2_cuda.11.7.1-cudnn8_iron_stable
+          user_name: user1
+  r1-object-retrieval-devel:
+    image: elandini84/r1images:r1ObjectRetrieval_iron_devel
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+          base_img: elandini84/r1images:tourCore2_cuda.11.7.1-cudnn8_iron_devel
+          user_name: user1
+  r1-object-retrieval-demo-stable:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    build:
+      context: .
+      dockerfile: Dockerfile_demo
+      args:
+          base_img: elandini84/r1images:r1ObjectRetrieval_iron_stable
+          robot_code: /usr/local/src/robot
+          grcp_version: v1.60.0
+          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
+          open_telemetry_version: v1.13.0
+          nlohmann_json_version: v3.11.3
+          crc32c_version: 1.1.2
+          user_name: user1
+          jval: 8
+          llm_branch: master
+  r1-object-retrieval-demo-devel:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    build:
+      context: .
+      dockerfile: Dockerfile_demo
+      args:
+          base_img: elandini84/r1images:r1ObjectRetrieval_iron_devel
+          robot_code: /usr/local/src/robot
+          grcp_version: v1.60.0
+          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
+          open_telemetry_version: v1.13.0
+          nlohmann_json_version: v3.11.3
+          crc32c_version: 1.1.2
+          user_name: user1
+          jval: 8
+          llm_branch: master
+
+# Simulation images
+  r1-object-retrieval-sim-stable:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
+    build:
+      context: .
+      dockerfile: Dockerfile_sim
+      args:
+          base_img: elandini84/r1images:tourSim2_cuda.11.7.1-cudnn8_iron_stable
+          user_name: user1
+  r1-object-retrieval-sim-devel:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_iron_devel
+    build:
+      context: .
+      dockerfile: Dockerfile_sim
+      args:
+          base_img: elandini84/r1images:tourSim2_cuda.11.7.1-cudnn8_iron_devel
+          user_name: user1
+  r1-object-retrieval-sim-demo-stable:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_stable
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+          base_img: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
+          robot_code: /usr/local/src/robot
+          grcp_version: v1.60.0
+          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
+          open_telemetry_version: v1.13.0
+          nlohmann_json_version: v3.11.3
+          crc32c_version: 1.1.2
+          user_name: user1
+          jval: 8
+          llm_branch: master
+  r1-object-retrieval-sim-demo-devel:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_devel
+    build:
+      context: .
+      dockerfile: Dockerfile_demo
+      args:
+          base_img: elandini84/r1images:r1ObjectRetrieval_sim_iron_devel
+          robot_code: /usr/local/src/robot
+          grcp_version: v1.60.0
+          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
+          open_telemetry_version: v1.13.0
+          nlohmann_json_version: v3.11.3
+          crc32c_version: 1.1.2
+          user_name: user1
+          jval: 8
+          llm_branch: master
+
+# Containers for the robot
+  raise-demo-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *light
+    container_name: raise-demo-container
+    command: terminator -g /home/user1/.config/terminator/config
+  raise-demo-test-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *heavy
+    container_name: raise-demo-test-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-default-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    <<: *light
+    container_name: r1-object-retrieval-default-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-test-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    <<: *heavy
+    container_name: r1-object-retrieval-test-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-stable-container:
+    image: elandini84/r1images:r1ObjectRetrieval_iron_stable
+    <<: *general
+    container_name: r1-object-retrieval-stable-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-devel-container:
+    image: elandini84/r1images:r1ObjectRetrieval_iron_devel
+    <<: *general
+    container_name: r1-object-retrieval-devel-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-demo-stable-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *demo
+    container_name: r1-object-retrieval-demo-stable-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-demo-devel-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    <<: *demo
+    container_name: r1-object-retrieval-demo-devel-container
+    command: terminator -g /home/user1/.config/terminator/config
+
+# Containers for the simulation
+  r1-object-retrieval-sim-stable-container:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
+    <<: *general
+    container_name: r1-object-retrieval-sim-stable-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-sim-devel-container:
+    image: elandini84/r1images:r1ObjectRetrieval_iron_devel
+    <<: *general
+    container_name: r1-object-retrieval-sim-devel-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-sim-demo-stable-container:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_stable
+    <<: *demo
+    container_name: r1-object-retrieval-sim-demo-stable-container
+    command: terminator -g /home/user1/.config/terminator/config
+  r1-object-retrieval-sim-demo-devel-container:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_devel
+    <<: *demo
+    container_name: r1-object-retrieval-sim-demo-devel-container
+    command: terminator -g /home/user1/.config/terminator/config

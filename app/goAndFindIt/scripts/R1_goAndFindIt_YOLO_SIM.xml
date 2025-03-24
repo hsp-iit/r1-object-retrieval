@@ -1,0 +1,106 @@
+<application>
+   <name>R1_goAndFindIt_YOLO_SIM</name>
+
+   <dependencies>
+   </dependencies>
+
+   <!--  MODULES  -->
+   <application>
+        <name>Navigation_ROS2_R1_SIM_office</name>
+        <prefix></prefix>
+    </application>
+
+    <module>
+      <name>cer_gaze-controller</name>
+      <parameters>--cameras::context cameraCalibration --cameras::file cerSimEyes_640x480.ini --robot SIM_CER_ROBOT --joints-limits::pitch "(-20.0 20.0)" --joints-limits::yaw "(-40.0 40.0)"</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+		<name>python3</name>
+		<parameters>yarpYolo.py --from yarpYolo_R1.ini</parameters>
+      <workdir>$ENV{ROBOT_CODE}/r1-object-retrieval/modules/yarpYolo/</workdir>
+		<node>console</node>
+	</module>
+
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view/yoloView:i </parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>lookForObject</name>
+      <parameters>--context lookForObject --from lookForObject_R1_SIM_faster.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>nextLocPlanner</name>
+      <parameters>--context nextLocPlanner --from nextLocPlanner_R1_SIM_office.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>goAndFindIt</name>
+      <parameters>--context goAndFindIt --from goAndFindIt_R1_SIM.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>yarpmotorgui</name>
+      <parameters></parameters>
+      <workdir>$ENV{ROBOT_CODE}/cer-sim/conf/</workdir>
+      <node>console</node>
+   </module>
+
+   <!--  CONNECTIONS  -->
+   <connection>
+      <from>/SIM_CER_ROBOT/depthCamera/rgbImage:o</from>
+      <to>/yarpYolo/image:i</to>
+      <protocol>mjpeg</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpYolo/image:o</from>
+      <to>/view/yoloView:i</to>
+      <protocol>mjpeg</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/gazeControllerTarget:o</from>
+      <to>/cer_gaze-controller/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/findObject:rpc</from>
+      <to>/yarpYolo/command/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpYolo/where_coords:o</from>
+      <to>/lookForObject/objectCoordinates:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/lookForObject/object:o</from>
+      <to>/lookForObject/object:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/out:o</from>
+      <to>/goAndFindIt/lookForObject/result:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/nextLocPlanner:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+</application>

@@ -1,0 +1,203 @@
+<application>
+   <name>R1_goAndFindIt_andPoint_MDETR</name>
+
+   <dependencies>
+   </dependencies>
+
+   <!--  MODULES  -->
+   <application>
+        <name>Navigation_ROS2_R1SN003</name>
+        <prefix></prefix>
+    </application>
+
+   <module>
+      <name>cer_gaze-controller</name>
+      <parameters>--cameras::context cameraCalibration --cameras::file cerEyes_640x480.ini --joints-limits::pitch "(-20.0 20.0)" --joints-limits::yaw "(-40.0 40.0)"</parameters>
+      <node>r1-base</node>
+   </module>
+
+    <module>
+		<name>python3</name>
+		<parameters>$ENV{ROBOT_CODE}/r1-object-retrieval/mdetr_python_code/yarpMdetr.py --from yarpMdetr_R1.ini</parameters>
+		<node>console</node>
+	</module>
+
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view/mdetrView:i </parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>lookForObject</name>
+      <parameters>--context lookForObject --from lookForObject_R1.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>look_and_point</name>
+      <parameters>--context look_and_point</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>nextLocPlanner</name>
+      <parameters>--context nextLocPlanner --from nextLocPlanner_R1.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>goAndFindIt</name>
+      <parameters>--context goAndFindIt --from goAndFindIt_R1.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>handPointing</name>
+      <parameters>--context handPointing --from handPointing_R1.ini</parameters>
+      <environment></environment>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>cer_reaching-solver</name>
+      <parameters>--robot cer --arm-type right --verbosity 1</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>cer_reaching-controller</name>
+      <parameters>--robot cer --arm-type right --verbosity 1 --T 1.0</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>cer_reaching-solver</name>
+      <parameters>--robot cer --arm-type left --verbosity 1</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>cer_reaching-controller</name>
+      <parameters>--robot cer --arm-type left --verbosity 1 --T 1.0</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>cer_gaze-controller</name>
+      <parameters>--cameras::context cameraCalibration --cameras::file cerEyes_640x480.ini --joints-limits::pitch "(-20.0 20.0)" --joints-limits::yaw "(-40.0 40.0)"</parameters>
+      <node>r1-base</node>
+   </module>
+
+   <module>
+      <name>yarpmotorgui</name>
+      <parameters></parameters>
+      <workdir>$ENV{ROBOT_CODE}/robots-configuration/R1SN003/</workdir>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>./goHome.sh</name>
+      <parameters></parameters>
+      <workdir>$ENV{ROBOT_CODE}/cer/app/handPointing/scripts/</workdir>
+      <node>console</node>
+   </module>
+
+   <!--  CONNECTIONS  -->
+   <connection>
+      <from>/cer/realsense_repeater/rgbImage:o</from>
+      <to>/yarpMdetr/image:i</to>
+      <protocol>mjpeg</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpMdetr/image:o</from>
+      <to>/view/mdetrView:i</to>
+      <protocol>mjpeg</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/gazeControllerTarget:o</from>
+      <to>/cer_gaze-controller/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/findObject:rpc</from>
+      <to>/yarpMdetr/command/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/lookForObject/object:o</from>
+      <to>/lookForObject/object:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/out:o</from>
+      <to>/goAndFindIt/lookForObject/result:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/nextLocPlanner:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpMdetr/where_coords:o</from>
+      <to>/lookForObject/objectCoordinates:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/output:o</from>
+      <to>/look_and_point/in:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/look_and_point/out:o</from>
+      <to>/handPointing/clicked_point:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/cer_reaching-controller/right/solver:rpc</from>
+      <to>/cer_reaching-solver/right/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/cer_reaching-controller/left/solver:rpc</from>
+      <to>/cer_reaching-solver/left/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/handPointing/r_target:o</from>
+      <to>/cer_reaching-controller/right/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/handPointing/l_target:o</from>
+      <to>/cer_reaching-controller/left/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/handPointing/gazeTarget:o</from>
+      <to>/cer_gaze-controller/target:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/handPointing/get_arm_home:o</from>
+      <to>/handPointing/go_home:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+</application>

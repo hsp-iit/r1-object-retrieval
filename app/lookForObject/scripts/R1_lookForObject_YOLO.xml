@@ -1,0 +1,68 @@
+<application>
+   <name>R1_lookForObject_YOLO</name>
+
+   <dependencies>
+   </dependencies>
+
+   <!--  MODULES  -->
+   <application>
+      <name>Navigation_ROS2_R1SN003</name>
+      <prefix></prefix>
+   </application>
+
+   <module>
+      <name>cer_gaze-controller</name>
+      <parameters>--cameras::context cameraCalibration --cameras::file cerEyes_640x480.ini --joints-limits::pitch "(-20.0 20.0)" --joints-limits::yaw "(-40.0 40.0)"</parameters>
+      <node>r1-base</node>
+   </module>
+
+   <module>
+		<name>python3</name>
+		<parameters>$ENV{ROBOT_CODE}/r1-object-retrieval/modules/yarpYolo/yarpYolo.py --from yarpYolo_R1.ini</parameters>
+		<node>console</node>
+	</module>
+
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view/yoloView:i </parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>lookForObject</name>
+      <parameters>--context lookForObject --from lookForObject_R1.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <!--  CONNECTIONS  -->
+   <connection>
+      <from>/cer/realsense_repeater/rgbImage:o</from>
+      <to>/yarpYolo/image:i</to>
+      <protocol>mjpeg</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpYolo/image:o</from>
+      <to>/view/yoloView:i</to>
+      <protocol>mjpeg</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/gazeControllerTarget:o</from>
+      <to>/cer_gaze-controller/target:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/lookForObject/findObject:rpc</from>
+      <to>/yarpYolo/command/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/yarpYolo/where_coords:o</from>
+      <to>/lookForObject/objectCoordinates:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+</application>
