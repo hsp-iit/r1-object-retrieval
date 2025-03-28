@@ -12,7 +12,7 @@ jobs:
          config:
          - {
             ros2_distro: "jazzy",
-            cuda_version: "12.1"
+            cuda_version: "12.1.0"
            }
     steps:
     - name: Info
@@ -36,11 +36,11 @@ jobs:
        if [ ${{ github.event_name }} == 'schedule' ]; then
           echo "Building r1ObjectRetrievalSim image"
           sudo rm -rf /opt/hostedtoolcache
-          sudo docker buildx build -f Dockerfile_sim --build-arg base_img = elandini84/r1images:tourSim2_ubuntu24.04_${{ matrix.config.ros2_distro }}_devel_cuda${{ matrix.config.cuda_version }} -t elandini84/r1images:r1obr_sim_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_devel .
+          sudo docker buildx build -f Dockerfile_sim --build-arg base_img = elandini84/r1images:tourSim2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_devel -t elandini84/r1images:r1obr_sim_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_devel .
        elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Building r1ObjectRetrievalSim image"
           sudo rm -rf /opt/hostedtoolcache
-          sudo docker buildx build -f Dockerfile_sim --build-arg base_img = elandini84/r1images:tourSim2_ubuntu24.04_${{ matrix.config.ros2_distro }}_devel_cuda${{ matrix.config.cuda_version }} -t elandini84/r1images:r1obr_sim_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_stable .
+          sudo docker buildx build -f Dockerfile_sim --build-arg base_img = elandini84/r1images:tourSim2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_stable -t elandini84/r1images:r1obr_sim_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_stable .
        else
           echo "Failure!"
           exit 1
@@ -64,7 +64,7 @@ jobs:
          config:
          - {
             ros2_distro: "jazzy",
-            cuda_version: "12.1"
+            cuda_version: "12.1.0"
            }
     steps:
     - name: Info
@@ -88,11 +88,11 @@ jobs:
        if [ ${{ github.event_name }} == 'schedule' ]; then
           echo "Building r1ObjectRetrieval image"
           sudo rm -rf /opt/hostedtoolcache
-          sudo docker buildx build -f Dockerfile --build-arg base_img = elandini84/r1images:tourCore2_ubuntu24.04_${{ matrix.config.ros2_distro }}_devel_cuda${{ matrix.config.cuda_version }} -t elandini84/r1images:r1obr_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_devel .
+          sudo docker buildx build -f Dockerfile --build-arg base_img = elandini84/r1images:tourCore2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_devel -t elandini84/r1images:r1obr_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_devel .
        elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Building r1ObjectRetrieval image"
           sudo rm -rf /opt/hostedtoolcache
-          sudo docker buildx build -f Dockerfile --build-arg base_img = elandini84/r1images:tourCore2_ubuntu24.04_${{ matrix.config.ros2_distro }}_devel_cuda${{ matrix.config.cuda_version }} -t elandini84/r1images:r1obr_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_stable .
+          sudo docker buildx build -f Dockerfile --build-arg base_img = elandini84/r1images:tourCore2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_stable -t elandini84/r1images:r1obr_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_stable .
        else
           echo "Failure!"
           exit 1
