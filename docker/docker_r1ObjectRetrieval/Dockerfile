@@ -53,5 +53,4 @@ RUN sudo chmod 777 update_repo.sh
 
 # ------------------------------------------------------------------------------ #
 
-RUN sudo updatedb
 CMD ["bash"]

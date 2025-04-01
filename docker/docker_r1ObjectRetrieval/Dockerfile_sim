@@ -55,8 +55,6 @@ RUN sudo chmod 777 update_repo.sh
 
 RUN ln -s ${robotology_install_folder}/tour-guide-robot/app/navigation2/scripts/stop.sh stop_sim.sh
 
-ENV ROS_DOMAIN_ID=39
 # ------------------------------------------------------------------------------ #
 
-RUN sudo updatedb
 CMD ["bash"]
