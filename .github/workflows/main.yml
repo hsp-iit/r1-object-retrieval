@@ -1,6 +1,8 @@
 name: Docker build
 
 on:
+  schedule:
+  - cron: "0 2 * * 3,5"
   workflow_dispatch:
 
 
