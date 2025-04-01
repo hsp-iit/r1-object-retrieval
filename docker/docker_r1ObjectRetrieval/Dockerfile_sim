@@ -24,7 +24,7 @@ ARG user_name=user1
 ######################################
 
 # Install YOLO requirements
-RUN pip install ultralytics
+RUN pip install --break-system-packages ultralytics
 
 # r1-object-retrieval
 WORKDIR ${robotology_install_folder}
@@ -55,8 +55,6 @@ RUN sudo chmod 777 update_repo.sh
 
 RUN ln -s ${robotology_install_folder}/tour-guide-robot/app/navigation2/scripts/stop.sh stop_sim.sh
 
-ENV ROS_DOMAIN_ID=39
 # ------------------------------------------------------------------------------ #
 
-RUN sudo updatedb
 CMD ["bash"]

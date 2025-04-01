@@ -27,7 +27,7 @@ ARG user_name=user1
 ######################################
 
 # Install YOLO requirements
-RUN pip install ultralytics
+RUN pip install --break-system-packages ultralytics
 
 # r1-object-retrieval
 WORKDIR ${robotology_install_folder}
@@ -53,5 +53,4 @@ RUN sudo chmod 777 update_repo.sh
 
 # ------------------------------------------------------------------------------ #
 
-RUN sudo updatedb
 CMD ["bash"]
