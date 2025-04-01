@@ -1,7 +1,10 @@
 # r1-Object-Retrieval
 
 Repository to manage the work on the object retrieval with the robot R1.
-   
+
+## CI
+[![Docker build](https://github.com/hsp-iit/r1-object-retrieval/actions/workflows/main.yml/badge.svg)](https://github.com/hsp-iit/r1-object-retrieval/actions/workflows/main.yml)
+
 ## Requirements
 * [yarp](https://github.com/robotology/yarp)
 * [icub-main](https://github.com/robotology/icub-main.git)
@@ -23,9 +26,9 @@ docker pull colombraf/r1images:r1ObjectRetrievalSim   # to work in a simulated e
 ### From source
 * On Linux:
 ```bash
-git clone https://github.com/hsp-iit/r1-object-retrieval 
+git clone https://github.com/hsp-iit/r1-object-retrieval
 cd r1-object-retrieval && mkdir build && cd build && cmake .. && make -j11
-export PYTHONPATH=$PYTHONPATH:${R1_OBR_SOURCE_DIR} 
+export PYTHONPATH=$PYTHONPATH:${R1_OBR_SOURCE_DIR}
 export YARP_DATA_DIRS=$YARP_DATA_DIRS:${R1_OBR_BUILD_DIR}/share/R1_OBJECT_RETRIEVAL
 export PATH=$PATH:${R1_OBR_BUILD_DIR}/bin
 ```
