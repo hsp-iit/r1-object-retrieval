@@ -119,70 +119,60 @@ services:
 
 # Images for the robot
   r1-object-retrieval-stable:
-    image: elandini84/r1images:r1ObjectRetrieval_iron_stable
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
     build:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_jazzy_12.1.0_stable
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_stable
           user_name: user1
   r1-object-retrieval-devel:
-    image: elandini84/r1images:r1ObjectRetrieval_iron_devel
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_jazzy_12.1.0_devel
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_devel
           user_name: user1
   r1-object-retrieval-demo-stable:
-    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
     build:
       context: .
       dockerfile: Dockerfile_demo
       args:
-          base_img: elandini84/r1images:r1ObjectRetrieval_iron_stable
+          base_img: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
           robot_code: /usr/local/src/robot
-          grcp_version: v1.60.0
-          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
-          open_telemetry_version: v1.13.0
-          nlohmann_json_version: v3.11.3
-          crc32c_version: 1.1.2
+          google_cloud_version: tags/2025.01.13
           user_name: user1
-          jval: 8
           llm_branch: master
   r1-object-retrieval-demo-devel:
-    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_devel
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile_demo
       args:
-          base_img: elandini84/r1images:r1ObjectRetrieval_iron_devel
+          base_img: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
           robot_code: /usr/local/src/robot
-          grcp_version: v1.60.0
-          google_cloud_version: a89dc1d0762103c132decd4eb57e8c014b01455f
-          open_telemetry_version: v1.13.0
-          nlohmann_json_version: v3.11.3
-          crc32c_version: 1.1.2
+          google_cloud_version: tags/2025.01.13
           user_name: user1
-          jval: 8
           llm_branch: master
 
 # Simulation images
   r1-object-retrieval-sim-stable:
-    image: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
     build:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_jazzy_12.1.0_stable
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_stable
           user_name: user1
   r1-object-retrieval-sim-devel:
-    image: elandini84/r1images:r1ObjectRetrieval_sim_iron_devel
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_jazzy_12.1.0_devel
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_devel
           user_name: user1
   r1-object-retrieval-sim-demo-stable:
     image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_stable
