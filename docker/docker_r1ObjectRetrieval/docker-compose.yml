@@ -119,20 +119,20 @@ services:
 
 # Images for the robot
   r1-object-retrieval-stable:
-    image: elandini84/r1images:r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
     build:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_jazzy_${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_stable
           user_name: user1
   r1-object-retrieval-devel:
-    image: elandini84/r1images:r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_devel
           user_name: user1
   r1-object-retrieval-demo-stable:
     image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
@@ -164,15 +164,15 @@ services:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_jazzy_12.1.0_stable
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_stable
           user_name: user1
   r1-object-retrieval-sim-devel:
-    image: elandini84/r1images:r1obr_sim_cuda.12.1.0_jazzy_devel
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_jazzy_12.1.0_devel
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_devel
           user_name: user1
   r1-object-retrieval-sim-demo-stable:
     image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_stable
