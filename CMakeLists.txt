@@ -38,15 +38,8 @@ add_install_rpath_support(BIN_DIRS "${CMAKE_INSTALL_FULL_BINDIR}"
                           LIB_DIRS "${CMAKE_INSTALL_FULL_LIBDIR}"
                           INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}"
                           USE_LINK_PATH)
-                   
+
 # Everything is configured now, we can start adding source code
 add_subdirectory(app)
 add_subdirectory(modules)
 add_subdirectory(interfaces)
-
-# Append to .bashrc
-file(APPEND $ENV{HOME}/.bashrc "\n##### R1 OBJECT RETRIEVAL #####")
-file(APPEND $ENV{HOME}/.bashrc "\nexport R1_OBR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
-file(APPEND $ENV{HOME}/.bashrc "\nexport R1_OBR_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}")
-
-
