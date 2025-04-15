@@ -926,6 +926,44 @@ bool OrchestratorThread::go(string loc)
     return m_nav2loc->go(loc);
 }
 
+/****************************************************************/
+bool OrchestratorThread::guide(string loc)
+{
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Guiding to %s", loc.c_str());
+
+    // if (m_status != R1_IDLE)
+    stopOrReset("reset_noNavpos");
+
+
+    if (loc != "home" && loc.find(m_map_prefix) == string::npos)
+    {
+        loc = m_map_prefix + loc;
+    }
+
+    if (loc != "home")
+    {
+        Bottle req,rep;
+        req.fromString("find " + loc);
+        m_nextLoc_rpc_port.write(req,rep); //check if location name is valid
+        if (rep.get(0).asString() != "ok")
+        {
+            yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
+            askChatBotToSpeak(location_not_valid);
+            return false;
+        }
+    }
+
+    if(!setNavigationPosition())
+    {
+        m_status = R1_IDLE;
+        return false;
+    }
+
+    m_status = R1_GOING;
+    m_going = true;
+    return m_nav2loc->go(loc);
+}
+
 
 /****************************************************************/
 bool OrchestratorThread::dance(string dance_name)

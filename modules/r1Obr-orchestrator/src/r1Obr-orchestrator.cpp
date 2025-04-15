@@ -319,7 +319,7 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
     else if(cmd=="guide")
     {
         string location_name = request.get(1).asString();
-        /// TODO: implement guiding
+        m_inner_thread->guide(location_name);
         reply.addString("guiding to '" + location_name + "'");
     }
     else if(cmd=="directions")

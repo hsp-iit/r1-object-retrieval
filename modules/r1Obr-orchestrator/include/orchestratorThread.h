@@ -147,13 +147,10 @@ public:
     string      getWhere();
     string      getStatus();
     void        info(Bottle& reply);
-
     void        setEmotion();
-
     bool        askChatBotToSpeak(R1_says stat);
-
     bool        go(string loc);
-
+    bool        guide(string loc);
     bool        dance(string dance_name);
 
 };
