@@ -36,22 +36,7 @@
    </module>
    <module>
       <name>yarprobotinterface</name>
-      <parameters>--context google --from googleSpeechToText.ini</parameters>
-      <node>console1</node>
-   </module>
-
-   <!-- LLM device -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--config LLMDevice.xml</parameters>
-      <workdir>$ENV{ROBOT_CODE}/yarp-devices-llm/assets</workdir>
-      <node>console2</node>
-   </module>
-
-   <!-- chat bot -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context google --from googleChatBot.ini</parameters>
+      <parameters>--context google --from googleTranscription.ini</parameters>
       <node>console1</node>
    </module>
 
@@ -61,6 +46,12 @@
       <parameters>--context google --from googleSynthesizer.ini</parameters>
       <node>console1</node>
    </module>
+
+   <!-- Dialogue -->
+   <application>
+      <name>ObR_llm</name>
+      <prefix></prefix>
+   </application>
 
    <!-- orchestrator -->
    <application>
@@ -82,12 +73,6 @@
       <name>R1_handPointing_SIM</name>
       <prefix></prefix>
    </application>
-
-   <!-- negative outcome -->
-   <!-- <application>
-      <name>R1_disappointmentPose_SIM</name>
-      <prefix></prefix>
-   </application> -->
 
    <!-- face expressions -->
    <module>
@@ -157,7 +142,7 @@
    </connection>
 
    <connection>
-      <from>/r1Obr-orchestrator/chatBot/microphone:rpc</from>
+      <from>/r1Obr-orchestrator/dialogMng/microphone:rpc</from>
       <to>/audioRecorder_nws/rpc</to>
       <protocol>fast_tcp</protocol>
    </connection>
@@ -206,7 +191,7 @@
 
    <connection>
       <from>/audioPlayerWrapper/status:o</from>
-      <to>/r1Obr-orchestrator/chatBot/audioplayerStatus:i</to>
+      <to>/r1Obr-orchestrator/dialogMng/audioplayerStatus:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 

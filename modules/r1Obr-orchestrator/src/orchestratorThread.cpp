@@ -121,10 +121,10 @@ bool OrchestratorThread::threadInit()
         return false;
     }
 
-    // --------- Chat Bot initialization --------- //
-    m_chat_bot = new ChatBot();
-    if (!m_chat_bot->configure(m_rf)){
-        yCError(R1OBR_ORCHESTRATOR_THREAD,"ChatBot configuration failed");
+    // --------- Dialogue Manager initialization --------- //
+    m_dialogueManager = new DialogueManager();
+    if (!m_dialogueManager->configure(m_rf)){
+        yCError(R1OBR_ORCHESTRATOR_THREAD,"DialogueManager configuration failed");
         return false;
     }
 
@@ -188,8 +188,8 @@ if (m_sensor_network_rpc_port.asPort().isOpen())
     m_continuousSearch->close();
     delete m_continuousSearch;
 
-    m_chat_bot->close();
-    delete m_chat_bot;
+    m_dialogueManager->close();
+    delete m_dialogueManager;
 
     m_tiny_dancer->close();
     delete m_tiny_dancer;
@@ -872,8 +872,8 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         feedback = "no command";
         break;
     };
-
-    m_chat_bot->interactWithChatBot(str);
+    dlgmsg::DialogueMessage toReplier{dlgmsg::CmdTypes::SAY, {str}, m_dialogueManager->getLanguage()};
+    m_dialogueManager->interactWithReplier(toReplier,true);
 
 
     if (m_sn_active && feedback != "")
@@ -892,6 +892,44 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
 bool OrchestratorThread::go(string loc)
 {
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Going to %s", loc.c_str());
+
+    // if (m_status != R1_IDLE)
+    stopOrReset("reset_noNavpos");
+
+
+    if (loc != "home" && loc.find(m_map_prefix) == string::npos)
+    {
+        loc = m_map_prefix + loc;
+    }
+
+    if (loc != "home")
+    {
+        Bottle req,rep;
+        req.fromString("find " + loc);
+        m_nextLoc_rpc_port.write(req,rep); //check if location name is valid
+        if (rep.get(0).asString() != "ok")
+        {
+            yCError(R1OBR_ORCHESTRATOR_THREAD,"Location specified is not valid.");
+            askChatBotToSpeak(location_not_valid);
+            return false;
+        }
+    }
+
+    if(!setNavigationPosition())
+    {
+        m_status = R1_IDLE;
+        return false;
+    }
+
+    m_status = R1_GOING;
+    m_going = true;
+    return m_nav2loc->go(loc);
+}
+
+/****************************************************************/
+bool OrchestratorThread::guide(string loc)
+{
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Guiding to %s", loc.c_str());
 
     // if (m_status != R1_IDLE)
     stopOrReset("reset_noNavpos");

@@ -24,7 +24,7 @@ YARP_LOG_COMPONENT(R1OBR_ORCHESTRATOR, "r1_obr.orchestrator")
 
 Orchestrator::Orchestrator() :
     m_period(1.0)
-{  
+{
     m_rpc_server_port_name  = "/r1Obr-orchestrator/rpc";
     m_input_port_name = "/r1Obr-orchestrator/input:i";
     m_status_port_name = "/r1Obr-orchestrator/status:o";
@@ -34,9 +34,9 @@ Orchestrator::Orchestrator() :
 
 
 /****************************************************************/
-bool Orchestrator::configure(ResourceFinder &rf) 
-{   
-    if(rf.check("period")){m_period = rf.find("period").asFloat32();}   
+bool Orchestrator::configure(ResourceFinder &rf)
+{
+    if(rf.check("period")){m_period = rf.find("period").asFloat32();}
 
     // --------- Open RPC Server Port --------- //
     if(rf.check("input_rpc_port"))
@@ -99,13 +99,13 @@ bool Orchestrator::configure(ResourceFinder &rf)
 
 
     // --------- Status output ----------- //
-    if(rf.check("status_port")){m_status_port_name = rf.find("status_port").asString();} 
+    if(rf.check("status_port")){m_status_port_name = rf.find("status_port").asString();}
     if (!m_status_port.open(m_status_port_name))
     {
         yCError(R1OBR_ORCHESTRATOR, "Unable to open output status port");
         return false;
     }
-    
+
     // --------- SpeechSynthesizer config --------- //
     m_additional_speaker = new SpeechSynthesizer();
     if(!m_additional_speaker->configure(rf, "/second"))
@@ -113,7 +113,7 @@ bool Orchestrator::configure(ResourceFinder &rf)
         yCError(R1OBR_ORCHESTRATOR,"SpeechSynthesizer configuration failed");
         return false;
     }
-   
+
     string audiorecorderRPCPortName = "/r1Obr-orchestrator/microphone:rpc";
     if(!m_audiorecorderRPCPort.open(audiorecorderRPCPortName))
     {
@@ -145,26 +145,26 @@ bool Orchestrator::configure(ResourceFinder &rf)
 bool Orchestrator::close()
 {
     if (m_rpc_server_port.asPort().isOpen())
-        m_rpc_server_port.close();  
-        
+        m_rpc_server_port.close();
+
     if (!m_input_port.isClosed())
         m_input_port.close();
-        
+
     if (!m_positive_feedback_port.isClosed())
         m_positive_feedback_port.close();
-    
+
     if (!m_status_port.isClosed())
         m_status_port.close();
 
     if (m_audiorecorderRPCPort.asPort().isOpen())
         m_audiorecorderRPCPort.close();
-    
+
     if (!m_audioPlayPort.isClosed())
         m_audioPlayPort.close();
-    
+
     if (m_orchestrator_thrift_port.isOpen())
         m_orchestrator_thrift_port.close();
-    
+
     m_inner_thread->stop();
     delete m_inner_thread;
 
@@ -172,7 +172,7 @@ bool Orchestrator::close()
     delete m_additional_speaker;
 
     delete m_story_teller;
-    
+
     return true;
 }
 
@@ -191,7 +191,7 @@ bool Orchestrator::updateModule()
     status.clear();
     m_inner_thread->info(status);
     m_status_port.write();
-    
+
     if (isStopping())
     {
         if (m_inner_thread) m_inner_thread->stop();
@@ -206,7 +206,7 @@ bool Orchestrator::updateModule()
 bool Orchestrator::respond(const Bottle &request, Bottle &reply)
 {
     yCInfo(R1OBR_ORCHESTRATOR,"RPC Received: %s",request.toString().c_str());
-    
+
     reply.clear();
     string cmd=request.get(0).asString();
     if (request.size()==1)
@@ -269,13 +269,13 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
         }
         else if (cmd=="info")
         {
-            m_inner_thread->info(reply);            
+            m_inner_thread->info(reply);
         }
         else if (cmd=="cmd_unk")
         {
             reply.addVocab32(Vocab32::encode("ack"));
             yCWarning(R1OBR_ORCHESTRATOR,"Uknown command received");
-            m_inner_thread->askChatBotToSpeak(OrchestratorThread::cmd_unknown);            
+            m_inner_thread->askChatBotToSpeak(OrchestratorThread::cmd_unknown);
         }
         else
         {
@@ -291,19 +291,19 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
         reply.addString("searching for '" + request.get(1).asString() + "'");
     }
     else if (cmd=="say")
-    {   
+    {
         string toSay = request.get(1).asString();
         reply.addString("speaking");
         say(toSay);
     }
     else if (cmd=="go")
-    {   
+    {
         string location_name = request.get(1).asString();;
         m_inner_thread->go(location_name);
         reply.addString("going to '" + location_name + "'");
     }
     else if (cmd=="tell")
-    {   
+    {
         string story;
         string story_key = request.get(1).asString();
         m_story_teller->getStory(story_key, story);
@@ -311,10 +311,22 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
         say(story);
     }
     else if (cmd=="dance")
-    {   
+    {
         string dance_name = request.get(1).asString();
         m_inner_thread->dance(dance_name);
         reply.addString("dancing");
+    }
+    else if(cmd=="guide")
+    {
+        string location_name = request.get(1).asString();
+        m_inner_thread->guide(location_name);
+        reply.addString("guiding to '" + location_name + "'");
+    }
+    else if(cmd=="directions")
+    {
+        string location_name = request.get(1).asString();
+        /// TODO: implement getting directions
+        reply.addString("getting directions to '" + location_name + "'");
     }
     else
     {
@@ -324,7 +336,7 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
     }
 
     if (reply.size()==0)
-        reply.addVocab32(Vocab32::encode("ack")); 
+        reply.addVocab32(Vocab32::encode("ack"));
 
     return true;
 }
@@ -348,10 +360,10 @@ void Orchestrator::onRead(yarp::os::Bottle &b)
 
 
 /****************************************************************/
-bool Orchestrator::searchObject(const string& what)  
+bool Orchestrator::searchObject(const string& what)
 {
     yCInfo(R1OBR_ORCHESTRATOR, "Received: search %s", what.c_str());
-    
+
     Bottle request;
     request.fromString("search " + what);
     m_inner_thread->search(request);
@@ -361,10 +373,10 @@ bool Orchestrator::searchObject(const string& what)
 }
 
 /****************************************************************/
-bool Orchestrator::searchObjectLocation(const string& what, const string& where)  
+bool Orchestrator::searchObjectLocation(const string& what, const string& where)
 {
     yCInfo(R1OBR_ORCHESTRATOR, "Received: search %s , %s", what.c_str(), where.c_str());
-    
+
     Bottle request;
     request.fromString("search " + what + " " + where);
     m_inner_thread->search(request);
@@ -374,8 +386,8 @@ bool Orchestrator::searchObjectLocation(const string& what, const string& where)
 }
 
 /****************************************************************/
-bool Orchestrator::stopSearch()  
-{    
+bool Orchestrator::stopSearch()
+{
     yCInfo(R1OBR_ORCHESTRATOR, "Received: stop");
     m_inner_thread->stopOrReset("ext_stop");
 
@@ -383,8 +395,8 @@ bool Orchestrator::stopSearch()
 }
 
 /****************************************************************/
-bool Orchestrator::resetSearch()  
-{    
+bool Orchestrator::resetSearch()
+{
     yCInfo(R1OBR_ORCHESTRATOR, "Received: reset");
     m_inner_thread->stopOrReset("ext_reset");
 
@@ -392,65 +404,65 @@ bool Orchestrator::resetSearch()
 }
 
 /****************************************************************/
-bool Orchestrator::resetHome()  
-{    
+bool Orchestrator::resetHome()
+{
     yCInfo(R1OBR_ORCHESTRATOR, "Received: resetHome");
     return m_inner_thread->resetHome()=="reset and sent home";
 }
 
 /****************************************************************/
-bool Orchestrator::resume()  
-{   
+bool Orchestrator::resume()
+{
     yCInfo(R1OBR_ORCHESTRATOR, "Received: resume");
     return m_inner_thread->resume()!="not resumed";
 }
 
 /****************************************************************/
-string Orchestrator::status()  
+string Orchestrator::status()
 {
     return m_inner_thread->getStatus();
 }
 
 /****************************************************************/
-string Orchestrator::what()  
+string Orchestrator::what()
 {
     return m_inner_thread->getWhat();
 }
 
 /****************************************************************/
-string Orchestrator::where()  
+string Orchestrator::where()
 {
     return m_inner_thread->getWhere();
 }
 
 /****************************************************************/
-bool Orchestrator::navpos()  
-{   
+bool Orchestrator::navpos()
+{
     return m_inner_thread->setNavigationPosition();
 }
 
 /****************************************************************/
-bool Orchestrator::go(const string& location)  
-{    
+bool Orchestrator::go(const string& location)
+{
     yCInfo(R1OBR_ORCHESTRATOR, "Received: go %s", location.c_str());
     return m_inner_thread->go(location);
 }
 
 /****************************************************************/
 bool Orchestrator::say(const string& toSay)
-{    
+{
     //close microphone
     Bottle req{"stopRecording_RPC"}, rep;
     m_audiorecorderRPCPort.write(req,rep);
 
     //speak
     bool ret = m_additional_speaker->say(toSay);
-    
+
 
     //wait until finish speaking
     Time::delay(0.5);
     bool audio_is_playing{true};
-    while (audio_is_playing) 
+    while (audio_is_playing)
     {
         Bottle* player_status = m_audioPlayPort.read(false);
         if (player_status)
@@ -469,7 +481,7 @@ bool Orchestrator::say(const string& toSay)
 }
 
 /****************************************************************/
-bool Orchestrator::tell(const string& key)  
+bool Orchestrator::tell(const string& key)
 {
     string story;
     m_story_teller->getStory(key, story);
@@ -477,7 +489,7 @@ bool Orchestrator::tell(const string& key)
 }
 
 /****************************************************************/
-bool Orchestrator::dance(const string& motion)  
-{    
+bool Orchestrator::dance(const string& motion)
+{
     return m_inner_thread->dance(motion);
 }

@@ -68,6 +68,7 @@ x-light: &light
     - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
     - LIBGL_ALWAYS_INDIRECT=0
     - YARP_COLORED_OUTPUT=1
+    - YARP_CLOCK=${YARP_CLOCK}
     - NVIDIA_DRIVER_CAPABILITIES=all
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
@@ -98,6 +99,7 @@ x-heavy: &heavy
     - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user1/1000/bus
     - LIBGL_ALWAYS_INDIRECT=0
     - YARP_COLORED_OUTPUT=1
+    - YARP_CLOCK=${YARP_CLOCK}
     - NVIDIA_DRIVER_CAPABILITIES=all
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
@@ -184,7 +186,7 @@ services:
     image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_stable
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_demo
       args:
           base_img: elandini84/r1images:r1ObjectRetrieval_sim_iron_stable
           robot_code: /usr/local/src/robot
@@ -219,6 +221,19 @@ services:
     <<: *light
     container_name: raise-demo-container
     command: terminator -g /home/user1/.config/terminator/config
+  branch-test-container:
+    image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
+    <<: *light
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      - "/etc/hosts:/etc/hosts"
+      - "${HOME}/.config/yarp:/home/user1/.config/yarp"
+      - "${HOME}/.config/credentials/google-credentials/hsp_google.json:/home/user1/.config/google-credential/hsp_google.json"
+      - "${HOME}/.config/credentials/azure-credentials/config.env:/home/user1/.env/config.env"
+      - "./entrypoints/entrypoint_branch.sh:/home/user1/.entrypoint_branch.sh"
+    entrypoint: ["sh", "/home/user1/.entrypoint_branch.sh"]
+    container_name: branch-test-container
+    command: terminator -g /home/user1/.config/terminator/config
   raise-demo-test-container:
     image: elandini84/r1images:r1ObjectRetrieval_demo_iron_stable
     <<: *heavy
@@ -246,6 +261,11 @@ services:
   #   command: terminator -g /home/user1/.config/terminator/config
 
 # Containers for the simulation
+  raise-demo-sim-container:
+    image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_devel
+    <<: *light
+    container_name: raise-demo-sim-container
+    command: terminator -g /home/user1/.config/terminator/config
   r1-object-retrieval-sim-stable-container:
     image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
     <<: *general
