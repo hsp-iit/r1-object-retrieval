@@ -22,7 +22,7 @@ YARP_LOG_COMPONENT(NAV_2_LOC, "r1_obr.orchestrator.nav2loc")
 
 bool Nav2Loc::configure(yarp::os::ResourceFinder &rf)
 {
-    
+
     // --------- Navigation2DClient config --------- //
    Property nav2DProp;
     if(!rf.check("NAVIGATION_CLIENT"))
@@ -35,7 +35,7 @@ bool Nav2Loc::configure(yarp::os::ResourceFinder &rf)
     nav2DProp.put("navigation_server", nav_config.check("navigation_server", Value("/navigation2D_nws_yarp")));
     nav2DProp.put("map_locations_server", nav_config.check("map_locations_server", Value("/map2D_nws_yarp")));
     nav2DProp.put("localization_server", nav_config.check("localization_server", Value("/localization2D_nws_yarp")));
-    
+
     m_nav2DPoly.open(nav2DProp);
     if(!m_nav2DPoly.isValid())
     {
@@ -55,7 +55,7 @@ bool Nav2Loc::configure(yarp::os::ResourceFinder &rf)
         yCWarning(NAV_2_LOC,"NAV2LOC section missing in ini file. Using the default values");
     }
     Searchable& home_config = rf.findGroup("NAV2LOC");
-    if(home_config.check("home")) 
+    if(home_config.check("home"))
     {
         Bottle home;
         home.fromString(home_config.find("home").asString());
@@ -87,7 +87,7 @@ void Nav2Loc::close()
 
 bool Nav2Loc::goHome()
 {
-    
+
     if(!m_iNav2D->gotoTargetByAbsoluteLocation(m_home_location))
     {
         yCError(NAV_2_LOC, "Error with navigation to home location");
@@ -109,7 +109,13 @@ bool Nav2Loc::go(string loc)
     // Forcing a specific path following if we want to go to the laboratory from outside
     if(loc == "laboratory")
     {
-        if(!m_iNav2D->checkInsideArea("laboratory_area"))
+        bool is_inside = false;
+        if(!m_iNav2D->checkInsideArea("laboratory_area", is_inside))
+        {
+            yCError(NAV_2_LOC, "Error checking if robot is inside lab area");
+            return false;
+        }
+        if(!is_inside)
         {
             if(!m_iNav2D->gotoTargetByLocationName("laboratory_path"))
             {
@@ -150,7 +156,7 @@ bool Nav2Loc::resumeGo()
         goHome();
     else
         go(m_current_target_location);
-    
+
     return true;
 }
 
