@@ -1,47 +1,21 @@
 <application>
-   <name>R1_Orchestrator_YOLO_SIM</name>
+   <name>R1_Orchestrator_YOLO_SIM_OLD</name>
 
    <dependencies>
    </dependencies>
 
-   <!--                -->
-   <!--  APPLICATIONS  -->
-   <!--                -->
-
-   <!-- Dialogue -->
-   <application>
-      <name>ObR_llm</name>
-      <prefix></prefix>
-   </application>
-
-   <!-- orchestrator -->
-   <application>
-      <name>R1_goAndFindIt_YOLO_SIM</name>
-      <prefix></prefix>
-   </application>
-
-   <!-- positive outcome -->
-   <application>
-      <name>R1_approachObject_YOLO_SIM</name>
-      <prefix></prefix>
-   </application>
-
-   <application>
-      <name>R1_handPointing_SIM</name>
-      <prefix></prefix>
-   </application>
 
    <!--                -->
    <!--    MODULES     -->
    <!--                -->
 
+
    <!-- audio recorder -->
    <module>
       <name>yarprobotinterface</name>
-      <parameters>--context speechPipeline --from micAudio.ini --mic_sound_on_stop 0 --mic_start 1 --mic_min_samples 4000 --mic_max_samples 4000</parameters>
-      <node>console-llm</node>
+      <parameters>--context whisperTranscribe_demo --config yarp_audioFromMic.xml</parameters>
+      <node>pc</node>
    </module>
-
    <module>
       <name>yarpaudiocontrolgui</name>
       <parameters>--remote-rec /audioRecorder_nws</parameters>
@@ -49,45 +23,71 @@
 
    <!-- VAD -->
    <module>
-      <name>python3</name>
-      <parameters>oww.py --models hey_erra_uno.onnx</parameters>
-      <workdir>$ENV{TOUR_GUIDE_ROBOT_SOURCE_DIR}/aux_modules/speechProcessing/openWakeWord</workdir>
-      <node>console-llm</node>
-   </module>
-
-   <module>
-      <name>sileroVAD</name>
+      <name>backupVAD</name>
       <parameters></parameters>
-      <environment>YARP_LOG_PROCESS_LABEL=VAD</environment>
-      <node>console-llm</node>
-   </module>
-
-   <module>
-      <name>python3</name>
-      <parameters>play_notification.py</parameters>
-      <node>console-llm</node>
-      <workdir>$ENV{TOUR_GUIDE_ROBOT_SOURCE_DIR}/aux_modules/speechProcessing/wakeWordDetection</workdir>
+      <node>console</node>
    </module>
 
    <!-- Speech transcription -->
    <module>
       <name>yarprobotinterface</name>
-      <parameters>--context google --from googleTranscription.ini --transcription_lang it-IT</parameters>
-      <node>console-llm</node>
+      <parameters>--context whisperTranscribe_demo --config yarp_transcribe.xml --model ggml-small3.it.bin </parameters>
+      <node>pc</node>
+   </module>
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleSpeechToText.ini</parameters>
+      <node>console1</node>
+   </module>
+
+   <!-- LLM device -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--config LLMDevice.xml</parameters>
+      <workdir>$ENV{ROBOT_CODE}/yarp-devices-llm/assets</workdir>
+      <node>console2</node>
+   </module>
+
+   <!-- chat bot -->
+   <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleChatBot.ini</parameters>
+      <node>console1</node>
    </module>
 
    <!-- speech synthesizer -->
    <module>
       <name>yarprobotinterface</name>
-      <parameters>--context google --from googleSynthesizer.ini --synthesis_lang it-IT --synthesis_voice it-IT-Neural2-A</parameters>
-      <node>console-llm</node>
+      <parameters>--context google --from googleSynthesizer.ini</parameters>
+      <node>console1</node>
    </module>
 
+   <!-- orchestrator -->
+   <application>
+      <name>R1_goAndFindIt_YOLO_SIM</name>
+      <prefix></prefix>
+   </application>
    <module>
       <name>r1Obr-orchestrator</name>
       <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_noContinuousSearch.ini</parameters>
       <node>console</node>
    </module>
+
+   <!-- positive outcome -->
+   <application>
+      <name>R1_approachObject_YOLO_SIM</name>
+      <prefix></prefix>
+   </application>
+   <application>
+      <name>R1_handPointing_SIM</name>
+      <prefix></prefix>
+   </application>
+
+   <!-- negative outcome -->
+   <!-- <application>
+      <name>R1_disappointmentPose_SIM</name>
+      <prefix></prefix>
+   </application> -->
 
    <!-- face expressions -->
    <module>
@@ -95,9 +95,8 @@
       <parameters></parameters>
       <node>console</node>
    </module>
-
    <module>
-      <name>yarpview</name>
+      <name>yarpview </name>
       <parameters>--name /faceView/img:i</parameters>
       <node>console</node>
    </module>
@@ -116,24 +115,15 @@
       <node>console</node>
    </module>
 
-   <!--                -->
-   <!--  CONNECTIONS   -->
-   <!--                -->
+
+  <!--                -->
+  <!--  CONNECTIONS   -->
+  <!--                -->
 
    <connection>
       <from>/audioRecorder_nws/audio:o</from>
-      <to>/wake/audio:i</to>
-   </connection>
-
-   <connection>
-      <from>/wake/audio:o</from>
       <to>/vad/audio:i</to>
-   </connection>
-
-   <connection>
-      <from>/vad/rpc:o</from>
-      <to>/wake/rpc:i</to>
-      <protocol>fast_tcp</protocol>
+      <protocol>fast_tcp+recv.portmonitor+file.soundfilter_resample+type.dll+channel.0+frequency.16000</protocol>
    </connection>
 
    <connection>
@@ -167,7 +157,7 @@
    </connection>
 
    <connection>
-      <from>/r1Obr-orchestrator/dialogMng/microphone:rpc</from>
+      <from>/r1Obr-orchestrator/chatBot/microphone:rpc</from>
       <to>/audioRecorder_nws/rpc</to>
       <protocol>fast_tcp</protocol>
    </connection>
@@ -216,7 +206,7 @@
 
    <connection>
       <from>/audioPlayerWrapper/status:o</from>
-      <to>/r1Obr-orchestrator/dialogMng/audioplayerStatus:i</to>
+      <to>/r1Obr-orchestrator/chatBot/audioplayerStatus:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
@@ -249,4 +239,5 @@
       <to>/r1Obr-orchestrator/thrift:s</to>
       <protocol>fast_tcp</protocol>
    </connection>
+
 </application>
