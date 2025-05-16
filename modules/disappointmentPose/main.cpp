@@ -30,6 +30,14 @@
 
 YARP_LOG_COMPONENT(DISAPPOINTMENT_POSE, "r1_obr.disappointmentPose")
 
+#ifndef PARTS_NAMES
+#define PARTS_NAME 127
+#define RIGHT_ARM 0
+#define LEFT_ARM 1
+#define HEAD 2
+#endif
+
+
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
@@ -39,8 +47,8 @@ class DisappointmentPose : public RFModule, public TypedReaderCallback<Bottle>
 private:
     //Polydriver
     PolyDriver           m_drivers[3];
-    IControlMode*        m_ictrlmode[3];  
-    IPositionControl*    m_iposctrl[3];   \
+    IControlMode*        m_ictrlmode[3]{nullptr, nullptr, nullptr};
+    IPositionControl*    m_iposctrl[3]{nullptr, nullptr, nullptr};
 
     //Port
     BufferedPort<Bottle> m_input_port;
@@ -51,6 +59,7 @@ private:
     Bottle               m_head_pos;
 
     double               m_period;
+    bool                 m_parts_on[3]{true,true,true};
 
 public:
     //Constructor/Distructor
@@ -81,7 +90,7 @@ DisappointmentPose::DisappointmentPose()
 
 bool DisappointmentPose::configure(ResourceFinder &rf)
 {
-    
+
     //Generic config
     if(rf.check("period")) {m_period = rf.find("period").asFloat32();}
     string robot=rf.check("robot",Value("cer")).asString();
@@ -92,10 +101,18 @@ bool DisappointmentPose::configure(ResourceFinder &rf)
         m_input_port_name = rf.find("input_port").asString();
     m_input_port.useCallback(*this);
     if(!m_input_port.open(m_input_port_name))
-        yCError(DISAPPOINTMENT_POSE) << "Cannot open port" << m_input_port_name; 
+        yCError(DISAPPOINTMENT_POSE) << "Cannot open port" << m_input_port_name;
     else
         yCInfo(DISAPPOINTMENT_POSE) << "opened port" << m_input_port_name;
 
+
+    // Check enable/disable arms options
+    if(rf.check("right_arm_on"))
+        m_parts_on[RIGHT_ARM] = rf.find("right_arm_on").asInt16() == 1;
+    if(rf.check("left_arm_on"))
+        m_parts_on[LEFT_ARM] = rf.find("left_arm_on").asInt16() == 1;
+    if(rf.check("head_on"))
+        m_parts_on[HEAD] = rf.find("left_arm_on").asInt16() == 1;
 
     //Config arms and head pose
     bool okConfig = rf.check("ACTIVE");
@@ -106,61 +123,70 @@ bool DisappointmentPose::configure(ResourceFinder &rf)
     else
     {
         Searchable& config = rf.findGroup("ACTIVE");
-        if(config.check("right_arm_pos")) 
+        if(config.check("right_arm_pos"))
             m_right_arm_pos.fromString(config.find("right_arm_pos").asString());
-        if(config.check("left_arm_pos")) 
+        if(config.check("left_arm_pos"))
             m_left_arm_pos.fromString(config.find("left_arm_pos").asString());
-        if(config.check("head_pos")) 
+        if(config.check("head_pos"))
             m_head_pos.fromString(config.find("head_pos").asString());
     }
 
-    
+
     // Polydriver config
     Property prop;
 
-    prop.put("device","remote_controlboard");
-    prop.put("local","/disappointmentPose/right_arm");
-    prop.put("remote","/"+robot+"/right_arm");
-    if (!m_drivers[0].open(prop))
+    if(m_parts_on[RIGHT_ARM])
     {
-        yCError(DISAPPOINTMENT_POSE,"Unable to connect to %s",("/"+robot+"/right_arm").c_str());
-        close();
-        return false;
+        prop.put("device","remote_controlboard");
+        prop.put("local","/disappointmentPose/right_arm");
+        prop.put("remote","/"+robot+"/right_arm");
+        if (!m_drivers[RIGHT_ARM].open(prop))
+        {
+            yCError(DISAPPOINTMENT_POSE,"Unable to connect to %s",("/"+robot+"/right_arm").c_str());
+            close();
+            return false;
+        }
+        m_drivers[RIGHT_ARM].view(m_iposctrl[RIGHT_ARM]);
+        m_drivers[RIGHT_ARM].view(m_ictrlmode[RIGHT_ARM]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/disappointmentPose/left_arm");
-    prop.put("remote","/"+robot+"/left_arm");
-    if (!m_drivers[1].open(prop))
+    if(m_parts_on[LEFT_ARM])
     {
-        yCError(DISAPPOINTMENT_POSE,"Unable to connect to %s",("/"+robot+"/left_arm").c_str());
-        close();
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/disappointmentPose/left_arm");
+        prop.put("remote","/"+robot+"/left_arm");
+        if (!m_drivers[LEFT_ARM].open(prop))
+        {
+            yCError(DISAPPOINTMENT_POSE,"Unable to connect to %s",("/"+robot+"/left_arm").c_str());
+            close();
+            return false;
+        }
+        m_drivers[LEFT_ARM].view(m_iposctrl[LEFT_ARM]);
+        m_drivers[LEFT_ARM].view(m_ictrlmode[LEFT_ARM]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/disappointmentPose/head");
-    prop.put("remote","/"+robot+"/head");
-    if (!m_drivers[2].open(prop))
+    if(m_parts_on[HEAD])
     {
-        yCError(DISAPPOINTMENT_POSE,"Unable to connect to %s",("/"+robot+"/head").c_str());
-        close();
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/disappointmentPose/head");
+        prop.put("remote","/"+robot+"/head");
+        if (!m_drivers[HEAD].open(prop))
+        {
+            yCError(DISAPPOINTMENT_POSE,"Unable to connect to %s",("/"+robot+"/head").c_str());
+            close();
+            return false;
+        }
+        m_drivers[HEAD].view(m_iposctrl[HEAD]);
+        m_drivers[HEAD].view(m_ictrlmode[HEAD]);
     }
 
-    m_drivers[0].view(m_iposctrl[0]);
-    m_drivers[1].view(m_iposctrl[1]);
-    m_drivers[2].view(m_iposctrl[2]);
-    if(!m_iposctrl[0] || !m_iposctrl[1] || !m_iposctrl[2] )
+    if((!m_iposctrl[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_iposctrl[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_iposctrl[HEAD] && m_parts_on[HEAD]) )
     {
         yCError(DISAPPOINTMENT_POSE,"Error opening iPositionControl interfaces. Devices not available");
         return false;
     }
 
-    m_drivers[0].view(m_ictrlmode[0]);
-    m_drivers[1].view(m_ictrlmode[1]);
-    m_drivers[2].view(m_ictrlmode[2]);
-    if(!m_ictrlmode[0] || !m_ictrlmode[1] || !m_ictrlmode[2])
+    if((!m_ictrlmode[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_ictrlmode[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_ictrlmode[HEAD] && m_parts_on[HEAD]))
     {
         yCError(DISAPPOINTMENT_POSE,"Error opening iControlMode interfaces. Devices not available");
         return false;
@@ -179,9 +205,9 @@ double DisappointmentPose::getPeriod()
     return m_period;
 }
 
-void DisappointmentPose::onRead(Bottle& b) 
+void DisappointmentPose::onRead(Bottle& b)
 {
-    
+
     yCInfo(DISAPPOINTMENT_POSE,"Received something. Not a good thing probably. Therefore I am setting a disappointment pose");
     setPosition();
 }
@@ -190,58 +216,67 @@ void DisappointmentPose::setPosCtrlMode(const int part)
 {
     int NUMBER_OF_JOINTS;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode[part]->setControlMode(i_joint, VOCAB_CM_POSITION); } 
+    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode[part]->setControlMode(i_joint, VOCAB_CM_POSITION); }
 }
 
 
 void DisappointmentPose::setPosition()
-{    
+{
     for (int i = 0 ; i<=2 ; i++)
     {
+        if(!m_parts_on[i])
+            continue;
         setPosCtrlMode(i);
     }
-    
+
     //right arm
-    m_iposctrl[0]->positionMove(0, m_right_arm_pos.get(0).asFloat32());
-    m_iposctrl[0]->positionMove(1, m_right_arm_pos.get(1).asFloat32());
-    m_iposctrl[0]->positionMove(2, m_right_arm_pos.get(2).asFloat32());
-    m_iposctrl[0]->positionMove(3, m_right_arm_pos.get(3).asFloat32());
-    m_iposctrl[0]->positionMove(4, m_right_arm_pos.get(4).asFloat32());
-    m_iposctrl[0]->positionMove(5, m_right_arm_pos.get(5).asFloat32());
-    m_iposctrl[0]->positionMove(6, m_right_arm_pos.get(6).asFloat32());
-    m_iposctrl[0]->positionMove(7, m_right_arm_pos.get(7).asFloat32());
-    
+    if(m_parts_on[RIGHT_ARM])
+    {
+        m_iposctrl[RIGHT_ARM]->positionMove(0, m_right_arm_pos.get(0).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(1, m_right_arm_pos.get(1).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(2, m_right_arm_pos.get(2).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(3, m_right_arm_pos.get(3).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(4, m_right_arm_pos.get(4).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(5, m_right_arm_pos.get(5).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(6, m_right_arm_pos.get(6).asFloat32());
+        m_iposctrl[RIGHT_ARM]->positionMove(7, m_right_arm_pos.get(7).asFloat32());
+    }
+
     //left arm
-    m_iposctrl[1]->positionMove(0, m_left_arm_pos.get(0).asFloat32());
-    m_iposctrl[1]->positionMove(1, m_left_arm_pos.get(1).asFloat32());
-    m_iposctrl[1]->positionMove(2, m_left_arm_pos.get(2).asFloat32());
-    m_iposctrl[1]->positionMove(3, m_left_arm_pos.get(3).asFloat32());
-    m_iposctrl[1]->positionMove(4, m_left_arm_pos.get(4).asFloat32());
-    m_iposctrl[1]->positionMove(5, m_left_arm_pos.get(5).asFloat32());
-    m_iposctrl[1]->positionMove(6, m_left_arm_pos.get(6).asFloat32());
-    m_iposctrl[1]->positionMove(7, m_left_arm_pos.get(7).asFloat32());
-    
+    if(m_parts_on[LEFT_ARM])
+    {
+        m_iposctrl[LEFT_ARM]->positionMove(0, m_left_arm_pos.get(0).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(1, m_left_arm_pos.get(1).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(2, m_left_arm_pos.get(2).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(3, m_left_arm_pos.get(3).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(4, m_left_arm_pos.get(4).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(5, m_left_arm_pos.get(5).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(6, m_left_arm_pos.get(6).asFloat32());
+        m_iposctrl[LEFT_ARM]->positionMove(7, m_left_arm_pos.get(7).asFloat32());
+    }
     //head
-    m_iposctrl[2]->positionMove(0, m_head_pos.get(0).asFloat32());
-    m_iposctrl[2]->positionMove(1, m_head_pos.get(1).asFloat32());
+    if(!m_parts_on[HEAD])
+        return;
+    m_iposctrl[HEAD]->positionMove(0, m_head_pos.get(0).asFloat32());
+    m_iposctrl[HEAD]->positionMove(1, m_head_pos.get(1).asFloat32());
 }
 
 
 bool DisappointmentPose::close()
 {
-    if(m_drivers[0].isValid())
+    if(m_drivers[RIGHT_ARM].isValid())
     {
-        m_drivers[0].close();
+        m_drivers[RIGHT_ARM].close();
     }
 
-    if(m_drivers[1].isValid())
+    if(m_drivers[LEFT_ARM].isValid())
     {
-        m_drivers[1].close();
+        m_drivers[LEFT_ARM].close();
     }
 
-    if(m_drivers[2].isValid())
+    if(m_drivers[HEAD].isValid())
     {
-        m_drivers[2].close();
+        m_drivers[HEAD].close();
     }
 
     if (!m_input_port.isClosed())
@@ -265,7 +300,7 @@ int main(int argc, char *argv[])
     rf.setDefaultContext("disappointmentPose");                 //overridden by --context parameter
     rf.configure(argc,argv);
     DisappointmentPose mod;
-    
+
     return mod.runModule(rf);
 }
 

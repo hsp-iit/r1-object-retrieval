@@ -33,7 +33,7 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
 {
     std::string robot=rf.check("robot",yarp::os::Value("cer")).asString();
 
-    if(rf.check("set_nav_pos_time"))  
+    if(rf.check("set_nav_pos_time"))
         m_time = rf.find("set_nav_pos_time").asFloat32()-0.5;
 
     bool okConfig = rf.check("SET_NAVIGATION_POSITION");
@@ -44,85 +44,107 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
     else
     {
         yarp::os::Searchable& config = rf.findGroup("SET_NAVIGATION_POSITION");
-        if(config.check("right_arm_pos")) 
+        if(config.check("right_arm_pos"))
             m_right_arm_pos.fromString(config.find("right_arm_pos").asString());
-        if(config.check("left_arm_pos")) 
+        if(config.check("left_arm_pos"))
             m_left_arm_pos.fromString(config.find("left_arm_pos").asString());
-        if(config.check("head_pos")) 
+        if(config.check("head_pos"))
             m_head_pos.fromString(config.find("head_pos").asString());
-        if(config.check("torso_pos")) 
+        if(config.check("torso_pos"))
             m_torso_pos.fromString(config.find("torso_pos").asString());
     }
 
-    
+    // --------- Parts enable/disable ---------- //
+    if(rf.check("right_arm"))
+        m_parts_on[RIGHT_ARM] = rf.find("right_arm_on").asInt16() == 1;
+    if(rf.check("left_arm"))
+        m_parts_on[LEFT_ARM] = rf.find("left_arm_on").asInt16() == 1;
+    if(rf.check("head"))
+        m_parts_on[HEAD] = rf.find("head_on").asInt16() == 1;
+    if(rf.check("torso"))
+        m_parts_on[TORSO] = rf.find("torso_on").asInt16() == 1;
+
+
     // ----------- Polydriver config ----------- //
     yarp::os::Property prop;
 
-    prop.put("device","remote_controlboard");
-    prop.put("local","/goAndFindIt/getReadyToNavRArm");
-    prop.put("remote","/"+robot+"/right_arm");
-    if (!m_drivers[0].open(prop))
+    if(m_parts_on[RIGHT_ARM])
     {
-        yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/right_arm").c_str());
-        close();
-        return false;
+        prop.put("device","remote_controlboard");
+        prop.put("local","/goAndFindIt/getReadyToNavRArm");
+        prop.put("remote","/"+robot+"/right_arm");
+        if (!m_drivers[RIGHT_ARM].open(prop))
+        {
+            yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/right_arm").c_str());
+            close();
+            return false;
+        }
+        m_drivers[RIGHT_ARM].view(m_iposctrl[RIGHT_ARM]);
+        m_drivers[RIGHT_ARM].view(m_ictrlmode[RIGHT_ARM]);
+        m_drivers[RIGHT_ARM].view(m_iencoder[RIGHT_ARM]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/goAndFindIt/getReadyToNavLArm");
-    prop.put("remote","/"+robot+"/left_arm");
-    if (!m_drivers[1].open(prop))
+    if(m_parts_on[LEFT_ARM])
     {
-        yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/left_arm").c_str());
-        close();
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/goAndFindIt/getReadyToNavLArm");
+        prop.put("remote","/"+robot+"/left_arm");
+        if (!m_drivers[LEFT_ARM].open(prop))
+        {
+            yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/left_arm").c_str());
+            close();
+            return false;
+        }
+        m_drivers[LEFT_ARM].view(m_iposctrl[LEFT_ARM]);
+        m_drivers[LEFT_ARM].view(m_ictrlmode[LEFT_ARM]);
+        m_drivers[LEFT_ARM].view(m_iencoder[LEFT_ARM]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/goAndFindIt/getReadyToNavHead");
-    prop.put("remote","/"+robot+"/head");
-    if (!m_drivers[2].open(prop))
+    if(m_parts_on[HEAD])
     {
-        yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/head").c_str());
-        close();
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/goAndFindIt/getReadyToNavHead");
+        prop.put("remote","/"+robot+"/head");
+        if (!m_drivers[HEAD].open(prop))
+        {
+            yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/head").c_str());
+            close();
+            return false;
+        }
+        m_drivers[HEAD].view(m_iposctrl[HEAD]);
+        m_drivers[HEAD].view(m_ictrlmode[HEAD]);
+        m_drivers[HEAD].view(m_iencoder[HEAD]);
     }
-    prop.clear();
-    prop.put("device","remote_controlboard");
-    prop.put("local","/goAndFindIt/getReadyToNavTorso");
-    prop.put("remote","/"+robot+"/torso");
-    if (!m_drivers[3].open(prop))
+    if(m_parts_on[TORSO])
     {
-        yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/torso").c_str());
-        close();
-        return false;
+        prop.clear();
+        prop.put("device","remote_controlboard");
+        prop.put("local","/goAndFindIt/getReadyToNavTorso");
+        prop.put("remote","/"+robot+"/torso");
+        if (!m_drivers[TORSO].open(prop))
+        {
+            yCError(GET_READY_TO_NAV,"Unable to connect to %s",("/"+robot+"/torso").c_str());
+            close();
+            return false;
+        }
+        m_drivers[TORSO].view(m_iposctrl[TORSO]);
+        m_drivers[TORSO].view(m_ictrlmode[TORSO]);
+        m_drivers[TORSO].view(m_iencoder[TORSO]);
     }
 
-    m_drivers[0].view(m_iposctrl[0]);
-    m_drivers[1].view(m_iposctrl[1]);
-    m_drivers[2].view(m_iposctrl[2]);
-    m_drivers[3].view(m_iposctrl[3]);
-    if(!m_iposctrl[0] || !m_iposctrl[1] || !m_iposctrl[2] || !m_iposctrl[3])
+    if((!m_iposctrl[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_iposctrl[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_iposctrl[HEAD] && m_parts_on[HEAD]) || (!m_iposctrl[TORSO] && m_parts_on[TORSO]))
     {
         yCError(GET_READY_TO_NAV,"Error opening iPositionControl interfaces. Devices not available");
         return false;
     }
 
-    m_drivers[0].view(m_ictrlmode[0]);
-    m_drivers[1].view(m_ictrlmode[1]);
-    m_drivers[2].view(m_ictrlmode[2]);
-    m_drivers[3].view(m_ictrlmode[3]);
-    if(!m_ictrlmode[0] || !m_ictrlmode[1] || !m_ictrlmode[2] || !m_ictrlmode[3])
+    if((!m_ictrlmode[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_ictrlmode[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_ictrlmode[HEAD] && m_parts_on[HEAD]) || (!m_ictrlmode[TORSO] && m_parts_on[TORSO]))
     {
         yCError(GET_READY_TO_NAV,"Error opening iControlMode interfaces. Devices not available");
         return false;
     }
 
-    m_drivers[0].view(m_iencoder[0]);
-    m_drivers[1].view(m_iencoder[1]);
-    m_drivers[2].view(m_iencoder[2]);
-    m_drivers[3].view(m_iencoder[3]);
-    if(!m_iencoder[0] || !m_iencoder[1] || !m_iencoder[2] || !m_iencoder[3])
+    if((!m_iencoder[RIGHT_ARM] && m_parts_on[RIGHT_ARM]) || (!m_iencoder[LEFT_ARM] && m_parts_on[LEFT_ARM]) || (!m_iencoder[HEAD] && m_parts_on[HEAD]) || (!m_iencoder[TORSO] && m_parts_on[TORSO]))
     {
         yCError(GET_READY_TO_NAV,"Error opening IEncoders interfaces. Devices not available");
         return false;
@@ -134,40 +156,46 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
 
 bool GetReadyToNav::setPosCtrlMode(const int part)
 {
+    if(!m_parts_on[part])
+    {
+        yCWarning(GET_READY_TO_NAV, "Part %d is not available", part);
+        return true;
+    }
+
     int NUMBER_OF_JOINTS;
     std::vector<int> joints;
     std::vector<int> modes;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
+    {
         joints.push_back(i_joint);
         modes.push_back(VOCAB_CM_POSITION);
-    } 
+    }
 
     //need to stop the arm controllers so that the control mode of the arms can be set to Position
     std::string right_arm_controller_port{"/cer_reaching-controller/right/rpc"};
     std::string left_arm_controller_port{"/cer_reaching-controller/left/rpc"};
-    yarp::os::Bottle stop_command{"stop"}; 
-    if (yarp::os::Network::exists(right_arm_controller_port)) 
+    yarp::os::Bottle stop_command{"stop"};
+    if (yarp::os::Network::exists(right_arm_controller_port))
     {
         yarp::os::RpcClient tmpRightArmRPC;
         tmpRightArmRPC.open("/tmpRightArmRPC");
-        if (yarp::os::Network::connect(tmpRightArmRPC.getName(), right_arm_controller_port)) 
+        if (yarp::os::Network::connect(tmpRightArmRPC.getName(), right_arm_controller_port))
         {
             tmpRightArmRPC.write(stop_command);
             yarp::os::Network::disconnect(tmpRightArmRPC.getName(), right_arm_controller_port);
-        } 
+        }
         tmpRightArmRPC.close();
     }
-    if (yarp::os::Network::exists(left_arm_controller_port)) 
+    if (yarp::os::Network::exists(left_arm_controller_port))
     {
         yarp::os::RpcClient tmpLeftArmRPC;
         tmpLeftArmRPC.open("/tmpLeftArmRPC");
-        if (yarp::os::Network::connect(tmpLeftArmRPC.getName(), left_arm_controller_port)) 
+        if (yarp::os::Network::connect(tmpLeftArmRPC.getName(), left_arm_controller_port))
         {
             tmpLeftArmRPC.write(stop_command);
             yarp::os::Network::disconnect(tmpLeftArmRPC.getName(), left_arm_controller_port);
-        } 
+        }
         tmpLeftArmRPC.close();
     }
 
@@ -180,11 +208,22 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
         if(modes[i] != VOCAB_CM_POSITION)
         {
             std::string part_name="";
-            if(part==0) part_name = "right_arm";
-            else if(part==1) part_name = "left_arm";
-            else if(part==2) part_name = "head";
-            else if(part==3) part_name = "torso";
-            
+            switch(part){
+                case RIGHT_ARM:
+                    part_name = "right_arm";
+                    break;
+                case LEFT_ARM:
+                    part_name = "left_arm";
+                    break;
+                case HEAD:
+                    part_name = "head";
+                    break;
+                case TORSO:
+                    part_name = "torso";
+                    break;
+                default:
+                    break;
+            }
             yCError(GET_READY_TO_NAV) << "Joint" << i << "not in position mode for part:" << part_name;
             return false;
         }
@@ -196,30 +235,45 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
 
 bool GetReadyToNav::setJointsSpeed(const int part)
 {
+    if(!m_parts_on[part])
+    {
+        yCWarning(GET_READY_TO_NAV, "Part %d is not available", part);
+        return true;
+    }
+
     int NUMBER_OF_JOINTS;
     std::vector<int>    joints;
     std::vector<double> speeds;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
+    {
         double start, goal;
         m_iencoder[part]->getEncoder(i_joint,&start);
 
-        if (part == 0)
-            goal = m_right_arm_pos.get(i_joint).asFloat32();
-        else if (part == 1)
-            goal = m_left_arm_pos.get(i_joint).asFloat32();
-        else if (part == 2)
-            goal = m_head_pos.get(i_joint).asFloat32();
-        else if (part == 3)
-            goal = m_torso_pos.get(i_joint).asFloat32();
+        switch(part)
+        {
+            case RIGHT_ARM:
+                goal = m_right_arm_pos.get(i_joint).asFloat32();
+                break;
+            case LEFT_ARM:
+                goal = m_left_arm_pos.get(i_joint).asFloat32();
+                break;
+            case HEAD:
+                goal = m_head_pos.get(i_joint).asFloat32();
+                break;
+            case TORSO:
+                goal = m_torso_pos.get(i_joint).asFloat32();
+                break;
+            default:
+                break;
+        }
 
         double disp = start - goal;
         if(disp<0.0) disp *= -1;
 
         joints.push_back(i_joint);
         speeds.push_back(disp/m_time);
-    } 
+    }
 
     return m_iposctrl[part]->setRefSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
 }
@@ -227,31 +281,44 @@ bool GetReadyToNav::setJointsSpeed(const int part)
 
 bool GetReadyToNav::movePart(const int part)
 {
+    if(!m_parts_on[part])
+    {
+        yCWarning(GET_READY_TO_NAV, "Part %d is not available", part);
+        return true;
+    }
+
     int NUMBER_OF_JOINTS;
     std::vector<int>    joints;
     std::vector<double> positions;
     m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
     for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-    { 
+    {
         joints.push_back(i_joint);
 
-        if (part == 0)
-            positions.push_back(m_right_arm_pos.get(i_joint).asFloat32());
-        else if (part == 1)
-            positions.push_back(m_left_arm_pos.get(i_joint).asFloat32());
-        else if (part == 2)
-            positions.push_back(m_head_pos.get(i_joint).asFloat32());
-        else if (part == 3)
-            positions.push_back(m_torso_pos.get(i_joint).asFloat32());
-
-    } 
+        switch(part){
+            case RIGHT_ARM:
+                positions.push_back(m_right_arm_pos.get(i_joint).asFloat32());
+                break;
+            case LEFT_ARM:
+                positions.push_back(m_left_arm_pos.get(i_joint).asFloat32());
+                break;
+            case HEAD:
+                positions.push_back(m_head_pos.get(i_joint).asFloat32());
+                break;
+            case TORSO:
+                positions.push_back(m_torso_pos.get(i_joint).asFloat32());
+                break;
+            default:
+                break;
+        }
+    }
 
     return m_iposctrl[part]->positionMove(NUMBER_OF_JOINTS, joints.data(), positions.data());
 }
 
 
 bool GetReadyToNav::navPosition()
-{    
+{
     //set all joints in position control mode
     for (int i = 0 ; i<=3 ; i++)
     {
@@ -261,7 +328,7 @@ bool GetReadyToNav::navPosition()
             return false;
         }
     }
-    
+
     //set the joints' speeds to get to final position at the same time
     for (int i = 0 ; i<=3 ; i++)
     {
@@ -272,8 +339,8 @@ bool GetReadyToNav::navPosition()
         }
     }
 
-    yCInfo(GET_READY_TO_NAV, "Setting navigation position");  
-      
+    yCInfo(GET_READY_TO_NAV, "Setting navigation position");
+
     for (int i = 0 ; i<=3 ; i++)
     {
         if(!movePart(i))
@@ -291,12 +358,17 @@ bool GetReadyToNav::navPosition()
 bool GetReadyToNav::areJointsOk()
 {
     int mode=0;
-    for (int i = 0 ; i<4 ; i++) 
+    for (int i = 0 ; i<4 ; i++)
     {
+        if(!m_parts_on[i])
+        {
+            yCWarning(GET_READY_TO_NAV, "Part %d is not available", i);
+            continue;
+        }
         int NUMBER_OF_JOINTS;
         m_iposctrl[i]->getAxes(&NUMBER_OF_JOINTS);
         for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
-        { 
+        {
             m_ictrlmode[i]->getControlMode(i_joint, &mode);
             if (mode == VOCAB_CM_HW_FAULT)
             {
@@ -316,24 +388,24 @@ bool GetReadyToNav::areJointsOk()
 
 void GetReadyToNav::close()
 {
-    if(m_drivers[0].isValid())
+    if(m_drivers[RIGHT_ARM].isValid())
     {
-        m_drivers[0].close();
+        m_drivers[RIGHT_ARM].close();
     }
 
-    if(m_drivers[1].isValid())
+    if(m_drivers[LEFT_ARM].isValid())
     {
-        m_drivers[1].close();
+        m_drivers[LEFT_ARM].close();
     }
 
-    if(m_drivers[2].isValid())
+    if(m_drivers[HEAD].isValid())
     {
-        m_drivers[2].close();
+        m_drivers[HEAD].close();
     }
 
-    if(m_drivers[3].isValid())
+    if(m_drivers[TORSO].isValid())
     {
-        m_drivers[3].close();
+        m_drivers[TORSO].close();
     }
 }
 
