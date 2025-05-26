@@ -1,0 +1,40 @@
+<application>
+  <name>Test_lobby</name>
+
+
+  <dependencies>
+  </dependencies>
+
+
+  <!-- Modules -->
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context raise_llm --from lobbyChat.ini</parameters>
+    <node>console-llm</node>
+  </module>
+
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context raise_llm --from lobbyReplierChat.ini</parameters>
+    <node>console-llm</node>
+  </module>
+
+  <module>
+    <name>LLMStream</name>
+    <parameters>--context raise_llm --from lobbyStream.ini</parameters>
+    <node>console-llm</node>
+  </module>
+
+  <module>
+    <name>LLMStream</name>
+    <parameters>--context raise_llm --from lobbyReplierStream.ini</parameters>
+    <node>console-llm</node>
+  </module>
+
+  <connection>
+    <from>/lobby_stream/LLMStream/text:o</from>
+    <to>/lobbyRpl_stream/LLMStream/text:i</to>
+    <protocol>fast-tcp</protocol>
+  </connection>
+
+</application>
