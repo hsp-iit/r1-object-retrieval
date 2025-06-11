@@ -1,0 +1,1 @@
+/usr/local/src/robot/tour-guide-robot/app/navigation2/scripts/stop.sh

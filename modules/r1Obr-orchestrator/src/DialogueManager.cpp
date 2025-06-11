@@ -196,6 +196,9 @@ void DialogueManager::onRead(Bottle& b)
 // ****************************************************** //
 void DialogueManager::interactWithDialogMng(const std::string& msgIn)
 {
+    yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
+    yCInfo(DIALOG_MNG_ORCHESTRATOR) << "Dialog got:" << msgIn;
+    yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
     if (msgIn == "")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Empty message in received");
@@ -220,13 +223,13 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             break;
         }
         case dlgmsg::CmdTypes::SAY: {
-            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "SAY is the way";
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "SAY is the way" << msgIn;
             std::string toSay = replyMsg.getParams()[0];
             speak(toSay);
             break;
         }
         default: {
-            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way";
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;
             toOrchestrator = fromMsgToBottle(replyMsg);
             m_orchestratorRPCPort.write(toOrchestrator, reply);
             dlgmsg::DialogueMessage orchMsg = replyMsg;
@@ -286,7 +289,7 @@ dlgmsg::DialogueMessage DialogueManager::coreLLM(const std::string& msgIn)
         return replyMsg;
     }
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "Contacting LLM. LLM answered: %s", answer.content.c_str());
-    
+
     nlohmann::json replyJson = nlohmann::json::parse(answer.content);
     dlgmsg::from_json(replyJson, replyMsg);
 
@@ -307,8 +310,8 @@ void DialogueManager::speak(const std::string& toSay)
     }
 
     //close microphone
-    yarp::os::Bottle req{"stopRecording_RPC"};
-    m_audiorecorderRPCPort.write(req);
+    // yarp::os::Bottle req{"stopRecording_RPC"};
+    // m_audiorecorderRPCPort.write(req);
 
     //speak
     m_speaker->say(toSay);
@@ -331,10 +334,10 @@ void DialogueManager::speak(const std::string& toSay)
         Time::delay(0.1);
     }
 
-    //re-open microphone
-    req.clear();
-    req.addString("startRecording_RPC");
-    m_audiorecorderRPCPort.write(req);
+    // //re-open microphone
+    // req.clear();
+    // req.addString("startRecording_RPC");
+    // m_audiorecorderRPCPort.write(req);
 }
 
 

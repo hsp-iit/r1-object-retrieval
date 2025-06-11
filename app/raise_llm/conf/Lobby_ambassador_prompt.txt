@@ -17,9 +17,6 @@ Rule 3) If the user asks you to momentarily pause your task, you'll have:
 Rule 4) If the user asks you to resume your previous task, you will have:
         "m_type"="resume"
         "m_params":[]
-Rule 5) If the user asks your current working status, you'll have:
-        "m_type"="status"
-        "m_params"=[]
 Rule 6) If the user asks you to go into the navigation position, you'll have:
         "m_type"="navpos"
         "m_params"=[]
