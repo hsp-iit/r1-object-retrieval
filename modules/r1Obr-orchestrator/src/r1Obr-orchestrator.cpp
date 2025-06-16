@@ -319,7 +319,12 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
     else if(cmd=="guide")
     {
         string location_name = request.get(1).asString();
-        m_inner_thread->guide(location_name);
+        if(!m_inner_thread->guide(location_name))
+        {
+            reply.addVocab32(Vocab32::encode("nack"));
+            yCError(R1OBR_ORCHESTRATOR,"Error: cannot guide to location '%s'", location_name.c_str());
+            return false;
+        }
         reply.addString("guiding to '" + location_name + "'");
     }
     else if(cmd=="directions")

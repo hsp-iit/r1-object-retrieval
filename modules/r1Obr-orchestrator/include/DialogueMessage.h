@@ -180,7 +180,6 @@ public:
 };
 
 inline void from_json(const json& j, DialogueMessage& msg) {
-    printf("Ciaomeeeerdeeeeee");
     CmdTypes type;
     j.at("m_type").get_to(type);
     msg.setType(type);

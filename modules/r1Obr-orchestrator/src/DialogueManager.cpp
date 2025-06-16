@@ -232,9 +232,17 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;
             toOrchestrator = fromMsgToBottle(replyMsg);
             m_orchestratorRPCPort.write(toOrchestrator, reply);
+            if (!reply.isNull() && reply.get(0).asString() == "nack")
+            {
+                yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Orchestrator returned NACK.");
+                return;
+            }
             dlgmsg::DialogueMessage orchMsg = replyMsg;
             orchMsg.setQuery(msgIn);
             orchMsg.setComment(reply.toString());
+            yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
+            yCInfo(DIALOG_MNG_ORCHESTRATOR) << "Replier from dialoguemanager" << msgIn;
+            yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
             interactWithReplier(orchMsg);
             break;
         }

@@ -873,6 +873,9 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     };
     dlgmsg::DialogueMessage toReplier{dlgmsg::CmdTypes::SAY, {str}, m_dialogueManager->getLanguage()};
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "+++++++++++++++++++++++++++++++++++++++++++++++++++");
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Replier from orchestrator thread: %s", str.c_str());
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "+++++++++++++++++++++++++++++++++++++++++++++++++++");
     m_dialogueManager->interactWithReplier(toReplier,true);
 
 
