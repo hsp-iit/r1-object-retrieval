@@ -338,6 +338,7 @@ void OrchestratorThread::run()
 
             if (m_status == R1_GOING) //in case of external stop
             {
+
                 askChatBotToSpeak(go_target_reached);
                 m_status = R1_IDLE;
             }
@@ -790,13 +791,16 @@ void OrchestratorThread::setEmotion()
 bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
 {
     string str, feedback{""};
+    dlgmsg::CmdTypes cmdType;
     switch (stat)
     {
     case object_found_maybe:
         str = "object_found_maybe";
+        cmdType = dlgmsg::CmdTypes::SAY;
         break;
     case object_found_true:
         str = "object_found_true";
+        cmdType = dlgmsg::CmdTypes::SUCCESS;
         if(m_sn_language == "ita")
             feedback = "Ho trovato " + m_object + "! Hai bisogno di qualcos'altro?";
         else if(m_sn_language == "eng")
@@ -804,9 +808,11 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case object_found_false:
         str = "object_found_false";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         break;
     case object_not_found:
         str = "object_not_found";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Non ho trovato " + m_object + "!";
         else if(m_sn_language == "eng")
@@ -814,6 +820,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case something_bad_happened:
         str = "something_bad_happened";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "Ho riscontrato un errore. Ti chiedo di aspettare qualche minuto per sistemare il problema";
         else if(m_sn_language == "eng")
@@ -821,6 +828,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case location_not_valid:
         str = "location_not_valid";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "La posizione specificata non è valida.";
         else if(m_sn_language == "eng")
@@ -828,6 +836,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case gafi_idle:
         str = "gafi_idle";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "Il modulo di ricerca, go and find it, pare essere inattivo. Posso aiutarti in altro modo?";
         else if(m_sn_language == "eng")
@@ -835,6 +844,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case go_target_reached:
         str = "go_target_reached";
+        cmdType = dlgmsg::CmdTypes::SUCCESS;
         if(m_sn_language == "ita")
             feedback = "Sono arrivato a destinazione.";
         else if(m_sn_language == "eng")
@@ -842,6 +852,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case go_target_not_reached:
         str = "destination_not_reached";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Non sono riuscito a raggiungere la mia destinazione.";
         else if(m_sn_language == "eng")
@@ -849,6 +860,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case hardware_failure:
         str = "hardware_failure";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "Ho riscontrato un problema al mio hardware. Ti chiedo di aspettare qualche minuto per sistemare il problema";
         else if(m_sn_language == "eng")
@@ -856,12 +868,15 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case nav_pos_fail:
         str = "nav_pos_fail";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "Mi é stato impossibile assumere la posizione di navigazione";
         else if(m_sn_language == "eng")
             feedback = "Could not set the navigation position";
         break;
     case cmd_unknown:
+        str = "cmd_unknown";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "Chiedo perdono, non ho capito il comando";
         else if(m_sn_language == "eng")
@@ -872,7 +887,10 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         feedback = "no command";
         break;
     };
-    dlgmsg::DialogueMessage toReplier{dlgmsg::CmdTypes::SAY, {str}, m_dialogueManager->getLanguage()};
+    std::vector<std::string> params{};
+    if(cmdType==dlgmsg::CmdTypes::SAY)
+        params.push_back(str);
+    dlgmsg::DialogueMessage toReplier{cmdType, params, m_dialogueManager->getLanguage()};
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "+++++++++++++++++++++++++++++++++++++++++++++++++++");
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Replier from orchestrator thread: %s", str.c_str());
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "+++++++++++++++++++++++++++++++++++++++++++++++++++");

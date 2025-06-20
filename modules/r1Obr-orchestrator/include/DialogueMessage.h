@@ -42,6 +42,8 @@ enum CmdTypes
     NAVPOS,
     GUIDE,
     DIRECTIONS,
+    SUCCESS,
+    FAILED,
     INVALID = -1
 };
 
@@ -58,6 +60,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, "invalid"},
                                         {NAVPOS, "navpos"},
                                         {GUIDE, "guide"},
                                         {DIRECTIONS, "directions"},
+                                        {SUCCESS, "success"},
+                                        {FAILED, "failed"},
                                         {SAY, "say"}})
 
 class DialogueMessage

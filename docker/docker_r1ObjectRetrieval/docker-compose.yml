@@ -12,6 +12,7 @@ x-general: &general
     - R1_OBR_BRANCH=${R1_OBR_BRANCH:-master}
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "$XAUTHORITY:/home/user1/.Xauthority:ro"  # mount the auth file
     - "/etc/hosts:/etc/hosts"
     - "${HOME}/.config/yarp:/home/user1/.config/yarp"
     - "./entrypoints/entrypoint_light.sh:/home/user1/config/.entrypoint_light.sh"
