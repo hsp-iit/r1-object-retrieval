@@ -1,0 +1,363 @@
+{
+    "Rooms": [
+        "elevators",
+        "entrance",
+        "laboratory",
+        "del_bue_office",
+        "beltran_office",
+        "sofa_area",
+        "bathrooms",
+        "break_area"
+    ],
+    "Junctions": [
+        "main_door",
+        "bathroom_hallway_entrance",
+        "bathrooms_deviation",
+        "bathroom_hallway_laboratory",
+        "laboratory_lobby_entrance",
+        "laboratory_entrance",
+        "offices_deviation",
+        "del_bue_beltran_crossroads",
+        "sofa_area_junction",
+        "break_area_junction"
+    ],
+    "hallways": [
+        "h1",
+        "h2.1",
+        "h2.2",
+        "h3",
+        "h4.1",
+        "h4.2",
+        "h4.3",
+        "h4.4",
+        "h5",
+        "h6",
+        "h7"
+    ],
+    "connections": [
+        {
+            "elevators": [
+                {
+                    "to": "entrance",
+                    "through": [
+                        {
+                            "passage":"main_door",
+                            "direction": "forward"
+                        }
+                    ]
+                }
+            ],
+            "entrance": [
+                {
+                    "to": "elevators",
+                    "through": [
+                        {
+                            "passage":"main_door",
+                            "direction": "forward"
+                        }
+                    ]
+                },
+                {
+                    "to": "bathroom_hallway_entrance",
+                    "through": [
+                        {
+                            "passage":"h1",
+                            "direction": "left"
+                        }
+                    ]
+                }
+            ],
+            "bathroom_hallway_entrance": [
+                {
+                    "to": "entrance",
+                    "through": [
+                        {
+                            "passage":"h1",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "bathrooms_deviation",
+                    "through": [
+                        {
+                            "passage":"h2",
+                            "direction": "right"
+                        }
+                    ]
+                }
+            ],
+            "bathrooms_deviation": [
+                {
+                    "to": "bathroom_hallway_entrance",
+                    "through": [
+                        {
+                            "passage":"h2",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "bathrooms",
+                    "through": [
+                        {
+                            "passage":"h3",
+                            "direction": "right"
+                        }
+                    ]
+                },
+                {
+                    "to": "bathroom_hallway_laboratory",
+                    "through": [
+                        {
+                            "passage":"h2.2",
+                            "direction": "forward"
+                        }
+                    ]
+                }
+            ],
+            "bathrooms": [
+                {
+                    "to": "bathrooms_deviation",
+                    "through": [
+                        {
+                            "passage":"h3",
+                            "direction": "backward"
+                        }
+                    ]
+                }
+            ],
+            "bathroom_hallway_laboratory": [
+                {
+                    "to": "bathrooms_deviation",
+                    "through": [
+                        {
+                            "passage":"h2.2",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "laboratory_lobby_entrance",
+                    "through": [
+                        {
+                            "passage":"h4.1",
+                            "direction": "left"
+                        }
+                    ]
+                },
+                {
+                    "to": "offices_deviation",
+                    "through": [
+                        {
+                            "passage":"h4.2",
+                            "direction": "right"
+                        }
+                    ]
+                }
+            ],
+            "laboratory_lobby_entrance": [
+                {
+                    "to": "bathroom_hallway_laboratory",
+                    "through": [
+                        {
+                            "passage":"h4.1",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "laboratory_entrance",
+                    "through": [
+                        {
+                            "passage":"h5",
+                            "direction": "right"
+                        }
+                    ]
+                }
+            ],
+            "laboratory_entrance": [
+                {
+                    "to": "laboratory_lobby_entrance",
+                    "through": [
+                        {
+                            "passage":"h5",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "laboratory",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "right"
+                        }
+                    ]
+                }
+            ],
+            "laboratory": [
+                {
+                    "to": "laboratory_entrance",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "backward"
+                        }
+                    ]
+                }
+            ],
+            "offices_deviation": [
+                {
+                    "to": "bathroom_hallway_laboratory",
+                    "through": [
+                        {
+                            "passage":"h4.2",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "del_bue_beltran_crossroads",
+                    "through": [
+                        {
+                            "passage":"h6",
+                            "direction": "left"
+                        }
+                    ]
+                },
+                {
+                    "to": "sofa_area_junction",
+                    "through": [
+                        {
+                            "passage":"h4.3",
+                            "direction": "forward"
+                        }
+                    ]
+                }
+            ],
+            "del_bue_beltran_crossroads": [
+                {
+                    "to": "offices_deviation",
+                    "through": [
+                        {
+                            "passage":"h6",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "del_bue_office",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "left"
+                        }
+                    ]
+                },
+                {
+                    "to": "beltran_office",
+                    "through": [
+                        {
+                            "passage":"h7",
+                            "direction": "right"
+                        }
+                    ]
+                }
+            ],
+            "del_bue_office": [
+                {
+                    "to": "del_bue_beltran_crossroads",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "backward"
+                        }
+                    ]
+                }
+            ],
+            "beltran_office": [
+                {
+                    "to": "del_bue_beltran_crossroads",
+                    "through": [
+                        {
+                            "passage":"h7",
+                            "direction": "backward"
+                        }
+                    ]
+                }
+            ],
+            "sofa_area_junction": [
+                {
+                    "to": "offices_deviation",
+                    "through": [
+                        {
+                            "passage":"h4.3",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "break_area_junction",
+                    "through": [
+                        {
+                            "passage":"h4.4",
+                            "direction": "forward"
+                        }
+                    ]
+                },
+                {
+                    "to": "sofa_area",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "left"
+                        }
+                    ]
+                }
+            ],
+            "break_area_junction": [
+                {
+                    "to": "sofa_area_junction",
+                    "through": [
+                        {
+                            "passage":"h4.4",
+                            "direction": "backward"
+                        }
+                    ]
+                },
+                {
+                    "to": "break_area",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "right"
+                        }
+                    ]
+                }
+            ],
+            "sofa_area": [
+                {
+                    "to": "sofa_area_junction",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "backward"
+                        }
+                    ]
+                }
+            ],
+            "break_area": [
+                {
+                    "to": "break_area_junction",
+                    "through": [
+                        {
+                            "passage":"direct",
+                            "direction": "backward"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

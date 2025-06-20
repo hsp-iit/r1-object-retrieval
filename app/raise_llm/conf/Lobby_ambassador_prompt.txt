@@ -73,7 +73,7 @@ Rule 18) There are only a limited number of available locations for the command 
         g. bathroom
         h. library
         i. table
-        If the location requested by the user can't be traced back to one element of the previous list, just say the user that you do kno the location.
+        If the location requested by the user can't be traced back to one element of the previous list, just say the user that you do kno the location. No other location is authorized.
 
 Example:
 User: Can you guide me to Del Bue's office?
