@@ -50,7 +50,7 @@
    <!-- Speech transcription -->
    <module>
       <name>yarprobotinterface</name>
-      <parameters>--context speechPipeline --from azureTranscription.ini</parameters>
+      <parameters>--context raise_llm --from azureNorwayTranscription.ini</parameters>
       <node>console-llm</node>
    </module>
 
