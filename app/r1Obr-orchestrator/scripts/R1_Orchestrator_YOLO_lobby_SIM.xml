@@ -63,7 +63,7 @@
 
    <module>
       <name>r1Obr-orchestrator</name>
-      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_noContinuousSearch.ini</parameters>
+      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_SIM.ini</parameters>
       <node>console</node>
    </module>
 
