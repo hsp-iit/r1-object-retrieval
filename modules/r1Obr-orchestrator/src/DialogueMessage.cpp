@@ -67,6 +67,7 @@ std::string dlgmsg::DialogueMessage::getTypeAsString() const
             {CmdTypes::SAY, "say"},
             {CmdTypes::SUCCESS, "success"},
             {CmdTypes::FAILED, "failed"},
+            {CmdTypes::FAREWELL, "farewell"},
             {CmdTypes::INVALID, "invalid"}
     };
 

@@ -30,6 +30,7 @@ OrchestratorThread::OrchestratorThread(yarp::os::ResourceFinder &rf):
     m_where_specified(false),
     m_object_found(false),
     m_object_not_found(false),
+    m_going_home(false),
     m_going(false)
 {
     //Defaults
@@ -338,8 +339,14 @@ void OrchestratorThread::run()
 
             if (m_status == R1_GOING) //in case of external stop
             {
-
-                askChatBotToSpeak(go_target_reached);
+                if(m_going_home)
+                {
+                    m_going_home = false;
+                }
+                else
+                {
+                    askChatBotToSpeak(go_target_reached);
+                }
                 m_status = R1_IDLE;
             }
         }
@@ -569,6 +576,7 @@ string OrchestratorThread::resetHome()
 
     if (setNavigationPosition())
     {
+        m_going_home = true;
         m_status = R1_GOING;
         m_nav2loc->goHome();
     }

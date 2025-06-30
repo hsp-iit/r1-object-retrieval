@@ -282,6 +282,8 @@ yarp::os::Bottle DialogueManager::fromMsgToBottle(const dlgmsg::DialogueMessage&
     toOrchestrator.clear();
     toOrchestrator.fromString(command+args);
 
+    yCWarning(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::fromMsgToBottle. Bottle toOrchestrator: %s", toOrchestrator.toString().c_str());
+
     return toOrchestrator;
 }
 

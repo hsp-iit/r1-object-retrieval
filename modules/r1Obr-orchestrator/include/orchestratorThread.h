@@ -112,6 +112,7 @@ private:
     bool                    m_object_found;
     bool                    m_object_not_found;
     bool                    m_going;
+    bool                    m_going_home;
     string                  m_map_prefix;
 
     ResourceFinder&         m_rf;

@@ -52,18 +52,18 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
             m_head_pos.fromString(config.find("head_pos").asString());
         if(config.check("torso_pos"))
             m_torso_pos.fromString(config.find("torso_pos").asString());
+        // --------- Parts enable/disable ---------- //
+        if(config.check("right_arm_on"))
+            m_parts_on[RIGHT_ARM] = config.find("right_arm_on").asInt16() == 1;
+        if(config.check("left_arm_on"))
+            m_parts_on[LEFT_ARM] = config.find("left_arm_on").asInt16() == 1;
+        if(config.check("head_on"))
+            m_parts_on[HEAD] = config.find("head_on").asInt16() == 1;
+        if(config.check("torso_on"))
+            m_parts_on[TORSO] = config.find("torso_on").asInt16() == 1;
+        yCWarning(GET_READY_TO_NAV,"Parts enabled: right_arm=%d, left_arm=%d, head=%d, torso=%d",
+                m_parts_on[RIGHT_ARM], m_parts_on[LEFT_ARM], m_parts_on[HEAD], m_parts_on[TORSO]);
     }
-
-    // --------- Parts enable/disable ---------- //
-    if(rf.check("right_arm"))
-        m_parts_on[RIGHT_ARM] = rf.find("right_arm_on").asInt16() == 1;
-    if(rf.check("left_arm"))
-        m_parts_on[LEFT_ARM] = rf.find("left_arm_on").asInt16() == 1;
-    if(rf.check("head"))
-        m_parts_on[HEAD] = rf.find("head_on").asInt16() == 1;
-    if(rf.check("torso"))
-        m_parts_on[TORSO] = rf.find("torso_on").asInt16() == 1;
-
 
     // ----------- Polydriver config ----------- //
     yarp::os::Property prop;

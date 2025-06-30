@@ -244,6 +244,10 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
         {
             reply.addString(m_inner_thread->resetHome());
         }
+        else if (cmd=="farewell")
+        {
+            reply.addString(m_inner_thread->resetHome());
+        }
         else if (cmd=="resume")
         {
             reply.addString(m_inner_thread->resume());
