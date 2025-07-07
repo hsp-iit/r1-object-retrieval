@@ -364,10 +364,11 @@ void DialogueManager::speak(const std::string& toSay)
         Time::delay(0.1);
     }
 
-    // //re-open microphone
-    // req.clear();
-    // req.addString("startRecording_RPC");
-    // m_audiorecorderRPCPort.write(req);
+    //re-open microphone
+    yarp::os::Bottle req;
+    req.clear();
+    req.addString("startRecording_RPC");
+    m_audiorecorderRPCPort.write(req);
 }
 
 
