@@ -264,11 +264,15 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             yCInfo(DIALOG_MNG_ORCHESTRATOR) << "Replier from dialoguemanager" << msgIn;
             yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
             interactWithReplier(orchMsg);
+            if(cmdType != dlgmsg::CmdTypes::RESUME &&
+               cmdType != dlgmsg::CmdTypes::STOP)
+            {
+                m_currentQuestion = msgIn;
+            }
             break;
         }
     }
 
-    m_currentQuestion = msgIn;
     m_currentLLMAnswer = replyMsg;
 }
 
