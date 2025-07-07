@@ -35,6 +35,7 @@ private:
     yarp::os::BufferedPort<Bottle>    m_voiceCommandPort;
     yarp::os::RpcClient               m_orchestratorRPCPort;
     yarp::os::RpcClient               m_audiorecorderRPCPort;
+    yarp::os::RpcClient               m_wakeWordRPCPort;
     yarp::os::BufferedPort<Bottle>    m_audioPlayPort;
 
     yarp::dev::PolyDriver             m_polyLLM;

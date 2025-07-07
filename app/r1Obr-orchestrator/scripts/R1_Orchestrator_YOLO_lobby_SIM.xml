@@ -27,7 +27,7 @@
    </application>
 
    <application>
-      <name>Test_lobby</name>
+      <name>Speech_Pipeline_Lobby_sim</name>
       <prefix></prefix>
    </application>
 
@@ -35,56 +35,10 @@
    <!--    MODULES     -->
    <!--                -->
 
-   <!-- audio recorder -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context speechPipeline --from micAudio.ini --mic_sound_on_stop 1 --mic_start 0 --mic_min_samples 4000 --mic_max_samples 4000</parameters>
-      <node>console-llm</node>
-   </module>
-
-   <module>
-      <name>yarpaudiocontrolgui</name>
-      <parameters>--remote-rec /audioRecorder_nws</parameters>
-   </module>
-
-   <!-- Speech transcription -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context raise_llm --from azureNorwayTranscription.ini</parameters>
-      <node>console-llm</node>
-   </module>
-
-   <!-- speech synthesizer -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context speechPipeline --from azureSynthesizer.ini</parameters>
-      <node>console-llm</node>
-   </module>
-
    <module>
       <name>r1Obr-orchestrator</name>
       <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_SIM.ini</parameters>
       <node>console</node>
-   </module>
-
-   <!-- face expressions -->
-   <module>
-      <name>faceExpressionImage5GTour</name>
-      <parameters></parameters>
-      <node>console</node>
-   </module>
-
-   <module>
-      <name>yarpview</name>
-      <parameters>--name /faceView/img:i</parameters>
-      <node>console</node>
-   </module>
-
-   <!-- audio player -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context vadModule --from audioPlayer.ini</parameters>
-      <node>pc</node>
    </module>
 
    <!-- sensor network receiver -->
@@ -105,7 +59,7 @@
    </connection>
 
    <connection>
-      <from>/speechTranscription_nws/text:o</from>
+      <from>/SpeechToTextComponent/text:o</from>
       <to>/r1Obr-orchestrator/voice_command:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
@@ -135,14 +89,14 @@
    </connection>
 
    <connection>
-      <from>/r1Obr-orchestrator/microphone:rpc</from>
-      <to>/audioRecorder_nws/rpc</to>
+      <from>/r1Obr-orchestrator/dialogMng/wakeWord:rpc</from>
+      <to>/wake/rpc:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
    <connection>
-      <from>/faceExpressionImage/image:o</from>
-      <to>/faceView/img:i</to>
+      <from>/r1Obr-orchestrator/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
@@ -185,12 +139,6 @@
    <connection>
       <from>/audioPlayerWrapper/status:o</from>
       <to>/r1Obr-orchestrator/audioplayerStatus:i</to>
-      <protocol>fast_tcp</protocol>
-   </connection>
-
-   <connection>
-      <from>/audioPlayerWrapper/status:o</from>
-      <to>/faceExpressionImage/mouthAudioData:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 

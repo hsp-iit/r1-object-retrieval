@@ -31,6 +31,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
     std::string voiceCommandPortName     = "/r1Obr-orchestrator/voice_command:i";
     std::string orchestratorRPCPortName  = "/r1Obr-orchestrator/dialogMng:rpc";
     std::string audiorecorderRPCPortName = "/r1Obr-orchestrator/dialogMng/microphone:rpc";
+    std::string wakeWordRPCPortName = "/r1Obr-orchestrator/dialogMng/wakeWord:rpc";
     std::string audioplayerStatusPortName= "/r1Obr-orchestrator/dialogMng/audioplayerStatus:i";
     std::string local_chatBot_nwc        = "/r1Obr-orchestrator/dialogMng";
     std::string m_currentLanguage       = "it-IT";
@@ -62,6 +63,13 @@ bool DialogueManager::configure(ResourceFinder &rf)
     if(!m_audiorecorderRPCPort.open(audiorecorderRPCPortName))
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to open Chat Bot RPC port to audio recorder");
+        return false;
+    }
+
+    if(config.check("rpc_wakeword_port")) {wakeWordRPCPortName = config.find("rpc_wakeword_port").asString();}
+    if(!m_wakeWordRPCPort.open(wakeWordRPCPortName))
+    {
+        yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to open Chat Bot RPC port to wakeword");
         return false;
     }
 
@@ -227,6 +235,18 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             std::string toSay = replyMsg.getParams()[0];
             speak(toSay);
             break;
+        }
+        case dlgmsg::CmdTypes::FAREWELL: {
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "FAREWELL is the way" << msgIn;
+            yarp::os::Bottle toWakeWord;
+            toWakeWord.clear();
+            toWakeWord.addString("stop");
+            m_wakeWordRPCPort.write(toWakeWord,reply);
+            if (!reply.isNull() && reply.get(0).asString() == "nack")
+            {
+                yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Orchestrator returned NACK.");
+                return;
+            }
         }
         default: {
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;
