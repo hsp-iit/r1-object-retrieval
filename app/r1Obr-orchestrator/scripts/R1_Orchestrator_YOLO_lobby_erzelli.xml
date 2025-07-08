@@ -6,9 +6,8 @@
 
 
    <!--                -->
-   <!--    MODULES     -->
+   <!--  APPLICATIONS  -->
    <!--                -->
-
 
    <!-- orchestrator -->
    <application>
@@ -28,53 +27,19 @@
    </application>
 
    <application>
-      <name>Test_lobby</name>
+      <name>Speech_Pipeline_Lobby_robot</name>
       <prefix></prefix>
    </application>
+
 
    <!--                -->
    <!--    MODULES     -->
    <!--                -->
 
-   <!-- speech synthesizer -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context google --from googleSynthesizer_EN.ini</parameters>
-      <node>console</node>
-   </module>
-
    <module>
       <name>r1Obr-orchestrator</name>
       <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_lobby_erzelli.ini</parameters>
       <environment>YARP_PORTNUMBER_r1Obr_orchestrator_voice_command_i=3000</environment>
-      <node>console</node>
-   </module>
-
-   <!-- face expressions -->
-   <module>
-      <name>faceExpressionImage5GTour</name>
-      <parameters></parameters>
-      <node>console</node>
-   </module>
-
-   <module>
-      <name>yarprobotinterface </name>
-      <parameters>--context headSynchronizer --from faceDisplay.ini</parameters>
-      <node>r1-face</node>
-   </module>
-
-   <!-- audio player -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--context vadModule --from audioPlayer.ini</parameters>
-      <node>r1-face</node>
-   </module>
-
-   <!-- LLM device -->
-   <module>
-      <name>yarprobotinterface</name>
-      <parameters>--config LLMDevice.xml</parameters>
-      <workdir>$ENV{ROBOT_CODE}/yarp-devices-llm/assets</workdir>
       <node>console</node>
    </module>
 
@@ -85,9 +50,22 @@
       <node>console</node>
    </module>
 
+
   <!--                -->
   <!--  CONNECTIONS   -->
   <!--                -->
+
+   <connection>
+      <from>/audioRecorder_nws/audio:o</from>
+      <to>/speechTranscription_nws/sound:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/SpeechToTextComponent/text:o</from>
+      <to>/r1Obr-orchestrator/voice_command:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
 
    <connection>
       <from>/r1Obr-orchestrator/nextLocPlanner/request:rpc</from>
@@ -108,8 +86,20 @@
    </connection>
 
    <connection>
-      <from>/faceExpressionImage/image:o</from>
-      <to>/robot/faceDisplay/image:i</to>
+      <from>/r1Obr-orchestrator/dialogMng/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/dialogMng/wakeWord:rpc</from>
+      <to>/wake/rpc:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
@@ -145,19 +135,13 @@
 
    <connection>
       <from>/audioPlayerWrapper/status:o</from>
-      <to>/r1Obr-orchestrator/chatBot/audioplayerStatus:i</to>
+      <to>/r1Obr-orchestrator/dialogMng/audioplayerStatus:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
    <connection>
       <from>/audioPlayerWrapper/status:o</from>
       <to>/r1Obr-orchestrator/audioplayerStatus:i</to>
-      <protocol>fast_tcp</protocol>
-   </connection>
-
-   <connection>
-      <from>/audioPlayerWrapper/status:o</from>
-      <to>/faceExpressionImage/mouthAudioData:i</to>
       <protocol>fast_tcp</protocol>
    </connection>
 
@@ -178,5 +162,4 @@
       <to>/r1Obr-orchestrator/thrift:s</to>
       <protocol>fast_tcp</protocol>
    </connection>
-
 </application>
