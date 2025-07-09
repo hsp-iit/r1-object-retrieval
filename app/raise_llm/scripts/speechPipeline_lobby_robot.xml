@@ -8,13 +8,13 @@
   <module>
     <name>yarprobotinterface</name>
     <parameters>--context speechPipeline --from micAudio.ini --mic_sound_on_stop 0 --mic_start 1 --mic_min_samples 4000 --mic_max_samples 4000</parameters>
-    <node>r1-torso</node>
+    <node>r1-base</node>
   </module>
 
   <module>
     <name>yarprobotinterface</name>
-    <parameters>--context vadModule --from audioPlayer.ini</parameters>
-    <node>r1-face</node>
+    <node> --- </node>
+    <workdir>RUN IT DIRECTLY ON R1-FACE TERMINAL WITH TMUX</workdir>
   </module>
 
   <!-- Speech filtering -->
@@ -45,7 +45,8 @@
   <module>
     <name>yarprobotinterface </name>
     <parameters>--context headSynchronizer --from faceDisplay.ini</parameters>
-    <node>r1-face</node>
+    <node> --- </node>
+    <workdir>RUN IT DIRECTLY ON R1-FACE TERMINAL WITH TMUX</workdir>
   </module>
 
   <module>
@@ -64,7 +65,7 @@
 
   <module>
       <name>yarprobotinterface</name>
-      <parameters>--context speechPipeline --from azureTranscription.ini</parameters>
+      <parameters>--context raise_llm --from azureNorwayTranscription.ini</parameters>
       <node>console-llm</node>
   </module>
 
