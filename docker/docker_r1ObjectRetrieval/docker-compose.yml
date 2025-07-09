@@ -10,6 +10,8 @@ x-general: &general
     - ROS_DISTRO=${ROS_DISTRO:-jazzy}
     - R1_OBR_REMOTE=${R1_OBR_REMOTE:-origin}
     - R1_OBR_BRANCH=${R1_OBR_BRANCH:-master}
+    - TOUR_REMOTE=${TOUR_REMOTE:-origin}
+    - TOUR_BRANCH=${TOUR_BRANCH:-master}
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "$XAUTHORITY:/home/user1/.Xauthority:ro"  # mount the auth file
