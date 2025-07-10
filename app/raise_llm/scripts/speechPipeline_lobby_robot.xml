@@ -13,6 +13,7 @@
 
   <module>
     <name>yarprobotinterface</name>
+    <parameters>--context vadModule --from audioPlayer.ini</parameters>
     <node> --- </node>
     <workdir>RUN IT DIRECTLY ON R1-FACE TERMINAL WITH TMUX</workdir>
   </module>
@@ -28,7 +29,7 @@
 
   <module>
     <name>sileroVAD</name>
-    <parameters></parameters>
+    <parameters>--vad_gap_allowance 45 --vad_threshold 0.91</parameters>
     <environment>YARP_LOG_PROCESS_LABEL=VAD</environment>
     <node>console-llm</node>
   </module>
