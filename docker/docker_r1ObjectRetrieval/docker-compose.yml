@@ -16,9 +16,9 @@ x-general: &general
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "$XAUTHORITY:/home/user1/.Xauthority:ro"  # mount the auth file
     - "/etc/hosts:/etc/hosts"
-    - "${HOME}/.config/yarp:/home/user1/.config/yarp"
     - "./entrypoints/entrypoint_light.sh:/home/user1/config/.entrypoint_light.sh"
     - "./entrypoints/entrypoint_heavy.sh:/home/user1/config/.entrypoint_heavy.sh"
+    - "./entrypoints/entrypoint_lobby.sh:/home/user1/config/.entrypoint_lobby.sh"
   network_mode: host
   entrypoint: ["sh", "${ENTRY_POINT:-/home/user1/config/.entrypoint_light.sh}"]
   ipc: host
