@@ -77,7 +77,7 @@
   <!-- LLM devices -->
   <module>
     <name>yarprobotinterface</name>
-    <parameters>--context raise_llm --from lobbyChat.ini</parameters>
+    <parameters>--context raise_llm --from lobbyChat.ini --prompt_file Lobby_ambassador_sim_prompt.txt</parameters>
     <node>console-llm</node>
   </module>
 
