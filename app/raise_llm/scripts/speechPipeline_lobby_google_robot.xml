@@ -7,7 +7,7 @@
   <!-- Audio input and output devices -->
   <module>
     <name>yarprobotinterface</name>
-    <parameters>--context speechPipeline --from micAudio.ini --mic_sound_on_stop 0 --mic_start 1 --mic_min_samples 4000 --mic_max_samples 4000</parameters>
+    <parameters>--context speechPipeline --from micAudio.ini --mic_id 2 --mic_rate 44100 --mic_sound_on_stop 0 --mic_start 1 --mic_min_samples 4000 --mic_max_samples 4000</parameters>
     <node>r1-base</node>
   </module>
 
