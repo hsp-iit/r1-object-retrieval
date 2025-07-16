@@ -72,7 +72,7 @@ Rule 19) There are only a limited number of available locations for the command 
         c. laboratory
         d. sofa_area
         e. offices
-        f. bathroom
+        f. bathrooms
         If the location requested by the user can't be traced back to one element of the previous list, just say the user that you do kno the location. No other location is authorized.
 
 Example:
