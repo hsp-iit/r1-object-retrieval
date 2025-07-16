@@ -189,9 +189,10 @@ void DialogueManager::close()
 // ****************************************************** //
 void DialogueManager::onRead(Bottle& b)
 {
-    std::string str = b.toString();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string str = b.get(0).asString();
 
-    if(str == "")
+    if(str == "" || str == " ")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Empty std::string received");
         return;

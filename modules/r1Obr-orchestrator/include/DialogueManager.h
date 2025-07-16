@@ -18,6 +18,8 @@
 #ifndef DIALOG_MNG_ORCHESTRATOR_H
 #define DIALOG_MNG_ORCHESTRATOR_H
 
+#include <mutex>
+
 #include <yarp/os/all.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/IChatBot.h>
@@ -49,6 +51,7 @@ private:
 
     SpeechSynthesizer*                m_speaker;
 
+    std::mutex                        m_mutex; /** Internal mutex. **/
     std::string                       m_currentLanguage;
     std::string                       m_currentQuestion;
     dlgmsg::DialogueMessage           m_currentLLMAnswer;
