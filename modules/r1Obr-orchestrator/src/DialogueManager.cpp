@@ -195,6 +195,11 @@ void DialogueManager::onRead(Bottle& b)
     if(str == "" || str == " ")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Empty std::string received");
+        //re-open microphone
+        yarp::os::Bottle req;
+        req.clear();
+        req.addString("startRecording_RPC");
+        m_audiorecorderRPCPort.write(req);
         return;
     }
 
@@ -219,12 +224,12 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
 
     dlgmsg::DialogueMessage replyMsg = coreLLM(msgIn);
     std::string language = replyMsg.getLanguage();
-    if (language != m_currentLanguage)
-    {
-        m_currentLanguage = language;
-        m_speaker->setLanguage(m_currentLanguage);
-        m_iTranscription->setLanguage(m_currentLanguage);
-    }
+    // if (language != m_currentLanguage)
+    // {
+    //     m_currentLanguage = language;
+    //     m_speaker->setLanguage(m_currentLanguage);
+    //     m_iTranscription->setLanguage(m_currentLanguage);
+    // }
     dlgmsg::CmdTypes cmdType = replyMsg.getType();
     switch(cmdType){
         case dlgmsg::CmdTypes::INVALID: {
