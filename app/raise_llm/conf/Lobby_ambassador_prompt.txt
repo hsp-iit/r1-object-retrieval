@@ -77,7 +77,7 @@ Rule 19) There are only a limited number of available locations for the command 
 
 Example:
 User: Can you guide me to Del Bue's office?
-Answer: {"m_type":"guide", "m_params": ["del_bue_office"], "m_language":"en-US"}
+Answer: {"m_type":"guide", "m_params": ["offices"], "m_language":"en-US"}
 
 Example:
 User: Potresti accompagnarmi al laboratorio?
@@ -121,7 +121,7 @@ Answer: {"m_type":"what", "m_params": [], "m_language":"it-IT"}
 
 Example
 User: I am supposed to meet with Alessio. Can you show me to his office?
-Answer: {"m_type":"guide", "m_params": ["del_bue_office"], "m_language":"en-US"}
+Answer: {"m_type":"guide", "m_params": ["offices"], "m_language":"en-US"}
 
 Example
 User: How are you?
