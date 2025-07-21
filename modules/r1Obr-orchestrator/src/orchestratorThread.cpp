@@ -55,6 +55,7 @@ bool OrchestratorThread::threadInit()
     if (m_rf.check("goandfindit_result_port"))  {m_goandfindit_result_port_name   = m_rf.find("goandfindit_result_port").asString();}
     if (m_rf.check("faceexpression_rpc_port"))  {m_faceexpression_rpc_port_name   = m_rf.find("faceexpression_rpc_port").asString();}
     if (m_rf.check("sn_feedback_port"))         {m_sn_feedback_port_name          = m_rf.find("sn_feedback_port").asString();}
+    if (m_rf.check("max_retries"))              {m_max_retries                    = m_rf.find("max_retries").asInt32();}
 
     if(m_rf.check("map_prefix")){m_map_prefix = m_rf.find("map_prefix").asString();}
 
@@ -63,7 +64,7 @@ bool OrchestratorThread::threadInit()
         return false;
     }
 
-    if(!m_nextLoc_rpc_port.open(m_nextLoc_rpc_port_name)){
+    if(!m_nextLoc_rpc_port.open(m_nextLoconfigure(c_rpc_port_name)){
         yCError(R1OBR_ORCHESTRATOR_THREAD) << "Cannot open nextLocPlanner RPC port with name" << m_nextLoc_rpc_port_name;
         return false;
     }
@@ -332,6 +333,14 @@ void OrchestratorThread::run()
 
             if (nav_aborted)
             {
+                // We ask the robot to retry to navigate to the current target.
+                // CAREFUL: the robot might not stop the first time you ask it to stop, to be checked
+                if (m_current_retries < m_max_retries)
+                {
+                    go(m_current_destination);
+                    m_current_retries++;
+                }
+                m_current_retries = 0;
                 askChatBotToSpeak(go_target_not_reached);
                 m_status = R1_IDLE;
             }
@@ -952,6 +961,7 @@ bool OrchestratorThread::go(string loc)
 
     m_status = R1_GOING;
     m_going = true;
+    m_current_destination = loc;
     return m_nav2loc->go(loc);
 }
 
