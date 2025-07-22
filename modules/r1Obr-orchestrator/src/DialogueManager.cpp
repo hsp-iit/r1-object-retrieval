@@ -350,8 +350,26 @@ void DialogueManager::speak(const std::string& toSay)
     }
 
     //close microphone
-    // yarp::os::Bottle req{"stopRecording_RPC"};
-    // m_audiorecorderRPCPort.write(req);
+    yarp::os::Bottle red_rec{"isRecording_RPC"};
+    yarp::os::Bottle reply;
+    yarp::os::Bottle req_stop{"stopRecording_RPC"};
+    reply.clear();
+    m_audiorecorderRPCPort.write(red_rec, reply);
+    if (!reply.isNull() && reply.get(0).asString() == "nack")
+    {
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "Error while checking if microphone is recording";
+    }
+    yCInfo(DIALOG_MNG_ORCHESTRATOR, "isReconrding_RPC reply: %s", reply.toString().c_str());
+    if(reply.get(0).asString() == "true")
+    {
+        yCInfo(DIALOG_MNG_ORCHESTRATOR, "Microphone is recording, stopping it");
+        reply.clear();
+        m_audiorecorderRPCPort.write(req_stop,reply);
+    }
+    else
+    {
+        yCInfo(DIALOG_MNG_ORCHESTRATOR, "Microphone is not recording, no need to stop it");
+    }
 
     //speak
     m_speaker->say(toSay);
