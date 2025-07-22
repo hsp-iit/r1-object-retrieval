@@ -360,7 +360,7 @@ void DialogueManager::speak(const std::string& toSay)
         yCError(DIALOG_MNG_ORCHESTRATOR) << "Error while checking if microphone is recording";
     }
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "isReconrding_RPC reply: %s", reply.toString().c_str());
-    if(reply.get(0).asString() == "true")
+    if(reply.get(0).asInt8() == 1)
     {
         yCInfo(DIALOG_MNG_ORCHESTRATOR, "Microphone is recording, stopping it");
         reply.clear();
