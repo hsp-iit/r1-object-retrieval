@@ -17,6 +17,7 @@
  */
 
 #include "goAndFindItThread.h"
+#include <chrono>
 
 
 YARP_LOG_COMPONENT(GO_AND_FIND_IT_THREAD, "r1_obr.goAndFindIt.goAndFindItThread")

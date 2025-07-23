@@ -17,6 +17,7 @@
  */
 
 #include "orchestratorThread.h"
+#include <chrono>
 
 
 YARP_LOG_COMPONENT(R1OBR_ORCHESTRATOR_THREAD, "r1_obr.orchestrator.orchestratorThread")
@@ -968,7 +969,13 @@ bool OrchestratorThread::guide(string loc)
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Guiding to %s", loc.c_str());
 
     // if (m_status != R1_IDLE)
+    auto start = std::chrono::high_resolution_clock::now();
     stopOrReset("reset_noNavpos");
+    auto endStoporReset = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = endStoporReset - start;
+
+    // Output times
+    yCDebug(R1OBR_ORCHESTRATOR_THREAD) << "Elapsed time stopOrReset: " << elapsed.count() << " ms";
 
 
     if (loc != "home" && loc.find(m_map_prefix) == string::npos)
@@ -989,15 +996,29 @@ bool OrchestratorThread::guide(string loc)
         }
     }
 
+    start = std::chrono::high_resolution_clock::now();
     if(!setNavigationPosition())
     {
         m_status = R1_IDLE;
         return false;
     }
+    auto endSetNav = std::chrono::high_resolution_clock::now();
+    elapsed = endSetNav - start;
+
+    // Output times
+    yCDebug(R1OBR_ORCHESTRATOR_THREAD) << "Elapsed time setNavigationPosition: " << elapsed.count() << " ms";
 
     m_status = R1_GOING;
     m_going = true;
-    return m_nav2loc->go(loc);
+    start = std::chrono::high_resolution_clock::now();
+    bool result = m_nav2loc->go(loc);
+    auto endGo = std::chrono::high_resolution_clock::now();
+    elapsed = endGo - start;
+
+    // Output times
+    yCDebug(R1OBR_ORCHESTRATOR_THREAD) << "Elapsed time go: " << elapsed.count() << " ms";
+
+    return result;
 }
 
 
