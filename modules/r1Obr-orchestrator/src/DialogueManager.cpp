@@ -253,6 +253,8 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
                 yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Orchestrator returned NACK.");
                 return;
             }
+            m_iLlm->refreshConversation();
+            m_iLlmReplier->refreshConversation();
         }
         default: {
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;
