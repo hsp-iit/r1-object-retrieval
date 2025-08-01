@@ -125,14 +125,6 @@ bool Nav2Loc::go(string loc)
         }
         // If we are inside the lab area, we swap to the default behaviour
     }
-    else if (loc == "erzelli_break_area")
-    {
-        if(!m_iNav2D->gotoTargetByLocationName("erzelli_break_path"))
-        {
-            yCError(NAV_2_LOC, "Error with navigation to erzelli break area from outside");
-            return false;
-        }
-    }
 
     if(!m_iNav2D->gotoTargetByLocationName(loc))
     {
