@@ -43,6 +43,13 @@
       <node>console</node>
    </module>
 
+   <module>
+      <name>r1Obr-orchestrator</name>
+      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_lobby_erzelli_english.ini</parameters>
+      <environment>YARP_PORTNUMBER_r1Obr_orchestrator_voice_command_i=3000</environment>
+      <node>console</node>
+   </module>
+
    <!-- sensor network receiver -->
    <module>
       <name>sensorNetworkReceiver</name>

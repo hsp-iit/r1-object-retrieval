@@ -70,6 +70,17 @@
       <node>console-llm</node>
   </module>
 
+  <module>
+     <name>yarprobotinterface</name>
+     <parameters>--context google --from googleSynthesizer.ini --synthesis_lang en-US --synthesis_voice en-US-Neural2-E</parameters>
+     <node>console-llm</node>
+  </module>
+
+  <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleTranscription.ini --transcription_lang en-US</parameters>
+      <node>console-llm</node>
+  </module>
   <!-- Speech interaction managing modules -->
   <module>
     <name>ros2_run.sh</name>
