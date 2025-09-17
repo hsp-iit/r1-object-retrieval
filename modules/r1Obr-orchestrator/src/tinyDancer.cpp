@@ -33,13 +33,13 @@ bool TinyDancer::configure()
     if(m_rf.check("robot")) {m_robot = m_rf.find("robot").asString();}
 
     // --------- Parts enable/disable ---------- //
-    if(m_rf.check("right_arm"))
+    if(m_rf.check("right_arm_on"))
         m_parts_on[RIGHT_ARM] = m_rf.find("right_arm_on").asInt16() == 1;
-    if(m_rf.check("left_arm"))
+    if(m_rf.check("left_arm_on"))
         m_parts_on[LEFT_ARM] = m_rf.find("left_arm_on").asInt16() == 1;
-    if(m_rf.check("head"))
+    if(m_rf.check("head_on"))
         m_parts_on[HEAD] = m_rf.find("head_on").asInt16() == 1;
-    if(m_rf.check("torso"))
+    if(m_rf.check("torso_on"))
         m_parts_on[TORSO] = m_rf.find("torso_on").asInt16() == 1;
 
     // Polydriver config
