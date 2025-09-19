@@ -224,12 +224,12 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
 
     dlgmsg::DialogueMessage replyMsg = coreLLM(msgIn);
     std::string language = replyMsg.getLanguage();
-    // if (language != m_currentLanguage)
-    // {
-    //     m_currentLanguage = language;
-    //     m_speaker->setLanguage(m_currentLanguage);
-    //     m_iTranscription->setLanguage(m_currentLanguage);
-    // }
+    if (language != m_currentLanguage)
+    {
+        m_currentLanguage = language;
+        m_speaker->setLanguage(m_currentLanguage);
+        m_iTranscription->setLanguage(m_currentLanguage);
+    }
     dlgmsg::CmdTypes cmdType = replyMsg.getType();
     switch(cmdType){
         case dlgmsg::CmdTypes::INVALID: {
