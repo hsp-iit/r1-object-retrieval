@@ -18,6 +18,7 @@
 
 
 #include "r1Obr-orchestrator.h"
+#include <chrono>
 
 YARP_LOG_COMPONENT(R1OBR_ORCHESTRATOR, "r1_obr.orchestrator")
 
@@ -244,6 +245,10 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
         {
             reply.addString(m_inner_thread->resetHome());
         }
+        else if (cmd=="farewell")
+        {
+            reply.addString(m_inner_thread->resetHome());
+        }
         else if (cmd=="resume")
         {
             reply.addString(m_inner_thread->resume());
@@ -318,9 +323,20 @@ bool Orchestrator::respond(const Bottle &request, Bottle &reply)
     }
     else if(cmd=="guide")
     {
+        auto start = std::chrono::high_resolution_clock::now();
         string location_name = request.get(1).asString();
-        m_inner_thread->guide(location_name);
+        if(!m_inner_thread->guide(location_name))
+        {
+            reply.addVocab32(Vocab32::encode("nack"));
+            yCError(R1OBR_ORCHESTRATOR,"Error: cannot guide to location '%s'", location_name.c_str());
+            return false;
+        }
         reply.addString("guiding to '" + location_name + "'");
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+
+        // Output times
+        yCDebug(R1OBR_ORCHESTRATOR) << "Elapsed time: " << elapsed.count() << " ms";
     }
     else if(cmd=="directions")
     {

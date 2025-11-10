@@ -42,6 +42,9 @@ enum CmdTypes
     NAVPOS,
     GUIDE,
     DIRECTIONS,
+    SUCCESS,
+    FAILED,
+    FAREWELL,
     INVALID = -1
 };
 
@@ -58,6 +61,9 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, "invalid"},
                                         {NAVPOS, "navpos"},
                                         {GUIDE, "guide"},
                                         {DIRECTIONS, "directions"},
+                                        {SUCCESS, "success"},
+                                        {FAILED, "failed"},
+                                        {FAREWELL, "farewell"},
                                         {SAY, "say"}})
 
 class DialogueMessage
@@ -180,7 +186,6 @@ public:
 };
 
 inline void from_json(const json& j, DialogueMessage& msg) {
-    printf("Ciaomeeeerdeeeeee");
     CmdTypes type;
     j.at("m_type").get_to(type);
     msg.setType(type);

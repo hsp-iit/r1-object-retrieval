@@ -112,7 +112,13 @@ private:
     bool                    m_object_found;
     bool                    m_object_not_found;
     bool                    m_going;
+    bool                    m_going_home;
     string                  m_map_prefix;
+
+    // Navigation
+    string                  m_current_destination;
+    size_t                  m_current_retries = 0;
+    size_t                  m_max_retries = 1;
 
     ResourceFinder&         m_rf;
 

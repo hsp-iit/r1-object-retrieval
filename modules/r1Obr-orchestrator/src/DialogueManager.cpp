@@ -31,6 +31,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
     std::string voiceCommandPortName     = "/r1Obr-orchestrator/voice_command:i";
     std::string orchestratorRPCPortName  = "/r1Obr-orchestrator/dialogMng:rpc";
     std::string audiorecorderRPCPortName = "/r1Obr-orchestrator/dialogMng/microphone:rpc";
+    std::string wakeWordRPCPortName = "/r1Obr-orchestrator/dialogMng/wakeWord:rpc";
     std::string audioplayerStatusPortName= "/r1Obr-orchestrator/dialogMng/audioplayerStatus:i";
     std::string local_chatBot_nwc        = "/r1Obr-orchestrator/dialogMng";
     std::string m_currentLanguage       = "it-IT";
@@ -62,6 +63,13 @@ bool DialogueManager::configure(ResourceFinder &rf)
     if(!m_audiorecorderRPCPort.open(audiorecorderRPCPortName))
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to open Chat Bot RPC port to audio recorder");
+        return false;
+    }
+
+    if(config.check("rpc_wakeword_port")) {wakeWordRPCPortName = config.find("rpc_wakeword_port").asString();}
+    if(!m_wakeWordRPCPort.open(wakeWordRPCPortName))
+    {
+        yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to open Chat Bot RPC port to wakeword");
         return false;
     }
 
@@ -181,11 +189,17 @@ void DialogueManager::close()
 // ****************************************************** //
 void DialogueManager::onRead(Bottle& b)
 {
-    std::string str = b.toString();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string str = b.get(0).asString();
 
-    if(str == "")
+    if(str == "" || str == " ")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Empty std::string received");
+        //re-open microphone
+        yarp::os::Bottle req;
+        req.clear();
+        req.addString("startRecording_RPC");
+        m_audiorecorderRPCPort.write(req);
         return;
     }
 
@@ -196,6 +210,9 @@ void DialogueManager::onRead(Bottle& b)
 // ****************************************************** //
 void DialogueManager::interactWithDialogMng(const std::string& msgIn)
 {
+    yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
+    yCInfo(DIALOG_MNG_ORCHESTRATOR) << "Dialog got:" << msgIn;
+    yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
     if (msgIn == "")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Empty message in received");
@@ -220,24 +237,50 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             break;
         }
         case dlgmsg::CmdTypes::SAY: {
-            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "SAY is the way";
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "SAY is the way" << msgIn;
             std::string toSay = replyMsg.getParams()[0];
             speak(toSay);
             break;
         }
+        case dlgmsg::CmdTypes::FAREWELL: {
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "FAREWELL is the way" << msgIn;
+            yarp::os::Bottle toWakeWord;
+            toWakeWord.clear();
+            toWakeWord.addString("stop");
+            m_wakeWordRPCPort.write(toWakeWord,reply);
+            if (!reply.isNull() && reply.get(0).asString() == "nack")
+            {
+                yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Orchestrator returned NACK.");
+                return;
+            }
+            m_iLlm->refreshConversation();
+            m_iLlmReplier->refreshConversation();
+        }
         default: {
-            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way";
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;
             toOrchestrator = fromMsgToBottle(replyMsg);
             m_orchestratorRPCPort.write(toOrchestrator, reply);
+            if (!reply.isNull() && reply.get(0).asString() == "nack")
+            {
+                yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Orchestrator returned NACK.");
+                return;
+            }
             dlgmsg::DialogueMessage orchMsg = replyMsg;
             orchMsg.setQuery(msgIn);
             orchMsg.setComment(reply.toString());
+            yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
+            yCInfo(DIALOG_MNG_ORCHESTRATOR) << "Replier from dialoguemanager" << msgIn;
+            yCInfo(DIALOG_MNG_ORCHESTRATOR) << "----------------------";
             interactWithReplier(orchMsg);
+            if(cmdType != dlgmsg::CmdTypes::RESUME &&
+               cmdType != dlgmsg::CmdTypes::STOP)
+            {
+                m_currentQuestion = msgIn;
+            }
             break;
         }
     }
 
-    m_currentQuestion = msgIn;
     m_currentLLMAnswer = replyMsg;
 }
 
@@ -271,6 +314,8 @@ yarp::os::Bottle DialogueManager::fromMsgToBottle(const dlgmsg::DialogueMessage&
     toOrchestrator.clear();
     toOrchestrator.fromString(command+args);
 
+    yCWarning(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::fromMsgToBottle. Bottle toOrchestrator: %s", toOrchestrator.toString().c_str());
+
     return toOrchestrator;
 }
 
@@ -286,7 +331,7 @@ dlgmsg::DialogueMessage DialogueManager::coreLLM(const std::string& msgIn)
         return replyMsg;
     }
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "Contacting LLM. LLM answered: %s", answer.content.c_str());
-    
+
     nlohmann::json replyJson = nlohmann::json::parse(answer.content);
     dlgmsg::from_json(replyJson, replyMsg);
 
@@ -307,8 +352,22 @@ void DialogueManager::speak(const std::string& toSay)
     }
 
     //close microphone
-    yarp::os::Bottle req{"stopRecording_RPC"};
-    m_audiorecorderRPCPort.write(req);
+    yarp::os::Bottle red_rec{"isRecording_RPC"};
+    yarp::os::Bottle reply;
+    yarp::os::Bottle req_stop{"stopRecording_RPC"};
+    reply.clear();
+    m_audiorecorderRPCPort.write(red_rec, reply);
+    yCInfo(DIALOG_MNG_ORCHESTRATOR, "isReconrding_RPC reply: %s", reply.toString().c_str());
+    if(reply.get(1).asString() == "ok")
+    {
+        yCInfo(DIALOG_MNG_ORCHESTRATOR, "Microphone is recording, stopping it");
+        reply.clear();
+        m_audiorecorderRPCPort.write(req_stop,reply);
+    }
+    else
+    {
+        yCInfo(DIALOG_MNG_ORCHESTRATOR, "Microphone is not recording, no need to stop it");
+    }
 
     //speak
     m_speaker->say(toSay);
@@ -332,6 +391,7 @@ void DialogueManager::speak(const std::string& toSay)
     }
 
     //re-open microphone
+    yarp::os::Bottle req;
     req.clear();
     req.addString("startRecording_RPC");
     m_audiorecorderRPCPort.write(req);

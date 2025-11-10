@@ -17,6 +17,7 @@
  */
 
 #include "goAndFindIt.h"
+#include <chrono>
 
 
 YARP_LOG_COMPONENT(GO_AND_FIND_IT, "r1_obr.goAndFindIt")

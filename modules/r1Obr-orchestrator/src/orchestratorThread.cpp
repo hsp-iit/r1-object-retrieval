@@ -17,6 +17,7 @@
  */
 
 #include "orchestratorThread.h"
+#include <chrono>
 
 
 YARP_LOG_COMPONENT(R1OBR_ORCHESTRATOR_THREAD, "r1_obr.orchestrator.orchestratorThread")
@@ -30,6 +31,7 @@ OrchestratorThread::OrchestratorThread(yarp::os::ResourceFinder &rf):
     m_where_specified(false),
     m_object_found(false),
     m_object_not_found(false),
+    m_going_home(false),
     m_going(false)
 {
     //Defaults
@@ -54,6 +56,7 @@ bool OrchestratorThread::threadInit()
     if (m_rf.check("goandfindit_result_port"))  {m_goandfindit_result_port_name   = m_rf.find("goandfindit_result_port").asString();}
     if (m_rf.check("faceexpression_rpc_port"))  {m_faceexpression_rpc_port_name   = m_rf.find("faceexpression_rpc_port").asString();}
     if (m_rf.check("sn_feedback_port"))         {m_sn_feedback_port_name          = m_rf.find("sn_feedback_port").asString();}
+    if (m_rf.check("max_retries"))              {m_max_retries                    = m_rf.find("max_retries").asInt32();}
 
     if(m_rf.check("map_prefix")){m_map_prefix = m_rf.find("map_prefix").asString();}
 
@@ -62,7 +65,7 @@ bool OrchestratorThread::threadInit()
         return false;
     }
 
-    if(!m_nextLoc_rpc_port.open(m_nextLoc_rpc_port_name)){
+    if(!m_nextLoc_rpc_port.open(m_nextLoconfigure(c_rpc_port_name)){
         yCError(R1OBR_ORCHESTRATOR_THREAD) << "Cannot open nextLocPlanner RPC port with name" << m_nextLoc_rpc_port_name;
         return false;
     }
@@ -331,6 +334,14 @@ void OrchestratorThread::run()
 
             if (nav_aborted)
             {
+                // We ask the robot to retry to navigate to the current target.
+                // CAREFUL: the robot might not stop the first time you ask it to stop, to be checked
+                if (m_current_retries < m_max_retries)
+                {
+                    go(m_current_destination);
+                    m_current_retries++;
+                }
+                m_current_retries = 0;
                 askChatBotToSpeak(go_target_not_reached);
                 m_status = R1_IDLE;
             }
@@ -338,7 +349,14 @@ void OrchestratorThread::run()
 
             if (m_status == R1_GOING) //in case of external stop
             {
-                askChatBotToSpeak(go_target_reached);
+                if(m_going_home)
+                {
+                    m_going_home = false;
+                }
+                else
+                {
+                    askChatBotToSpeak(go_target_reached);
+                }
                 m_status = R1_IDLE;
             }
         }
@@ -568,6 +586,7 @@ string OrchestratorThread::resetHome()
 
     if (setNavigationPosition())
     {
+        m_going_home = true;
         m_status = R1_GOING;
         m_nav2loc->goHome();
     }
@@ -790,13 +809,16 @@ void OrchestratorThread::setEmotion()
 bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
 {
     string str, feedback{""};
+    dlgmsg::CmdTypes cmdType;
     switch (stat)
     {
     case object_found_maybe:
         str = "object_found_maybe";
+        cmdType = dlgmsg::CmdTypes::SAY;
         break;
     case object_found_true:
         str = "object_found_true";
+        cmdType = dlgmsg::CmdTypes::SUCCESS;
         if(m_sn_language == "ita")
             feedback = "Ho trovato " + m_object + "! Hai bisogno di qualcos'altro?";
         else if(m_sn_language == "eng")
@@ -804,9 +826,11 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case object_found_false:
         str = "object_found_false";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         break;
     case object_not_found:
         str = "object_not_found";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Non ho trovato " + m_object + "!";
         else if(m_sn_language == "eng")
@@ -814,6 +838,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case something_bad_happened:
         str = "something_bad_happened";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Ho riscontrato un errore. Ti chiedo di aspettare qualche minuto per sistemare il problema";
         else if(m_sn_language == "eng")
@@ -821,6 +846,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case location_not_valid:
         str = "location_not_valid";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "La posizione specificata non è valida.";
         else if(m_sn_language == "eng")
@@ -828,6 +854,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case gafi_idle:
         str = "gafi_idle";
+        cmdType = dlgmsg::CmdTypes::SAY;
         if(m_sn_language == "ita")
             feedback = "Il modulo di ricerca, go and find it, pare essere inattivo. Posso aiutarti in altro modo?";
         else if(m_sn_language == "eng")
@@ -835,6 +862,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case go_target_reached:
         str = "go_target_reached";
+        cmdType = dlgmsg::CmdTypes::SUCCESS;
         if(m_sn_language == "ita")
             feedback = "Sono arrivato a destinazione.";
         else if(m_sn_language == "eng")
@@ -842,6 +870,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case go_target_not_reached:
         str = "destination_not_reached";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Non sono riuscito a raggiungere la mia destinazione.";
         else if(m_sn_language == "eng")
@@ -849,6 +878,7 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case hardware_failure:
         str = "hardware_failure";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Ho riscontrato un problema al mio hardware. Ti chiedo di aspettare qualche minuto per sistemare il problema";
         else if(m_sn_language == "eng")
@@ -856,12 +886,15 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         break;
     case nav_pos_fail:
         str = "nav_pos_fail";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Mi é stato impossibile assumere la posizione di navigazione";
         else if(m_sn_language == "eng")
             feedback = "Could not set the navigation position";
         break;
     case cmd_unknown:
+        str = "cmd_unknown";
+        cmdType = dlgmsg::CmdTypes::FAILED;
         if(m_sn_language == "ita")
             feedback = "Chiedo perdono, non ho capito il comando";
         else if(m_sn_language == "eng")
@@ -872,7 +905,20 @@ bool OrchestratorThread::askChatBotToSpeak(R1_says stat)
         feedback = "no command";
         break;
     };
-    dlgmsg::DialogueMessage toReplier{dlgmsg::CmdTypes::SAY, {str}, m_dialogueManager->getLanguage()};
+    std::vector<std::string> params{};
+    std::string comment="";
+    if(cmdType==dlgmsg::CmdTypes::SAY)
+    {
+        params.push_back(str);
+    }
+    else if(cmdType==dlgmsg::CmdTypes::SUCCESS || cmdType==dlgmsg::CmdTypes::FAILED)
+    {
+        comment = str;
+    }
+    dlgmsg::DialogueMessage toReplier{cmdType, params, m_dialogueManager->getLanguage(),"",comment};
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "+++++++++++++++++++++++++++++++++++++++++++++++++++");
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Replier from orchestrator thread: %s", str.c_str());
+    yCInfo(R1OBR_ORCHESTRATOR_THREAD, "+++++++++++++++++++++++++++++++++++++++++++++++++++");
     m_dialogueManager->interactWithReplier(toReplier,true);
 
 
@@ -923,6 +969,7 @@ bool OrchestratorThread::go(string loc)
 
     m_status = R1_GOING;
     m_going = true;
+    m_current_destination = loc;
     return m_nav2loc->go(loc);
 }
 
@@ -932,7 +979,13 @@ bool OrchestratorThread::guide(string loc)
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Guiding to %s", loc.c_str());
 
     // if (m_status != R1_IDLE)
+    auto start = std::chrono::high_resolution_clock::now();
     stopOrReset("reset_noNavpos");
+    auto endStoporReset = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = endStoporReset - start;
+
+    // Output times
+    yCDebug(R1OBR_ORCHESTRATOR_THREAD) << "Elapsed time stopOrReset: " << elapsed.count() << " ms";
 
 
     if (loc != "home" && loc.find(m_map_prefix) == string::npos)
@@ -953,15 +1006,29 @@ bool OrchestratorThread::guide(string loc)
         }
     }
 
+    start = std::chrono::high_resolution_clock::now();
     if(!setNavigationPosition())
     {
         m_status = R1_IDLE;
         return false;
     }
+    auto endSetNav = std::chrono::high_resolution_clock::now();
+    elapsed = endSetNav - start;
+
+    // Output times
+    yCDebug(R1OBR_ORCHESTRATOR_THREAD) << "Elapsed time setNavigationPosition: " << elapsed.count() << " ms";
 
     m_status = R1_GOING;
     m_going = true;
-    return m_nav2loc->go(loc);
+    start = std::chrono::high_resolution_clock::now();
+    bool result = m_nav2loc->go(loc);
+    auto endGo = std::chrono::high_resolution_clock::now();
+    elapsed = endGo - start;
+
+    // Output times
+    yCDebug(R1OBR_ORCHESTRATOR_THREAD) << "Elapsed time go: " << elapsed.count() << " ms";
+
+    return result;
 }
 
 
