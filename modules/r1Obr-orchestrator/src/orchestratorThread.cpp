@@ -65,7 +65,7 @@ bool OrchestratorThread::threadInit()
         return false;
     }
 
-    if(!m_nextLoc_rpc_port.open(m_nextLoconfigure(c_rpc_port_name)){
+    if(!m_nextLoc_rpc_port.open(m_nextLoc_rpc_port_name)){
         yCError(R1OBR_ORCHESTRATOR_THREAD) << "Cannot open nextLocPlanner RPC port with name" << m_nextLoc_rpc_port_name;
         return false;
     }
