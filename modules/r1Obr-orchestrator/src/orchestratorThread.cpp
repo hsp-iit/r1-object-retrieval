@@ -584,17 +584,18 @@ string OrchestratorThread::resetHome()
 {
     stopOrReset("reset_noNavpos");
 
-    if (setNavigationPosition())
-    {
-        m_going_home = true;
-        m_status = R1_GOING;
-        m_nav2loc->goHome();
-    }
-    else
-        return "reset but NOT sent home";
+    // if (setNavigationPosition())
+    // {
+    //     m_going_home = true;
+    //     m_status = R1_GOING;
+    //     m_nav2loc->goHome();
+    // }
+    // else
+    //     return "reset but NOT sent home";
 
     return "reset and sent home";
 }
+
 
 
 /****************************************************************/
