@@ -242,6 +242,15 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             speak(toSay);
             break;
         }
+        case dlgmsg::CmdTypes::IGNORE: {
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "IGNORE is the way" << msgIn;
+            //re-open microphone
+            yarp::os::Bottle req;
+            req.clear();
+            req.addString("startRecording_RPC");
+            m_audiorecorderRPCPort.write(req);
+            return;
+        }
         case dlgmsg::CmdTypes::FAREWELL: {
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "FAREWELL is the way" << msgIn;
             yarp::os::Bottle toWakeWord;

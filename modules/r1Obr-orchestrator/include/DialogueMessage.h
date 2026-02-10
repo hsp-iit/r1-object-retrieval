@@ -45,6 +45,7 @@ enum CmdTypes
     SUCCESS,
     FAILED,
     FAREWELL,
+    IGNORE,
     INVALID = -1
 };
 
@@ -64,6 +65,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, "invalid"},
                                         {SUCCESS, "success"},
                                         {FAILED, "failed"},
                                         {FAREWELL, "farewell"},
+                                        {IGNORE, "ignore"},
                                         {SAY, "say"}})
 
 class DialogueMessage
