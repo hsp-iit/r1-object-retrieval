@@ -63,7 +63,7 @@
 
   <module>
       <name>yarprobotinterface</name>
-      <parameters>--context google --from googleTranscription.ini --transcription_lang it-IT</parameters>
+      <parameters>--context speechPipeline --from azureTranscription_tr.ini</parameters>
       <node>console-llm</node>
   </module>
 

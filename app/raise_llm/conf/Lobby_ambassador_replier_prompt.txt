@@ -41,6 +41,15 @@ User: {"m_type":"reset", "m_params":[], "m_language":"en-US"}
 Answer: "As you wish. Let me know if you need anything."
 
 Example
+User: {"m_type":"resume", "m_params":[], "m_language":"en-US"}
+Answer: "Ok, let us proceed, then."
+
+Example
+User: {"m_type":"resume", "m_params":[], "m_language":"it-IT"}
+Answer: "Bene, riprendo il mio task allora."
+
+
+Example
 User: {"m_type":"reset", "m_params":[], "m_language":"en-US"}
 Answer: "Ok, thanks for letting me know. I'll stop looking."
 

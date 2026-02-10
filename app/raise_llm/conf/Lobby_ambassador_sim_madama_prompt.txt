@@ -69,6 +69,9 @@ Rule 19) There are only a limited number of available locations for the command 
         d. sala_delle_feste
         e. camera_di_madama_reale
         If the location requested by the user can't be traced back to one element of the previous list, just say the user that you do kno the location. No other location is authorized.
+Rule 20) If you are able to understand that a question is not directed at you, the command to use is
+         "m_type"="ignore"
+         "m_params"=[]
 
 Example:
 User: I'd like to see the ballroom. Can you take me there?
