@@ -1,0 +1,22 @@
+<application>
+   <name>R1_object_retrieval_clean_dockers</name>
+
+   <dependencies>
+   </dependencies>
+
+   <!--  MODULES  -->
+   <module>
+		<name>docker</name>
+		<parameters>compose up down --remove-orphans</parameters>
+      <workdir>$ENV{HSP_CODE}/r1-object-retrieval/docker/docker_r1ObjectRetrieval</workdir>
+		<node>dockers</node>
+	</module>
+
+   <module>
+		<name>docker</name>
+		<parameters>compose up down --remove-orphans</parameters>
+      <workdir>$ENV{HSP_CODE}/tour-guide-robot/docker_stuff/docker_talk</workdir>
+		<node>dockers</node>
+	</module>
+
+</application>

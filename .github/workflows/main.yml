@@ -37,11 +37,21 @@ jobs:
       run: |
        if [ ${{ github.event_name }} == 'schedule' ]; then
           echo "Building r1ObjectRetrievalSim image"
+          sudo docker system prune -af
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/hostedtoolcache
+          df -h
           sudo docker build --build-arg base_img=elandini84/r1images:tourSim2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_devel -t elandini84/r1images:r1obr_sim_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_devel . -f Dockerfile_sim
        elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Building r1ObjectRetrievalSim image"
+          sudo docker system prune -af
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/hostedtoolcache
+          df -h
           sudo docker build --build-arg base_img=elandini84/r1images:tourSim2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_stable -t elandini84/r1images:r1obr_sim_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_stable . -f Dockerfile_sim
        else
           echo "Failure!"
@@ -89,11 +99,21 @@ jobs:
       run: |
        if [ ${{ github.event_name }} == 'schedule' ]; then
           echo "Building r1ObjectRetrieval image"
+          sudo docker system prune -af
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/hostedtoolcache
+          df -h
           sudo docker build --build-arg base_img=elandini84/r1images:tourCore2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_devel -t elandini84/r1images:r1obr_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_devel .
        elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Building r1ObjectRetrieval image"
+          sudo docker system prune -af
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/hostedtoolcache
+          df -h
           sudo docker build --build-arg base_img=elandini84/r1images:tourCore2_ubuntu24.04_${{matrix.config.ros2_distro}}_${{matrix.config.cuda_version}}_stable -t elandini84/r1images:r1obr_cuda.${{ matrix.config.cuda_version }}_${{ matrix.config.ros2_distro }}_stable .
        else
           echo "Failure!"

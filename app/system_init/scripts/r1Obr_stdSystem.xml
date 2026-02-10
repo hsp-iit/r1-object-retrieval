@@ -1,0 +1,49 @@
+<application>
+   <name>R1_object_retrieval_Std_system</name>
+
+   <dependencies>
+   </dependencies>
+
+   <!--  MODULES  -->
+   <module>
+      <name>yarprun</name>
+      <parameters>--server /dockers --log</parameters>
+      <node>localhost</node>
+   </module>
+
+   <module>
+      <name>xhost</name>
+      <parameters> + local:docker</parameters>
+      <node>dockers</node>
+   </module>
+
+   <module>
+		<name>docker</name>
+		<parameters>compose up r1-object-retrieval-devel-container</parameters>
+      <workdir>$ENV{HSP_CODE}/r1-object-retrieval/docker/docker_r1ObjectRetrieval</workdir>
+      <environment>
+         R1_OBR_REMOTE=origin
+         R1_OBR_BRANCH=master
+         ROS_DISTRO=jazzy
+         TOUR_REMOTE=origin
+         TOUR_BRANCH=jazzy
+         ENTRY_POINT=/home/user1/config/.entrypoint_light.sh
+      </environment>
+		<node>dockers</node>
+	</module>
+
+   <module>
+		<name>docker</name>
+		<parameters>compose up r1-talk-ub24-v2.33-master-container</parameters>
+      <workdir>$ENV{HSP_CODE}/tour-guide-robot/docker_stuff/docker_talk</workdir>
+      <environment>
+         R1_OBR_REMOTE=origin
+         R1_OBR_BRANCH=master
+         TOUR_REMOTE=origin
+         TOUR_BRANCH=jazzy
+         ENTRY_POINT=/home/yarp-user/config/.entrypoint_light.sh
+      </environment>
+		<node>dockers</node>
+	</module>
+
+</application>
