@@ -23,11 +23,9 @@
 YARP_LOG_COMPONENT(DIALOG_MNG_ORCHESTRATOR, "r1_obr.orchestrator.DialogueManager")
 
 
-// ****************************************************** //
-
 bool DialogueManager::configure(ResourceFinder &rf)
 {
-    // Defaults
+    // Set default port names and language before reading config
     std::string voiceCommandPortName     = "/r1Obr-orchestrator/voice_command:i";
     std::string orchestratorRPCPortName  = "/r1Obr-orchestrator/dialogMng:rpc";
     std::string audiorecorderRPCPortName = "/r1Obr-orchestrator/dialogMng/microphone:rpc";
@@ -43,9 +41,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
 
     Searchable& config = rf.findGroup("DIALOGUE");
 
-
-    // ------------------  out ------------------ //
-    if(config.check("rpc_orchestrator_port")) {orchestratorRPCPortName = config.find("rpc_orchestrator_port").asString();}
+    // Open RPC port to orchestrator and establish connection
     if(!m_orchestratorRPCPort.open(orchestratorRPCPortName))
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to open Chat Bot RPC port to orchestrator");
@@ -66,6 +62,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
         return false;
     }
 
+    // Open RPC port for wake word detection control
     if(config.check("rpc_wakeword_port")) {wakeWordRPCPortName = config.find("rpc_wakeword_port").asString();}
     if(!m_wakeWordRPCPort.open(wakeWordRPCPortName))
     {
@@ -75,6 +72,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
 
     // ------------------  in  ------------------ //
 
+    // Open input port for receiving voice commands from transcription system
     // Voice Command Port
     if(config.check("voice_command_port")) {voiceCommandPortName = config.find("voice_command_port").asString();}
     if (!m_voiceCommandPort.open(voiceCommandPortName))
@@ -84,7 +82,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
     }
     m_voiceCommandPort.useCallback(*this);
 
-    // ------------ LLM configuration ------------ //
+    // Configure main LLM driver for command interpretation
     std::string llm_local{"/r1Obr-orchestrator/dialogMng/llm/rpc"}, llm_remote{"/LLM_nws/rpc"};
     Property prop;
     if(config.check("llm_local")) { llm_local = config.find("llm_local").asString();}
@@ -104,7 +102,8 @@ bool DialogueManager::configure(ResourceFinder &rf)
 
     m_iLlm->refreshConversation();
 
-    // ------------ LLM Replier configuration ------------ //
+    // Configure replier LLM - uses a separate LLM instance for context-aware detailed responses
+    // This allows maintaining two independent conversation contexts
     std::string llm_replier_local{"/r1Obr-orchestrator/dialogMng/llm_replier/rpc"}, llm_replier_remote{"/LLM_nws/rpc"};
     Property prop_replier;
     if(config.check("llm_replier_local")) { llm_replier_local = config.find("llm_replier_local").asString();}
@@ -124,8 +123,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
 
     m_iLlmReplier->refreshConversation();
 
-
-    // ------------ Audio Player Status Port ------------ //
+    // Setup audio player status monitoring
     if(config.check("audioplayer_input_port")) {audioplayerStatusPortName = config.find("audioplayer_input_port").asString();}
     if(!m_audioPlayPort.open(audioplayerStatusPortName))
     {
@@ -134,7 +132,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
     }
 
 
-    // --------- SpeechSynthesizer config --------- //
+    // Initialize speech synthesizer
     m_speaker = new SpeechSynthesizer();
     if(!m_speaker->configure(rf, ""))
     {
@@ -142,7 +140,7 @@ bool DialogueManager::configure(ResourceFinder &rf)
         return false;
     }
 
-    // --------- SpeechTranscription_nwc config --------- //
+    // Configure speech transcription service
     std::string transcription_local{"/r1Obr-orchestrator/dialogMng/transcription/rpc"}, transcription_remote{"/speechTranscription_nws/rpc"};
     Property propTranscription;
     if(config.check("transcription_local")) { transcription_local = config.find("transcription_local").asString();}
@@ -163,7 +161,6 @@ bool DialogueManager::configure(ResourceFinder &rf)
 }
 
 
-// ****************************************************** //
 void DialogueManager::close()
 {
     if(!m_voiceCommandPort.isClosed())
@@ -186,7 +183,6 @@ void DialogueManager::close()
 }
 
 
-// ****************************************************** //
 void DialogueManager::onRead(Bottle& b)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -195,7 +191,7 @@ void DialogueManager::onRead(Bottle& b)
     if(str == "" || str == " ")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Empty std::string received");
-        //re-open microphone
+        // Skip empty commands and restart microphone
         yarp::os::Bottle req;
         req.clear();
         req.addString("startRecording_RPC");
@@ -222,7 +218,10 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
     yarp::os::Bottle toOrchestrator;
     yarp::os::Bottle reply;
 
+    // Query main LLM to interpret user command and get structured response
     dlgmsg::DialogueMessage replyMsg = coreLLM(msgIn);
+
+    // Update language settings if different from current
     std::string language = replyMsg.getLanguage();
     if (language != m_currentLanguage)
     {
@@ -230,19 +229,24 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
         m_speaker->setLanguage(m_currentLanguage);
         m_iTranscription->setLanguage(m_currentLanguage);
     }
+
+    // Execute appropriate action based on LLM command type
     dlgmsg::CmdTypes cmdType = replyMsg.getType();
     switch(cmdType){
+        // Invalid command - query LLM again to generate user-friendly error message
         case dlgmsg::CmdTypes::INVALID: {
             manageInvalidCmd();
             break;
         }
         case dlgmsg::CmdTypes::SAY: {
+            // Direct speech response - synthesize and speak
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "SAY is the way" << msgIn;
             std::string toSay = replyMsg.getParams()[0];
             speak(toSay);
             break;
         }
         case dlgmsg::CmdTypes::IGNORE: {
+            // Ignore command - restart recording without further processing
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "IGNORE is the way" << msgIn;
             //re-open microphone
             yarp::os::Bottle req;
@@ -252,6 +256,7 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             return;
         }
         case dlgmsg::CmdTypes::FAREWELL: {
+            // Farewell - stop wake word detection and reset LLM conversation contexts
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "FAREWELL is the way" << msgIn;
             yarp::os::Bottle toWakeWord;
             toWakeWord.clear();
@@ -266,6 +271,7 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             m_iLlmReplier->refreshConversation();
         }
         default: {
+            // Execute command through orchestrator, get response, and seed replier LLM
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;
             toOrchestrator = fromMsgToBottle(replyMsg);
             m_orchestratorRPCPort.write(toOrchestrator, reply);
@@ -295,10 +301,12 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
 
 void DialogueManager::manageInvalidCmd()
 {
+    // Query LLM to generate user-friendly error message in current language
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Unknown command received from LLM.");
     std::string notify = "notify user: \"Unknown command received from LLM.\" Use language code: " + m_currentLanguage;
     dlgmsg::DialogueMessage replyMsg = coreLLM(notify);
 
+    // Retry until LLM returns a SAY command
     while(replyMsg.getType() != dlgmsg::CmdTypes::SAY)
     {
         replyMsg = coreLLM(notify);
@@ -309,6 +317,8 @@ void DialogueManager::manageInvalidCmd()
 
 yarp::os::Bottle DialogueManager::fromMsgToBottle(const dlgmsg::DialogueMessage& msg)
 {
+    // Convert DialogueMessage to YARP Bottle format for RPC communication
+    // Format: command_type param1 param2 ... (spaces in params replaced with underscores)
     yarp::os::Bottle toOrchestrator;
     std::vector<std::string> params = msg.getParams();
     std::string args;
@@ -351,6 +361,7 @@ void DialogueManager::speak(const std::string& toSay)
 {
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "Saying: %s", toSay.c_str());
 
+    // Wait for any previous audio playback to finish
     bool audio_is_playing{true};
     while (audio_is_playing)
     {
@@ -360,7 +371,7 @@ void DialogueManager::speak(const std::string& toSay)
         Time::delay(0.1);
     }
 
-    //close microphone
+    // Stop microphone recording before speaking (avoid echo/interference)
     yarp::os::Bottle red_rec{"isRecording_RPC"};
     yarp::os::Bottle reply;
     yarp::os::Bottle req_stop{"stopRecording_RPC"};
@@ -378,8 +389,10 @@ void DialogueManager::speak(const std::string& toSay)
         yCInfo(DIALOG_MNG_ORCHESTRATOR, "Microphone is not recording, no need to stop it");
     }
 
-    //speak
+    // Synthesize and play speech
     m_speaker->say(toSay);
+
+    // Wait for speech to start playing (audio_is_playing becomes true)
     while (!audio_is_playing)
     {
         if(!audioIsPlaying(audio_is_playing)){
@@ -388,7 +401,7 @@ void DialogueManager::speak(const std::string& toSay)
         Time::delay(0.1);
     }
 
-    //wait until finish speaking
+    // Wait for speech to finish playing
     Time::delay(0.5);
     audio_is_playing = true;
     while (audio_is_playing)
@@ -399,7 +412,7 @@ void DialogueManager::speak(const std::string& toSay)
         Time::delay(0.1);
     }
 
-    //re-open microphone
+    // Restart microphone recording for next command
     yarp::os::Bottle req;
     req.clear();
     req.addString("startRecording_RPC");
@@ -409,11 +422,15 @@ void DialogueManager::speak(const std::string& toSay)
 
 bool DialogueManager::audioIsPlaying(bool& audio_is_playing)
 {
+    // Check if audio player status port is connected
     if(m_audioPlayPort.getInputCount()<1)
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "Audio player status port not connected");
         return false;
     }
+
+    // Non-blocking read of audio player status
+    // Extracts boolean flag from the second element of the status message
     yarp::os::Bottle* player_status = m_audioPlayPort.read(false);
     if (player_status)
     {
@@ -427,6 +444,7 @@ bool DialogueManager::audioIsPlaying(bool& audio_is_playing)
 
 void DialogueManager::interactWithReplier(const dlgmsg::DialogueMessage& msgIn, bool keepContext)
 {
+    // Serialize command for replier LLM - replier receives both command and orchestrator response as context
     nlohmann::json replyJson;
     dlgmsg::to_json(replyJson, msgIn);
     yCInfo(DIALOG_MNG_ORCHESTRATOR, "Seeding replier with: %s", replyJson.dump().c_str());
@@ -437,11 +455,14 @@ void DialogueManager::interactWithReplier(const dlgmsg::DialogueMessage& msgIn, 
         manageInvalidCmd();
         return;
     }
+
+    // Optionally add conversation context (current user question) for better replies
     if(keepContext)
     {
         replyMsg.setQuery(m_currentQuestion);
     }
 
+    // Query replier LLM with full command context for detailed, aware responses
     replyJson = replyMsg;
     yarp::dev::LLM_Message answer;
     m_iLlmReplier->ask(replyJson.dump(), answer);
