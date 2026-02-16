@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  SPDX-FileCopyrightText: 2023-2024 Istituto Italiano di Tecnologia (IIT)
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+
+<!DOCTYPE robot PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+<robot name="llama2Device" build="2" portprefix="/llama2Device" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <devices>
+        <device name="llama2_device" type="llama2Device">
+            <param name="model_name">
+                /home/elandini-iit.local/Downloads/Dolphin3.0-Llama3.2-3B-f16.gguf
+            </param>
+            <param extern-name="lobby_prompt_ctx" name="prompt_context">raise_llm</param>
+            <param extern-name="lobby_prompt" name="prompt_file">Lobby_ambassador_sim_madama_prompt.txt</param>
+            <!--<param name="model_context">
+                llama2context
+                /home/leonardo/Repos/yarp-device-llama2/models/llama2/speechless-llama2-13b.Q4_K_M.gguf
+            </param>-->
+        </device>
+        <device name="LLM_nws" type="LLM_nws_yarp">
+			<param extern-name="LLMNwsYarp_name" name="name">
+				/LLM_nws/rpc
+			</param>
+			<action phase="startup" level="5" type="attach">
+				<paramlist name="networks">echo
+					<elem name="subdeviceLLM">
+						llama2_device
+					</elem>
+				</paramlist>
+			</action>
+			<action phase="shutdown" level="5" type="detach" />
+		</device>
+    </devices>
+</robot>
