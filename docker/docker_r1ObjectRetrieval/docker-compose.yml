@@ -45,7 +45,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.8}_stable
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_stable
           user_name: user1
   r1-object-retrieval-devel:
     image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_devel
@@ -53,7 +53,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.8}_devel
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_devel
           user_name: user1
 
 # Simulation images
@@ -63,7 +63,7 @@ services:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.8}_stable
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_stable
           user_name: user1
   r1-object-retrieval-sim-devel:
     image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_devel
@@ -71,7 +71,7 @@ services:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_devel_cuda${CUDA_CUSTOM:-12.8}
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_devel
           user_name: user1
 
 # Containers for the robot
