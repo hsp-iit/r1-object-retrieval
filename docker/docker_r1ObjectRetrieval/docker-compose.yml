@@ -14,9 +14,10 @@ x-general: &general
     - TOUR_BRANCH=${TOUR_BRANCH:-master}
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "$XAUTHORITY:/home/user1/.Xauthority:ro"  # mount the auth file
+    - "$XAUTHORITY:/home/user1/.Xauthority:ro"
     - "${HOME}/.config/yarp:/home/user1/.config/yarp:rw"
     - "/etc/hosts:/etc/hosts"
+    - "${CYCLONEDDS_URI}:/home/user1/.config/cyclone_dds_settings.xml"
     - "./entrypoints/entrypoint_light.sh:/home/user1/config/.entrypoint_light.sh"
     - "./entrypoints/entrypoint_heavy.sh:/home/user1/config/.entrypoint_heavy.sh"
     - "./entrypoints/entrypoint_lobby.sh:/home/user1/config/.entrypoint_lobby.sh"
@@ -28,71 +29,71 @@ x-general: &general
   security_opt:
     - apparmor:unconfined
   deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
 
 services:
 
 # Images for the robot
   r1-object-retrieval-stable:
-    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_stable
     build:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_stable
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_stable
           user_name: user1
   r1-object-retrieval-devel:
-    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile
       args:
-          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_devel
+          base_img: elandini84/r1images:tourCore2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_devel
           user_name: user1
 
 # Simulation images
   r1-object-retrieval-sim-stable:
-    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_stable
     build:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_stable
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_stable
           user_name: user1
   r1-object-retrieval-sim-devel:
-    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_devel
     build:
       context: .
       dockerfile: Dockerfile_sim
       args:
-          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_${CUDA_CUSTOM:-12.1.0}_devel
+          base_img: elandini84/r1images:tourSim2_ubuntu24.04_${ROS_DISTRO:-jazzy}_cuda_${CUDA_CUSTOM:-12.8}_devel
           user_name: user1
 
 # Containers for the robot
   r1-object-retrieval-stable-container:
-    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_stable
     <<: *general
     container_name: r1-object-retrieval-stable-container
     command: terminator -g /home/user1/.config/terminator/config
   r1-object-retrieval-devel-container:
-    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
+    image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_devel
     <<: *general
     container_name: r1-object-retrieval-devel-container
     command: terminator -g /home/user1/.config/terminator/config
 
 # Containers for the simulation
   r1-object-retrieval-sim-stable-container:
-    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_stable
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_stable
     <<: *general
     container_name: r1-object-retrieval-sim-stable-container
     command: terminator -g /home/user1/.config/terminator/config
   r1-object-retrieval-sim-devel-container:
-    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
+    image: elandini84/r1images:r1obr_sim_cuda.${CUDA_CUSTOM:-12.8}_${ROS_DISTRO:-jazzy}_devel
     <<: *general
     container_name: r1-object-retrieval-sim-devel-container
     command: terminator -g /home/user1/.config/terminator/config

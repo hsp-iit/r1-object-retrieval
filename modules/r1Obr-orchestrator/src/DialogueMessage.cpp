@@ -19,7 +19,6 @@
 #include "DialogueMessage.h"
 #include <utility>
 
-
 dlgmsg::DialogueMessage::DialogueMessage(CmdTypes type, const std::vector<std::string>& params, const std::string& language, const std::string& query, const std::string& comment) :
         m_type(type),
         m_params(params),

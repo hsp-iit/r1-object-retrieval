@@ -53,7 +53,7 @@ RUN echo "cd ${robotology_install_folder}/tour-guide-robot && git pull" >> updat
 RUN echo "cd ${robotology_install_folder}/tour-guide-robot/build && cmake .. && make -j11" >> update_repo.sh
 RUN sudo chmod 777 update_repo.sh
 
-RUN ln -s ${robotology_install_folder}/tour-guide-robot/app/navigation2/scripts/stop.sh stop_sim.sh
+# RUN ln -s ${robotology_install_folder}/tour-guide-robot/app/navigation2/scripts/stop.sh stop_sim.sh
 
 # ------------------------------------------------------------------------------ #
 
