@@ -270,6 +270,27 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
             m_iLlm->refreshConversation();
             m_iLlmReplier->refreshConversation();
         }
+        case dlgmsg::CmdTypes::GRASP: {
+            // Grasping - send command to /gb-new-task/rpc:i
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "GRASP is the way" << msgIn;
+            yarp::os::Bottle command, response;
+            command.addString("start_video");
+            command.addString("grasp_position");
+            yarp::os::RpcClient gbNewTaskPort;
+            if (!gbNewTaskPort.open("/dialogueManager/gbNewTask:rpc")) {
+                yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to open RPC client port for /gb-new-task/rpc:i");
+                return;
+            }
+            if (!yarp::os::Network::connect(gbNewTaskPort.getName(), "/gb-new-task/rpc:i")) {
+                yCError(DIALOG_MNG_ORCHESTRATOR, "Unable to connect to /gb-new-task/rpc:i");
+                gbNewTaskPort.close();
+                return;
+            }
+            gbNewTaskPort.write(command, response);
+            yCInfo(DIALOG_MNG_ORCHESTRATOR, "Response from /gb-new-task/rpc:i: %s", response.toString().c_str());
+            gbNewTaskPort.close();
+            break;
+        }
         default: {
             // Execute command through orchestrator, get response, and seed replier LLM
             yCWarning(DIALOG_MNG_ORCHESTRATOR) << "DEFAULT is the way" << msgIn;

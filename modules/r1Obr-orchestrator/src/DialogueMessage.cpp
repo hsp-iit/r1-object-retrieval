@@ -67,7 +67,8 @@ std::string dlgmsg::DialogueMessage::getTypeAsString() const
             {CmdTypes::SUCCESS, "success"},
             {CmdTypes::FAILED, "failed"},
             {CmdTypes::FAREWELL, "farewell"},
-            {CmdTypes::INVALID, "invalid"}
+            {CmdTypes::INVALID, "invalid"},
+            {CmdTypes::GRASP, "grasping"}
     };
 
     return cmdTypeToString.at(m_type);
