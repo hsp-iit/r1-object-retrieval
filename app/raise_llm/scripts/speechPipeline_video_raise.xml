@@ -1,0 +1,263 @@
+<application>
+  <name>Speech_Pipeline_Video_Raise</name>
+
+  <dependencies>
+  </dependencies>
+
+  <!-- Audio input and output devices -->
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context speechPipeline --from micAudio.ini --mic_id 2 --mic_rate 44100 --mic_sound_on_stop 0 --mic_start 1 --mic_min_samples 4000 --mic_max_samples 4000</parameters>
+    <node>r1-torso</node>
+  </module>
+
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context vadModule --from audioPlayer.ini</parameters>
+    <node> --- </node>
+    <workdir>RUN IT DIRECTLY ON R1-FACE TERMINAL WITH TMUX</workdir>
+  </module>
+
+  <!-- Speech filtering -->
+
+  <module>
+    <name>python3</name>
+    <parameters>oww.py --models hey_r_one.onnx</parameters>
+    <workdir>$ENV{TOUR_GUIDE_ROBOT_SOURCE_DIR}/aux_modules/speechProcessing/openWakeWord</workdir>
+    <node>console-llm</node>
+  </module>
+
+  <module>
+    <name>sileroVAD</name>
+    <parameters>--vad_gap_allowance 45 --vad_threshold 0.96</parameters>
+    <environment>YARP_LOG_PROCESS_LABEL=VAD</environment>
+    <node>console-llm</node>
+  </module>
+
+  <module>
+    <name>python3</name>
+    <parameters>play_notification.py</parameters>
+    <node>console-llm</node>
+    <workdir>$ENV{TOUR_GUIDE_ROBOT_SOURCE_DIR}/aux_modules/speechProcessing/wakeWordDetection</workdir>
+  </module>
+
+ <!-- Face controls -->
+
+  <module>
+    <name>yarprobotinterface </name>
+    <parameters>--context headSynchronizer --from faceDisplay.ini</parameters>
+    <node> --- </node>
+    <workdir>RUN IT DIRECTLY ON R1-FACE TERMINAL WITH TMUX</workdir>
+  </module>
+
+  <module>
+    <name>faceExpressionImage5GTour</name>
+    <parameters></parameters>
+    <node>console-llm</node>
+  </module>
+
+
+  <!-- speech devices -->
+  <module>
+     <name>yarprobotinterface</name>
+     <parameters>--context google --from googleSynthesizer.ini --synthesis_lang it-IT --synthesis_voice it-IT-Neural2-E</parameters>
+     <node>console-llm</node>
+  </module>
+
+  <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleTranscription.ini --transcription_lang it-IT</parameters>
+      <node>console-llm</node>
+  </module>
+
+  <module>
+     <name>yarprobotinterface</name>
+     <parameters>--context google --from googleSynthesizer.ini --synthesis_lang en-US --synthesis_voice en-US-Neural2-E</parameters>
+     <node>console-llm</node>
+  </module>
+
+  <module>
+      <name>yarprobotinterface</name>
+      <parameters>--context google --from googleTranscription.ini --transcription_lang en-US</parameters>
+      <node>console-llm</node>
+  </module>
+  <!-- Speech interaction managing modules -->
+  <module>
+    <name>ros2_run.sh</name>
+    <parameters>speech_to_text_component speech_to_text_component</parameters>
+    <node>bt</node>
+  </module>
+
+  <!-- LLM devices -->
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context raise_llm --from video_raise.ini</parameters>
+    <node>console-llm</node>
+    <workdir>/usr/local/src/robot/r1-object-retrieval/app/raise_llm/conf</workdir>
+  </module>
+
+  <module>
+    <name>yarprobotinterface</name>
+    <parameters>--context raise_llm --from videoRaiseReplier.ini</parameters>
+    <node>console-llm</node>
+    <workdir>/usr/local/src/robot/r1-object-retrieval/app/raise_llm/conf</workdir>
+  </module>
+
+
+  <module>
+      <name>nextLocPlanner</name>
+      <parameters>--context nextLocPlanner --from nextLocPlanner_R1.ini</parameters>
+      <node>consoleob</node>
+   </module>
+
+   <module>
+      <name>goAndFindIt</name>
+      <parameters>--context goAndFindIt --from goAndFindIt_R1_cris.ini</parameters>
+      <node>consoleob</node>
+   </module>
+
+   <module>
+      <name>r1Obr-orchestrator</name>
+      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_lobby_cris.ini</parameters>
+      <node>consoleob</node>
+   </module>
+
+<!-- Connections -->
+
+  <connection>
+    <from>/audioRecorder_nws/audio:o</from>
+    <to>/wake/audio:i</to>
+    <protocol>tcp+recv.portmonitor+file.soundfilter_resample+type.dll+channel.0+frequency.16000</protocol>
+  </connection>
+
+  <connection>
+    <from>/wake/audio:o</from>
+    <to>/vad/audio:i</to>
+  </connection>
+
+  <connection>
+    <from>/vad/rpc:o</from>
+    <to>/wake/rpc:i</to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+  <connection>
+    <from>/vad/audio:o</from>
+    <to>/SpeechToTextComponent/audio:i</to>
+  </connection>
+
+  <connection>
+    <from>/faceExpressionImage/image:o</from>
+    <to>/robot/faceDisplay/image:i</to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+  <connection>
+    <from>/audioPlayerWrapper/status:o</from>
+    <to>/faceExpressionImage/mouthAudioData:i </to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+  <connection>
+    <from>/audioRecorder_nws/status:o</from>
+    <to>/faceExpressionImage/earsAudioStatus:i</to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+  <connection>
+    <from>/wake/notification:o</from>
+    <to>/wake_notification:i</to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+  <connection>
+    <from>/wake/face:o</from>
+    <to>/faceExpressionImage/rpc </to>
+    <protocol>fast_tcp</protocol>
+  </connection>
+
+  <connection>
+      <from>/goAndFindIt/nextLocPlanner:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/SpeechToTextComponent/text:o</from>
+      <to>/r1Obr-orchestrator/voice_command:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/nextLocPlanner/request:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/goAndFindIt/request:rpc</from>
+      <to>/goAndFindIt/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/output:o</from>
+      <to>/r1Obr-orchestrator/goAndFindIt/result:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/dialogMng/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/dialogMng/wakeWord:rpc</from>
+      <to>/wake/rpc:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/faceExpression:rpc</from>
+      <to>/faceExpressionImage/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/speech_sythesizer/audio:o</from>
+      <to>/audioPlayerWrapper/audio:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/speech_sythesizer/second/audio:o</from>
+      <to>/audioPlayerWrapper/audio:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/grasping/rpc:o</from>
+      <to>/gb-new-task/rpc:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/r1Obr-orchestrator/dialogMng/audioplayerStatus:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/r1Obr-orchestrator/audioplayerStatus:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+</application>
