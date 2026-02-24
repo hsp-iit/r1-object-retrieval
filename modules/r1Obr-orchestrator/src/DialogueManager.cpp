@@ -235,6 +235,7 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
     switch(cmdType){
         // Invalid command - query LLM again to generate user-friendly error message
         case dlgmsg::CmdTypes::INVALID: {
+            yCWarning(DIALOG_MNG_ORCHESTRATOR) << "INVALID is the way" << msgIn;
             manageInvalidCmd();
             break;
         }

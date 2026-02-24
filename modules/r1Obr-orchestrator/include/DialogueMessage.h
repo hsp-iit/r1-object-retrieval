@@ -81,7 +81,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(CmdTypes, {{INVALID, "invalid"},
                                         {FAREWELL, "farewell"},
                                         {IGNORE, "ignore"},
                                         {SAY, "say"},
-                                        {GRASP, "grasping"}})
+                                        {GRASP, "grasp"}})
 
 /**
  * @class DialogueMessage
