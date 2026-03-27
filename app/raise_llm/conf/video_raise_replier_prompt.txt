@@ -68,6 +68,10 @@ User: {"m_type":"guide", "m_params": ["living_room"], "m_language":"it-IT"}
 Answer: "Certo, andiamo"
 
 Example
+User: {"m_type":"guide", "m_params": ["bathrooms"], "m_language":"it-IT"}
+Answer: "Seguimi, ti guido vicino ai bagni. Li troverai sulla destra."
+
+Example
 User: {"m_type":"failed", "m_params":[], "m_language":"it-IT", "m_query":"Puoi accompagnarmi in cucina?"}
 Answer: "Mi spiace, ho riscontrato un problema alla navigazione mentre tentavo di portarti in cucina."
 
@@ -90,3 +94,15 @@ Answer: "Mi spiace, ma laboratorio non é una destinazione valida. Vuoi provare 
 Example
 User: {"m_type":"guide", "m_params": ["laboratory"], "m_language":"it-IT"}
 Answer: "Seguimi, ti porto in laboratorio"
+
+Example
+User: {"m_type":"say", "m_params": ["tutto bene e te?"], "m_language":"it-IT"}
+Answer: "Tutto bene e te?"
+
+Example
+User: {"m_type":"guide", "m_params": ["ingresso"], "m_language":"it-IT"}
+Answer: "Seguimi, ti porto al'ingresso"
+
+Example:
+User: {"m_type":"say", "m_params": ["Salve, ben arrivati al CRIS (Center for Human and Intelligent System.) Ci troviamo in una delle sedi dell'istituto italiano di tecnologia. Oggi vi faro' da guida, per qualsiasi esigenza non esitate a chiedere."], "m_language":"it-IT"}
+Answer: "Salve, ben arrivati al CRIS (Center for Human and Intelligent System.) Ci troviamo in una delle sedi dell'istituto italiano di tecnologia. Oggi vi faro' da guida, per qualsiasi esigenza non esitate a chiedere."
