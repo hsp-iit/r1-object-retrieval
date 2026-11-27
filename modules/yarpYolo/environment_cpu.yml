@@ -1,0 +1,29 @@
+# CPU-only conda environment for yarpYolo (yarpYolo.py)
+#
+# Same as environment.yml, but with the CPU builds of PyTorch: no CUDA libraries
+# are installed (about 2 GB instead of about 6 GB) and inference runs on the CPU,
+# much slower than on a GPU. yarpYolo selects the CPU automatically.
+#
+# Note: a CUDA toolkit installed on the system is not used by the prebuilt PyTorch
+# packages in any case: the GPU builds of environment.yml ship their own CUDA
+# runtime and only need the NVIDIA driver.
+#
+#   conda env create -f modules/yarpYolo/environment_cpu.yml
+#   conda env config vars set -n yarpyolo-cpu PYTHONPATH=<yarp build or install>/lib/python3
+#   conda activate yarpyolo-cpu
+#
+# The YARP Python bindings come from your YARP 4.0 build: see environment.yml.
+
+name: yarpyolo-cpu
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      # CPU builds of torch and torchvision (versions tagged "+cpu")
+      - --extra-index-url https://download.pytorch.org/whl/cpu
+      - torch
+      - torchvision
+      # pulls opencv-python and numpy
+      - ultralytics>=8.4,<8.5

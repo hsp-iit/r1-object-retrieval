@@ -13,6 +13,11 @@ conda env create -f modules/yarpYolo/environment.yml
 conda env config vars set -n yarpyolo PYTHONPATH=<yarp build or install>/lib/python3
 conda activate yarpyolo
 ```
+[environment_cpu.yml](environment_cpu.yml) is the same environment (named `yarpyolo-cpu`) with the CPU-only
+builds of PyTorch: no CUDA libraries, much smaller, but inference runs on the CPU. A CUDA toolkit installed
+on the system is not used by PyTorch either way: its GPU builds ship their own CUDA runtime and only need
+the NVIDIA driver.
+
 The Python version of the environment (3.12) must be the one the YARP bindings were built for:
 edit `environment.yml` if it differs. The variable replaces `PYTHONPATH` while the environment is active.
 The yarpmanager applications run `python3 yarpYolo.py`: start the `yarprun` of the node from the
