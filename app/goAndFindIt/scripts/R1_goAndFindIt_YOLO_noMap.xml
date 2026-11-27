@@ -41,6 +41,12 @@
       <node>console</node>
    </module>
 
+   <!-- plays the navigation pose (and the other predefined actions) -->
+   <application>
+      <name>R1_actionsPlayer</name>
+      <prefix></prefix>
+   </application>
+
    <module>
       <name>goAndFindIt</name>
       <parameters>--context goAndFindIt --from goAndFindIt_R1.ini</parameters>

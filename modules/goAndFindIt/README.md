@@ -8,6 +8,12 @@ If the search is not successful, the robot continues the search at the next loca
 
 If a location name is specified as input too, the search is performed just at that location.
 
+Before navigating, the robot is set in the navigation pose by playing the action `navigation_pose` with
+[yarpActionsPlayer](../../app/r1Obr-actions/README.md), which must be running (application `R1_actionsPlayer`).
+Set `actions_player_on 0` in the configuration file to skip it. Optional parameters:
+- `navigation_pose_action`: name of the action to play (default: `navigation_pose`)
+- `[ACTIONS_PLAYER]` group: `local_rpc_port`, `remote_rpc_port`, `timing_context`, `timing_file` (see `ActionsPlayerClient.h`)
+
 ## Usage:
 There are two ways to send commands to this module:
 

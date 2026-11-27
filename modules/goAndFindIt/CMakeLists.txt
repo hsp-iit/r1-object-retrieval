@@ -13,6 +13,6 @@ source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
-target_link_libraries(${PROJECT_NAME} PRIVATE YARP::YARP_os YARP::YARP_dev YARP::YARP_init)
+target_link_libraries(${PROJECT_NAME} PRIVATE YARP::YARP_os YARP::YARP_dev YARP::YARP_init yarpActionsPlayerRPC)
 set_property(TARGET goAndFindIt PROPERTY FOLDER "Modules")
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

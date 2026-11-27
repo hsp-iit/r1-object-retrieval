@@ -31,6 +31,8 @@ GoAndFindItThread::GoAndFindItThread(yarp::os::ResourceFinder &rf) :
     m_where_specified(false),
     m_nowhere_else(false),
     m_status(GaFI_IDLE),
+    m_actions_player_on(true),
+    m_nav_pose_action("navigation_pose"),
     m_in_nav_position(false)
 {
     m_nextLoc_rpc_port_name = "/goAndFindIt/nextLocPlanner:rpc";
@@ -39,7 +41,6 @@ GoAndFindItThread::GoAndFindItThread(yarp::os::ResourceFinder &rf) :
     m_output_port_name      = "/goAndFindIt/output:o";
     m_max_nav_time          = 300.0;
     m_max_search_time       = 120.0;
-    m_setNavPos_time        = 3.0;
 }
 
 /****************************************************************/
@@ -50,8 +51,10 @@ bool GoAndFindItThread::threadInit()
         m_max_nav_time = m_rf.find("max_nav_time").asFloat32();
     if(m_rf.check("max_search_time"))
         m_max_search_time = m_rf.find("max_search_time").asFloat32();
-    if(m_rf.check("set_nav_pos_time"))
-        m_setNavPos_time = m_rf.find("set_nav_pos_time").asFloat32();
+    if(m_rf.check("actions_player_on"))
+        m_actions_player_on = m_rf.find("actions_player_on").asInt16() == 1;
+    if(m_rf.check("navigation_pose_action"))
+        m_nav_pose_action = m_rf.find("navigation_pose_action").asString();
 
     //Open ports
     if(m_rf.check("nextLoc_rpc_port"))
@@ -120,13 +123,18 @@ bool GoAndFindItThread::threadInit()
         return false;
     }
 
-    // --------- getReadyToNav config --------- //
-    m_getReadyToNav = new GetReadyToNav();
-    bool ok{m_getReadyToNav->configure(m_rf)};
-    if(!ok)
+    // --------- Navigation position (yarpActionsPlayer) --------- //
+    if(m_actions_player_on)
     {
-        yCError(GO_AND_FIND_IT_THREAD,"GetReadyToNav configuration failed");
-        return false;
+        if(!m_actionsPlayer.configure(m_rf.findGroup("ACTIONS_PLAYER"), "/goAndFindIt/actionsPlayer:rpc"))
+        {
+            yCError(GO_AND_FIND_IT_THREAD,"Actions player client configuration failed");
+            return false;
+        }
+    }
+    else
+    {
+        yCWarning(GO_AND_FIND_IT_THREAD,"actions_player_on is 0: the robot will not be set in navigation position");
     }
 
     return true;
@@ -151,7 +159,8 @@ void GoAndFindItThread::threadRelease()
     if(m_nav2DPoly.isValid())
         m_nav2DPoly.close();
 
-    m_getReadyToNav->close();
+    if(m_actions_player_on)
+        m_actionsPlayer.close();
 
     yCInfo(GO_AND_FIND_IT_THREAD, "Thread released");
 
@@ -332,23 +341,46 @@ void GoAndFindItThread::nextWhere()
 
 
 /****************************************************************/
+void GoAndFindItThread::stopReachingControllers()
+{
+    //need to stop the arm controllers so that the arms can be moved in position control mode
+    for (const string side : {"right", "left"})
+    {
+        string controller_port{"/cer_reaching-controller/" + side + "/rpc"};
+        if (!Network::exists(controller_port))
+            continue;
+        RpcClient tmpRPC;
+        tmpRPC.open("/goAndFindIt/" + side + "ArmReachingController:rpc");
+        if (Network::connect(tmpRPC.getName(), controller_port))
+        {
+            Bottle stop_command{"stop"};
+            tmpRPC.write(stop_command);
+            Network::disconnect(tmpRPC.getName(), controller_port);
+        }
+        tmpRPC.close();
+    }
+}
+
+/****************************************************************/
 bool GoAndFindItThread::setNavigationPosition()
 {
-    if(m_getReadyToNav->areJointsOk())
+    if(!m_actions_player_on)
     {
-        if(!m_getReadyToNav->navPosition())
-            return false;
-
-        Time::delay(m_setNavPos_time);
         m_in_nav_position = true;
         return true;
     }
-    else
+
+    stopReachingControllers();
+
+    // play() returns when the pose is reached
+    if(!m_actionsPlayer.play(m_nav_pose_action))
     {
-        yCError(GO_AND_FIND_IT_THREAD,"Cannot set robot navigation position. Robot's joints present some issues");
-        m_status = GaFI_IDLE;
+        yCError(GO_AND_FIND_IT_THREAD,"Cannot set robot navigation position: action %s failed", m_nav_pose_action.c_str());
         return false;
     }
+
+    m_in_nav_position = true;
+    return true;
 }
 
 /****************************************************************/

@@ -23,7 +23,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/INavigation2D.h>
 #include <yarp/os/all.h>
-#include "getReadyToNav.h"
+#include <ActionsPlayerClient.h>
 
 using namespace std;
 using namespace yarp::os;
@@ -74,9 +74,11 @@ private:
     bool                    m_where_specified;
     bool                    m_nowhere_else;
 
-    GetReadyToNav*          m_getReadyToNav;
+    //Navigation position, set by yarpActionsPlayer
+    ActionsPlayerClient     m_actionsPlayer;
+    bool                    m_actions_player_on;
+    string                  m_nav_pose_action;
     bool                    m_in_nav_position;
-    double                  m_setNavPos_time;
 
 public:
     //Contructor and distructor
@@ -98,6 +100,7 @@ public:
     void setWhatWhere(string& what, string& where);
     void nextWhere();
     bool setNavigationPosition();
+    void stopReachingControllers();
     bool goThere();
     bool search();
     bool objFound();
