@@ -90,7 +90,7 @@ bool RobotOrient::configure()
 
         // defaults
         controllerProp.clear();
-        controllerProp.put("device","remote_controlboard");
+        controllerProp.put("device","controlBoard_nwc_yarp");
         controllerProp.put("local","/lookForObject/robotOrient/remote_controlboard");
         controllerProp.put("remote","/cer/head");
     }
