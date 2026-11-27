@@ -205,9 +205,9 @@ bool ApproachObjectThread::threadInit()
     }
 
     //get parameters data from the camera
-    bool propintr  = m_iRgbd->getDepthIntrinsicParam(m_propIntrinsics);
+    ReturnValue propintr  = m_iRgbd->getDepthIntrinsicParam(m_propIntrinsics);
     if(!propintr){
-        yCError(APPROACH_OBJECT_THREAD) << "Error getting depth intrinsics";
+        yCError(APPROACH_OBJECT_THREAD) << "Error getting depth intrinsics:" << propintr.toString();
         return false;
     }
     yCInfo(APPROACH_OBJECT_THREAD) << "Depth Intrinsics:" << m_propIntrinsics.toString();
@@ -260,7 +260,12 @@ void ApproachObjectThread::run()
     if (m_ext_start && !m_ext_stop)
     {
         Map2DLocation locRobot, locObject, locTarget;
-        m_iNav2D->getCurrentPosition(locRobot);
+        if (ReturnValue ret = m_iNav2D->getCurrentPosition(locRobot); !ret)
+        {
+            yCError(APPROACH_OBJECT_THREAD) << "Unable to get the current robot position:" << ret.toString();
+            m_ext_start = false;
+            return;
+        }
         yCInfo(APPROACH_OBJECT_THREAD,) << "Current location:"<< locRobot.toString();
 
         yCInfo(APPROACH_OBJECT_THREAD,"Calculating approaching position");
@@ -271,10 +276,10 @@ void ApproachObjectThread::run()
 
             //get depth image from camera
             ImageOf<float>  depth_image;
-            bool depth_ok = m_iRgbd->getDepthImage(depth_image);
+            ReturnValue depth_ok = m_iRgbd->getDepthImage(depth_image);
             if (!depth_ok)
             {
-                yCError(APPROACH_OBJECT_THREAD, "getDepthImage failed");
+                yCError(APPROACH_OBJECT_THREAD) << "getDepthImage failed:" << depth_ok.toString();
                 m_ext_start = false;
                 return;
             }
@@ -293,10 +298,10 @@ void ApproachObjectThread::run()
 
             //computing the transformation matrix from the camera to the base reference frame
             Matrix transform_mtrx;
-            bool base_frame_exists = m_iTc->getTransform(m_camera_frame_id, m_base_frame_id, transform_mtrx);
+            ReturnValue base_frame_exists = m_iTc->getTransform(m_camera_frame_id, m_base_frame_id, transform_mtrx);
             if (!base_frame_exists)
             {
-                yCError(APPROACH_OBJECT_THREAD, "unable to found transformation matrix (base)");
+                yCError(APPROACH_OBJECT_THREAD) << "unable to find transformation matrix (base):" << base_frame_exists.toString();
                 m_ext_start = false;
                 return;
             }
@@ -305,10 +310,10 @@ void ApproachObjectThread::run()
             Vector v_object_base = transform_mtrx*tempPoint;
 
             //point in space coordinates in world ref frame
-            bool world_frame_exists = m_iTc->getTransform(m_base_frame_id, m_world_frame_id, transform_mtrx);
+            ReturnValue world_frame_exists = m_iTc->getTransform(m_base_frame_id, m_world_frame_id, transform_mtrx);
             if (!world_frame_exists)
             {
-                yCError(APPROACH_OBJECT_THREAD, "unable to found transformation matrix (world)");
+                yCError(APPROACH_OBJECT_THREAD) << "unable to find transformation matrix (world):" << world_frame_exists.toString();
                 m_ext_start = false;
                 return;
             }
@@ -329,9 +334,10 @@ void ApproachObjectThread::run()
         yCInfo(APPROACH_OBJECT_THREAD,"Approaching object");
 
         yCInfo(APPROACH_OBJECT_THREAD,) << "Approach location:"<< locTarget.toString();
-        m_iNav2D->gotoTargetByAbsoluteLocation(locTarget);
+        if (ReturnValue ret = m_iNav2D->gotoTargetByAbsoluteLocation(locTarget); !ret)
+            yCError(APPROACH_OBJECT_THREAD) << "Unable to send the approach navigation goal:" << ret.toString();
 
-        NavigationStatusEnum currentStatus;
+        NavigationStatusEnum currentStatus{navigation_status_error};
         m_iNav2D->getNavigationStatus(currentStatus);
         while (currentStatus != navigation_status_goal_reached  && !m_ext_stop  )
         {
@@ -341,13 +347,15 @@ void ApproachObjectThread::run()
             if (currentStatus == navigation_status_aborted)
             {
                 yCWarning(APPROACH_OBJECT_THREAD, "Navigation aborted.");
-                m_iNav2D->stopNavigation();
+                if (ReturnValue ret = m_iNav2D->stopNavigation(); !ret)
+                    yCError(APPROACH_OBJECT_THREAD) << "Unable to stop the navigation:" << ret.toString();
 
                 yCInfo(APPROACH_OBJECT_THREAD,"Calculating new approach location");
                 if (calculateTargetLoc(locRobot, locObject, locTarget))
                 {
                     yCInfo(APPROACH_OBJECT_THREAD,) << "New approach location:"<< locTarget.toString();
-                    m_iNav2D->gotoTargetByAbsoluteLocation(locTarget);
+                    if (ReturnValue ret = m_iNav2D->gotoTargetByAbsoluteLocation(locTarget); !ret)
+                        yCError(APPROACH_OBJECT_THREAD) << "Unable to send the new approach navigation goal:" << ret.toString();
                     m_iNav2D->getNavigationStatus(currentStatus);
                 }
                 else
@@ -577,10 +585,14 @@ bool ApproachObjectThread::externalStop()
     yCInfo(APPROACH_OBJECT_THREAD,"Stopping approaching actions");
     m_ext_stop = true;
 
-    NavigationStatusEnum currentStatus;
-    m_iNav2D->getNavigationStatus(currentStatus);
+    NavigationStatusEnum currentStatus{navigation_status_error};
+    if (ReturnValue ret = m_iNav2D->getNavigationStatus(currentStatus); !ret)
+        yCError(APPROACH_OBJECT_THREAD) << "Unable to get the navigation status:" << ret.toString();
     if (currentStatus == navigation_status_moving)
-        m_iNav2D->stopNavigation();
+    {
+        if (ReturnValue ret = m_iNav2D->stopNavigation(); !ret)
+            yCError(APPROACH_OBJECT_THREAD) << "Unable to stop the navigation:" << ret.toString();
+    }
 
     return true;
 
