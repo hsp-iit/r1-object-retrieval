@@ -131,12 +131,20 @@ bool OrchestratorThread::threadInit()
         return false;
     }
 
-    // --------- Tiny Dancer --------- //
-    m_tiny_dancer = new TinyDancer(m_rf);
-    if(!m_tiny_dancer->configure())
+    // --------- Predefined actions (yarpActionsPlayer) --------- //
+    if(m_rf.check("actions_player_on"))
+        m_actions_player_on = m_rf.find("actions_player_on").asInt16() == 1;
+    if(m_actions_player_on)
     {
-        yCError(R1OBR_ORCHESTRATOR_THREAD,"TinyDancer configuration failed");
-        return false;
+        if(!m_actions_player.configure(m_rf.findGroup("ACTIONS_PLAYER"), "/r1Obr-orchestrator/actionsPlayer:rpc"))
+        {
+            yCError(R1OBR_ORCHESTRATOR_THREAD,"Actions player client configuration failed");
+            return false;
+        }
+    }
+    else
+    {
+        yCWarning(R1OBR_ORCHESTRATOR_THREAD,"actions_player_on is 0: the robot will not dance");
     }
 
     // -------- Sensor Network Integration -------- //
@@ -194,8 +202,8 @@ if (m_sensor_network_rpc_port.asPort().isOpen())
     m_dialogueManager->close();
     delete m_dialogueManager;
 
-    m_tiny_dancer->close();
-    delete m_tiny_dancer;
+    if(m_actions_player_on)
+        m_actions_player.close();
 
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Orchestrator thread released");
 
@@ -1038,12 +1046,17 @@ bool OrchestratorThread::dance(string dance_name)
 {
     yCInfo(R1OBR_ORCHESTRATOR_THREAD, "Received dance: %s", dance_name.c_str());
 
-    if(getStatus()=="idle")
+    if(getStatus()!="idle")
     {
-        return m_tiny_dancer->doDance(dance_name);
+        yCError(R1OBR_ORCHESTRATOR_THREAD,"Cannot dance now. Status should be 'idle', send a 'stop' command");
+        return false;
     }
 
-    yCError(R1OBR_ORCHESTRATOR_THREAD,"Cannot dance now. Status should be 'idle', send a 'stop' command");
+    if(!m_actions_player_on)
+    {
+        yCWarning(R1OBR_ORCHESTRATOR_THREAD, "Cannot dance %s: actions_player_on is 0", dance_name.c_str());
+        return false;
+    }
 
-    return false;
+    return m_actions_player.play(dance_name);
 }

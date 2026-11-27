@@ -36,6 +36,12 @@
    <!--    MODULES     -->
    <!--                -->
 
+   <!-- plays the predefined actions (dances) -->
+   <application>
+      <name>R1_actionsPlayer</name>
+      <prefix></prefix>
+   </application>
+
    <module>
       <name>r1Obr-orchestrator</name>
       <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_lobby_erzelli.ini</parameters>

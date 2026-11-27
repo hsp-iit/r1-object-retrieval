@@ -33,6 +33,6 @@ endforeach(header_file ${folder_header})
 
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${folder_source} ${folder_header})
-target_link_libraries(${PROJECT_NAME} PRIVATE YARP::YARP_os YARP::YARP_sig YARP::YARP_dev YARP::YARP_init r1OrchestratorRPC nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} PRIVATE YARP::YARP_os YARP::YARP_sig YARP::YARP_dev YARP::YARP_init r1OrchestratorRPC yarpActionsPlayerRPC nlohmann_json::nlohmann_json)
 set_property(TARGET r1Obr-orchestrator PROPERTY FOLDER "Modules")
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

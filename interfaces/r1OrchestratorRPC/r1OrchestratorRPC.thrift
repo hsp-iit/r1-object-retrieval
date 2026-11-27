@@ -83,9 +83,9 @@ service r1OrchestratorRPC {
     bool tell(1: string key);
     
     /**
-     * make the robot move as defined in the corresponding ini file containing the choreography
+     * make the robot perform a predefined action, played by yarpActionsPlayer (see app/r1Obr-actions)
      * example: dance hi
-     * @param string containing the name of the ini file containing the choreography
+     * @param string containing the name of the action
      * @return true/false on success/failure
      */
     bool dance(1: string motion);

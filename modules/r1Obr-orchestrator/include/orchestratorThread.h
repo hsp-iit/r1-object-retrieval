@@ -23,7 +23,7 @@
 #include "nav2loc.h"
 #include "continuousSearch.h"
 #include "DialogueManager.h"
-#include "tinyDancer.h"
+#include <ActionsPlayerClient.h>
 
 using namespace yarp::os;
 using namespace std;
@@ -94,8 +94,9 @@ private:
     //Chat Bot
     DialogueManager*                m_dialogueManager;
 
-    //TinyDancer
-    TinyDancer*             m_tiny_dancer;
+    //Predefined actions (dances), played by yarpActionsPlayer
+    ActionsPlayerClient     m_actions_player;
+    bool                    m_actions_player_on{true};
 
     //Sensor Network Integration
     bool                    m_sn_active;

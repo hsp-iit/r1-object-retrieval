@@ -28,6 +28,12 @@
       <name>R1_goAndFindIt_YOLO_erzelli</name>
       <prefix></prefix>
    </application>
+   <!-- plays the predefined actions (dances) -->
+   <application>
+      <name>R1_actionsPlayer</name>
+      <prefix></prefix>
+   </application>
+
    <module>
       <name>r1Obr-orchestrator</name>
       <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_erzelli.ini</parameters>

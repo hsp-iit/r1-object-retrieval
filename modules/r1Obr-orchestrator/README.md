@@ -44,6 +44,7 @@ Sending an RPC command to the port `/r1Obr-orchestrator/rpc`:
 - `go <location>` : navigates the robot to 'location' if it is valid
 - `say <sentence>`: the sentence is synthesized and played by the audio player
 - `tell <key>`: a previously stored sentence is accessed through the corresponfing key and it is played by the audio player
+- `dance <action>`: the robot performs a predefined action (e.g. `hi`, `dab`)
 
 A third way of sending commands to this module is via vocal commands. See the paragraph about the Chat Bot.
 
@@ -55,6 +56,13 @@ When a search ends without having found the object of the search, an output mess
 While if the object is found, an output message is sent to the positive outcome port (default name `/r1Obr-orchestrator/positive_outcome:o`) containing the name of the object followed by a Bottle with its pixel coordinates in the camera reference frame. 
 Output format:  `<objectName> (<coordsX> <coordsY>)`
 Example:        `ball (156 203)`
+
+### Predefined actions (dances)
+The dances (`dance <action>`) and the disappointment pose played when the object is not found (action `sadness`) are
+performed by [yarpActionsPlayer](../../app/r1Obr-actions/README.md), which must be running (application `R1_actionsPlayer`).
+Set `actions_player_on 0` in the configuration file to disable them.
+The connection to the player can be configured in the optional `[ACTIONS_PLAYER]` group
+(`local_rpc_port`, `remote_rpc_port`, `timing_context`, `timing_file`: see `ActionsPlayerClient.h`).
 
 ### Continous Search 
 The continous search is an optional feature of this orchestrator. 
