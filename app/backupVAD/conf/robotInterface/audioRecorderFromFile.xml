@@ -23,7 +23,7 @@ SPDX-License-Identifier: BSD-3-Clause
             </param>
         </device>
 
-        <device name="fromFileRecWrap" type="AudioRecorderWrapper">
+        <device name="fromFileRecWrap" type="audioRecorder_nws_yarp">
             <param extern-name="fromFile_min_samples_over_network" name="min_samples_over_network">
                 8820
             </param>

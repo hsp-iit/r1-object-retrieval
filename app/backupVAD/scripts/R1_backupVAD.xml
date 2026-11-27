@@ -23,7 +23,7 @@
   </module>
 
   <connection>
-    <from>/audioRecorderWrapper/audio:o</from>
+    <from>/audioRecorder_nws/audio:o</from>
     <to>/vad/audio:i</to>
     <protocol>fast_tcp+recv.portmonitor+file.soundfilter_resample+type.dll+channel.0+frequency.16000</protocol>
   </connection>
@@ -35,7 +35,7 @@
   </connection>
 
   <connection>
-    <from>/audioRecorderWrapper/status:o</from>
+    <from>/audioRecorder_nws/status:o</from>
     <to>/vad/microphone/status:i </to>
     <protocol>fast_tcp</protocol>
   </connection>

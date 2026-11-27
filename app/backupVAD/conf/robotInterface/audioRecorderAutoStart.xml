@@ -20,7 +20,7 @@ SPDX-License-Identifier: BSD-3-Clause
             </group>
         </device>
 
-        <device name="audioAutoRecWrap" type="AudioRecorderWrapper">
+        <device name="audioAutoRecWrap" type="audioRecorder_nws_yarp">
             <param extern-name="autoRec_start" name="start">
                 true
             </param>
