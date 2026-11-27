@@ -13,7 +13,7 @@ Repository to manage the work on the object retrieval with the robot R1.
 * [yarp-devices-llm](https://github.com/robotology/yarp-devices-llm)
 * [tour-guide-robot](https://github.com/hsp-iit/tour-guide-robot)
 * [Mdetr](https://github.com/ashkamath/mdetr/tree/main) requirements
-* [Yolo v8](https://github.com/ultralytics/ultralytics) requirements
+* [ultralytics](https://github.com/ultralytics/ultralytics) 8.4 for yarpYolo: see [modules/yarpYolo](modules/yarpYolo/README.MD) for its conda environment and model
 
 ## Installation
 ### Using Docker

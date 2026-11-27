@@ -1,0 +1,29 @@
+# Conda environment for yarpYolo (yarpYolo.py)
+#
+#   conda env create -f modules/yarpYolo/environment.yml
+#   conda activate yarpyolo
+#
+# YARP Python bindings
+#   They are not installed by this environment: conda-forge has no YARP 4.0 build.
+#   Use the bindings of your YARP 4.0 build (CMake options YARP_COMPILE_BINDINGS=ON,
+#   CREATE_PYTHON=ON). They only load in the Python version they were built for:
+#   check it with `ls <yarp build>/lib/python3/` and change the python version
+#   below if it is not 3.12. Then make them visible to the environment:
+#
+#     conda env config vars set -n yarpyolo PYTHONPATH=<yarp build or install>/lib/python3
+#
+# GPU
+#   ultralytics installs the default PyTorch wheels from PyPI, which on Linux
+#   support NVIDIA GPUs (CUDA) out of the box. For a smaller CPU-only
+#   environment, first install torch and torchvision from
+#   https://download.pytorch.org/whl/cpu (see https://pytorch.org).
+
+name: yarpyolo
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      # pulls torch, torchvision, opencv-python and numpy
+      - ultralytics>=8.4,<8.5
