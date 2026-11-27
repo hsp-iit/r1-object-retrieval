@@ -154,7 +154,7 @@ services:
           robot_code: /usr/local/src/robot
           google_cloud_version: tags/2025.01.13
           user_name: user1
-          llm_branch: master
+          llm_branch: yarp-4.0
   r1-object-retrieval-demo-devel:
     image: elandini84/r1images:r1obr_cuda.${CUDA_CUSTOM:-12.1.0}_${ROS_DISTRO:-jazzy}_devel
     build:
@@ -165,7 +165,7 @@ services:
           robot_code: /usr/local/src/robot
           google_cloud_version: tags/2025.01.13
           user_name: user1
-          llm_branch: master
+          llm_branch: yarp-4.0
 
 # Simulation images
   r1-object-retrieval-sim-stable:
@@ -207,7 +207,7 @@ services:
           crc32c_version: 1.1.2
           user_name: user1
           jval: 8
-          llm_branch: master
+          llm_branch: yarp-4.0
   r1-object-retrieval-sim-demo-devel:
     image: elandini84/r1images:r1ObjectRetrieval_sim_demo_iron_devel
     build:
@@ -223,7 +223,7 @@ services:
           crc32c_version: 1.1.2
           user_name: user1
           jval: 8
-          llm_branch: master
+          llm_branch: yarp-4.0
 
 # Containers for the robot
   raise-demo-container:

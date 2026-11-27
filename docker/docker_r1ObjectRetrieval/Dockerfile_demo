@@ -56,7 +56,7 @@ RUN echo "\n" >> /home/${user_name}/.bashrc && \
     echo "set +a" >> /home/${user_name}/.bashrc
 
 # Install yarpGPT
-ARG llm_branch
+ARG llm_branch=yarp-4.0
 
 WORKDIR ${robot_code}
 RUN git clone https://github.com/robotology/yarp-devices-llm -b ${llm_branch} && \
