@@ -216,7 +216,7 @@ void DisappointmentPose::setPosCtrlMode(const int part)
 {
     size_t NUMBER_OF_JOINTS{0};
     m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
-    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode[part]->setControlMode(i_joint, VOCAB_CM_POSITION); }
+    m_ictrlmode[part]->setControlModes(std::vector<yarp::dev::SelectableControlModeEnum>(NUMBER_OF_JOINTS, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION));
 }
 
 
