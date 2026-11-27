@@ -16,14 +16,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(YCM)
 find_package(YARP 4.0 REQUIRED COMPONENTS os sig dev math idl_tools)
 
-find_package(ICUB REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
-
-find_package(IPOPT)
-if(NOT IPOPT_FOUND)
-    message(WARNING "IPOPT library was not found, some kinematics module will not be available.")
-endif()
-
 include(GNUInstallDirs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
