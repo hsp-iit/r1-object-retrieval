@@ -6,3 +6,4 @@
 ################################################################################
 
 add_subdirectory(r1OrchestratorRPC)
+add_subdirectory(yarpActionsPlayerRPC)
