@@ -146,11 +146,15 @@ bool sensorNetworkReceiver::configure(ResourceFinder &rf)
             return false;
         }
 
-        m_iLlm->deleteConversation();
+        if (yarp::dev::ReturnValue ret = m_iLlm->deleteConversation(); !ret)
+            yCWarning(SENSOR_NETWORK_RECEIVER) << "Unable to delete the LLM conversation:" << ret.toString();
+        yarp::dev::ReturnValue promptRet;
         if(rf.check("llm_prompt"))
-            m_iLlm->setPrompt(rf.find("llm_prompt").asString());
+            promptRet = m_iLlm->setPrompt(rf.find("llm_prompt").asString());
         else
-            m_iLlm->setPrompt("You are an intent detector: whenever you receive a sentence like 'say: something' or 'try to say: something' you need to reply with the structure 'say \"something\"'. In all other cases just say 'nay'");
+            promptRet = m_iLlm->setPrompt("You are an intent detector: whenever you receive a sentence like 'say: something' or 'try to say: something' you need to reply with the structure 'say \"something\"'. In all other cases just say 'nay'");
+        if (!promptRet)
+            yCError(SENSOR_NETWORK_RECEIVER) << "Unable to set the LLM prompt:" << promptRet.toString();
 
         if (!m_r1Orchestrator_client_port.open(m_r1Orchestrator_client_port_name))
         {
@@ -184,7 +188,8 @@ bool sensorNetworkReceiver::respond(const Bottle &b, Bottle &reply)
     if(m_llm_active)
     {
         yarp::dev::LLM_Message answer;
-        m_iLlm->ask(b.toString(), answer);
+        if (yarp::dev::ReturnValue ret = m_iLlm->ask(b.toString(), answer); !ret)
+            yCError(SENSOR_NETWORK_RECEIVER) << "LLM ask failed:" << ret.toString();
         if(answer.type != "assistant")
         {
             yCError(SENSOR_NETWORK_RECEIVER, "sensorNetworkReceiver::respond. Unexpected answer type from LLM");
