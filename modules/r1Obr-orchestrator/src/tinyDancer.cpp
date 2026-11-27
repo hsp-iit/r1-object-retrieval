@@ -168,7 +168,7 @@ bool TinyDancer::areJointsOk()
 }
 
 // --------------------------------------------------------------- //
-bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
+bool TinyDancer::setCtrlMode(const int part, yarp::dev::SelectableControlModeEnum ctrlMode)
 {
     if(!m_parts_on[part])
     {
@@ -183,7 +183,7 @@ bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
     for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
-        modes.push_back(static_cast<yarp::dev::SelectableControlModeEnum>(ctrlMode));
+        modes.push_back(ctrlMode);
     }
 
     m_ictrlmode[part]->setControlModes(joints, modes);
@@ -193,7 +193,7 @@ bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
     m_ictrlmode[part]->getControlModes(joints, currentModes);
     for (size_t i=0; i<NUMBER_OF_JOINTS; i++)
     {
-        if(i >= currentModes.size() || static_cast<int>(currentModes[i]) != ctrlMode)
+        if(i >= currentModes.size() || static_cast<int>(currentModes[i]) != static_cast<int>(ctrlMode))
         {
             yCError(TINY_DANCER) << "Joint " << i << " not in correct control mode for part" << part;
             return false;
@@ -309,25 +309,25 @@ bool TinyDancer::doDance(string& dance_name)
                     bool ok = true;
                     if (armR_joints)
                     {
-                        ok = ok && setCtrlMode(0, VOCAB_CM_POSITION);
+                        ok = ok && setCtrlMode(0, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
                         if (time >= 0)
                             ok = ok && setJointsSpeed(0, time, armR_joints);
                     }
                     if (armL_joints)
                     {
-                        ok = ok && setCtrlMode(1, VOCAB_CM_POSITION);
+                        ok = ok && setCtrlMode(1, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
                         if (time >= 0)
                             ok = ok && setJointsSpeed(1, time, armL_joints);
                     }
                     if (head_joints)
                     {
-                        ok = ok && setCtrlMode(2, VOCAB_CM_POSITION);
+                        ok = ok && setCtrlMode(2, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
                         if (time >= 0)
                             ok = ok && setJointsSpeed(2, time, head_joints);
                     }
                     if (torso_joints)
                     {
-                        ok = ok && setCtrlMode(3, VOCAB_CM_POSITION);
+                        ok = ok && setCtrlMode(3, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
                         if (time >= 0)
                             ok = ok && setJointsSpeed(3, time, torso_joints);
                     }

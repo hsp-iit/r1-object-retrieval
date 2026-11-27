@@ -59,7 +59,7 @@ public:
     void close();
 
     bool areJointsOk();
-    bool setCtrlMode(const int part, int ctrlMode);
+    bool setCtrlMode(const int part, yarp::dev::SelectableControlModeEnum ctrlMode);
     bool setJointsSpeed(const int part, const double time, Bottle* joint_pos);
     bool movePart(const int part, Bottle* joint_pos);
     bool doDance(string& dance_name);
