@@ -163,7 +163,7 @@ bool ApproachObjectThread::threadInit()
     // --------- RGBDSensor config --------- //
     Property rgbdProp;
     // Prepare default prop object
-    rgbdProp.put("device",          "RGBDSensorClient");
+    rgbdProp.put("device",          "RGBDSensor_nwc_yarp");
     rgbdProp.put("localImagePort",  "/approachObject/clientRgbPort:i");
     rgbdProp.put("localDepthPort",  "/approachObject/clientDepthPort:i");
     rgbdProp.put("localRpcPort",    "/approachObject/clientRpcPort");
