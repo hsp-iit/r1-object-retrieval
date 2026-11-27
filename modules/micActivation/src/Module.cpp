@@ -33,8 +33,10 @@ bool Module::configure(yarp::os::ResourceFinder &rf)
 
     if(iAudioGrabber_->isRecording(is_microphone_open_))
     {
-        iAudioGrabber_->resetRecordingAudioBuffer();
-        iAudioGrabber_->stopRecording();
+        if (yarp::dev::ReturnValue ret = iAudioGrabber_->resetRecordingAudioBuffer(); !ret)
+            yError() << "Unable to reset the recording audio buffer:" << ret.toString();
+        if (yarp::dev::ReturnValue ret = iAudioGrabber_->stopRecording(); !ret)
+            yError() << "Unable to stop the recording:" << ret.toString();
     }
 
     return true;
@@ -51,7 +53,8 @@ bool Module::updateModule()
             return false;
         }
 
-        iAudioGrabber_->isRecording(is_microphone_open_);
+        if (yarp::dev::ReturnValue ret = iAudioGrabber_->isRecording(is_microphone_open_); !ret)
+            yError() << "Unable to get the recording status:" << ret.toString();
 
         if (button_pressed->get(0).asInt8() != 0 || button_pressed->get(1).asInt8() != 0)
         {
@@ -59,7 +62,8 @@ bool Module::updateModule()
             if(!is_microphone_open_)
             {
                 yInfo() << "Started recording";
-                iAudioGrabber_->startRecording();
+                if (yarp::dev::ReturnValue ret = iAudioGrabber_->startRecording(); !ret)
+                    yError() << "Unable to start the recording:" << ret.toString();
             }
         }
 
@@ -68,7 +72,8 @@ bool Module::updateModule()
             if(is_microphone_open_)
             {
                 yInfo() << "Stopped recording";
-                iAudioGrabber_->stopRecording();
+                if (yarp::dev::ReturnValue ret = iAudioGrabber_->stopRecording(); !ret)
+                    yError() << "Unable to stop the recording:" << ret.toString();
             }
         }
     }
