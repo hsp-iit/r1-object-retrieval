@@ -8,7 +8,7 @@ SPDX-License-Identifier: BSD-3-Clause
     <devices>
         <device name="lobbyRplChat" type="GPTDevice">
             <param extern-name="lobbyRpl_prompt_ctx" name="prompt_context">raise_llm</param>
-            <param extern-name="lobbyRpl_prompt" name="prompt_file">Lobby_ambassador_replier_prompt.txt</param>
+            <param extern-name="lobbyRpl_prompt" name="prompt_file">video_raise_replier_prompt.txt</param>
         </device>
         <device name="LLM_nws" type="LLM_nws_yarp">
             <param extern-name="LLMNwsYarp_name" name="name">

@@ -1,0 +1,138 @@
+<application>
+   <name>R1_Orchestrator_lobby_minimal_CRIS_base</name>
+
+   <dependencies>
+   </dependencies>
+
+
+   <!--                -->
+   <!--  APPLICATIONS  -->
+   <!--                -->
+   <application>
+        <name>Navigation_ROS2_R1SN003_cris_steamdeck_base</name>
+        <prefix></prefix>
+    </application>
+
+   <application>
+      <name>Speech_Pipeline_Lobby_google_robot_base</name>
+      <prefix></prefix>
+   </application>
+
+   <!--                -->
+   <!--    MODULES     -->
+   <!--                -->
+   <module>
+      <name>yarpmotorgui</name>
+      <parameters></parameters>
+      <workdir>$ENV{ROBOT_CODE}/robots-configuration/R1SN003/</workdir>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>nextLocPlanner</name>
+      <parameters>--context nextLocPlanner --from nextLocPlanner_R1.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>goAndFindIt</name>
+      <parameters>--context goAndFindIt --from goAndFindIt_R1_cris.ini</parameters>
+      <node>console</node>
+   </module>
+
+   <module>
+      <name>r1Obr-orchestrator</name>
+      <parameters>--context r1Obr-orchestrator --from r1Obr-orchestrator_R1_lobby_cris.ini</parameters>
+      <node>console</node>
+   </module>
+
+
+  <!--                -->
+  <!--  CONNECTIONS   -->
+  <!--                -->
+
+  <connection>
+      <from>/goAndFindIt/nextLocPlanner:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/SpeechToTextComponent/text:o</from>
+      <to>/r1Obr-orchestrator/voice_command:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/nextLocPlanner/request:rpc</from>
+      <to>/nextLocPlanner/request/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/goAndFindIt/request:rpc</from>
+      <to>/goAndFindIt/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/goAndFindIt/output:o</from>
+      <to>/r1Obr-orchestrator/goAndFindIt/result:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/dialogMng/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/dialogMng/wakeWord:rpc</from>
+      <to>/wake/rpc:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/microphone:rpc</from>
+      <to>/audioRecorder_nws/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/faceExpression:rpc</from>
+      <to>/faceExpressionImage/rpc</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/speech_sythesizer/audio:o</from>
+      <to>/audioPlayerWrapper/audio:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/speech_sythesizer/second/audio:o</from>
+      <to>/audioPlayerWrapper/audio:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/r1Obr-orchestrator/grasping/rpc:o</from>
+      <to>/gb-new-task/rpc:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/r1Obr-orchestrator/dialogMng/audioplayerStatus:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+   <connection>
+      <from>/audioPlayerWrapper/status:o</from>
+      <to>/r1Obr-orchestrator/audioplayerStatus:i</to>
+      <protocol>fast_tcp</protocol>
+   </connection>
+
+</application>

@@ -22,7 +22,7 @@
 
   <module>
     <name>uv</name>
-    <parameters>run oww.py --models hey_erra_uno.onnx</parameters>
+    <parameters>run oww.py --models hey_r_one.onnx</parameters>
     <workdir>$ENV{TOUR_GUIDE_ROBOT_SOURCE_DIR}/aux_modules/speechProcessing/openWakeWord</workdir>
     <node>r1-base</node>
   </module>
