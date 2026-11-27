@@ -6,7 +6,7 @@ Repository to manage the work on the object retrieval with the robot R1.
 [![Docker build](https://github.com/hsp-iit/r1-object-retrieval/actions/workflows/main.yml/badge.svg)](https://github.com/hsp-iit/r1-object-retrieval/actions/workflows/main.yml)
 
 ## Requirements
-* [yarp](https://github.com/robotology/yarp) 4.0 or later (branch `yarp-4.0`)
+* [yarp](https://github.com/robotology/yarp) 4.0 or later (branch `yarp-4.0`), including the `yarpActionsPlayer` executable (built by default)
 * [icub-main](https://github.com/robotology/icub-main.git)
 * [icub-contrib](https://github.com/robotology/icub-contrib-common.git)
 * [cer](https://github.com/robotology/cer)
@@ -59,10 +59,17 @@ You can find here below a list of the main [modules](modules) in this repo and a
 | [look_and_point](modules/look_and_point/README.md) | Just a simple module to use the positive output of the search and give it as an iput to the handPointing module (cer repo) |
 | [micActivation](modules/micActivation/)| Module that starts/stops the audioRecorder device when a joystick button is pressed/released |
 
+## Predefined actions
+The predefined motions of the robot (the dances of the orchestrator, the disappointment pose and the navigation pose of goAndFindIt)
+are played by `yarpActionsPlayer`, part of YARP, through the yarpmanager application `R1_actionsPlayer`.
+The actions, written as editable keyframes, and the tool that generates the trajectories from them are in [app/r1Obr-actions](app/r1Obr-actions/README.md).
+Only R1SN003 is configured.
+
 
 ## Interfaces
 You can find in the [interfaces](interfaces) folder the thrift files for the creation of the following classes:
 * [r1OrchestratorRPC](interfaces/r1OrchestratorRPC/): implementations of the RPC calls of the module r1Obr-orchestrator
+* [yarpActionsPlayerRPC](interfaces/yarpActionsPlayerRPC/): client of yarpActionsPlayer (copy of its thrift file) and `ActionsPlayerClient`, used by the modules to play the predefined actions
 
 ## Apps
 In the [app](app) folder you can find, divided by context:
