@@ -70,7 +70,7 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
 
     if(m_parts_on[RIGHT_ARM])
     {
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/goAndFindIt/getReadyToNavRArm");
         prop.put("remote","/"+robot+"/right_arm");
         if (!m_drivers[RIGHT_ARM].open(prop))
@@ -86,7 +86,7 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
     if(m_parts_on[LEFT_ARM])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/goAndFindIt/getReadyToNavLArm");
         prop.put("remote","/"+robot+"/left_arm");
         if (!m_drivers[LEFT_ARM].open(prop))
@@ -102,7 +102,7 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
     if(m_parts_on[HEAD])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/goAndFindIt/getReadyToNavHead");
         prop.put("remote","/"+robot+"/head");
         if (!m_drivers[HEAD].open(prop))
@@ -118,7 +118,7 @@ bool GetReadyToNav::configure(yarp::os::ResourceFinder &rf)
     if(m_parts_on[TORSO])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/goAndFindIt/getReadyToNavTorso");
         prop.put("remote","/"+robot+"/torso");
         if (!m_drivers[TORSO].open(prop))
