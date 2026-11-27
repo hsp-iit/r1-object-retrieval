@@ -205,8 +205,8 @@ bool RobotOrient::configure()
         double min_pos_h {0}, min_pos_v {0};
         double max_pos_h {100}, max_pos_v {100};
 
-        bool limGotV = m_ilimctrl->getLimits(0, &min_pos_v, &max_pos_v); //pitch
-        bool limGotH = m_ilimctrl->getLimits(1, &min_pos_h, &max_pos_h); //yaw
+        bool limGotV = m_ilimctrl->getPosLimits(0, &min_pos_v, &max_pos_v); //pitch
+        bool limGotH = m_ilimctrl->getPosLimits(1, &min_pos_h, &max_pos_h); //yaw
         if(!limGotV || !limGotH)
         {
             yCError(ROBOT_ORIENT,"An error occurred while retrieving the head joint limits");
@@ -303,9 +303,9 @@ void RobotOrient::resetTurns()
 void RobotOrient::home()
 {    
     // ------ set head to Position control mode ------ //
-    int NUMBER_OF_JOINTS;
-    m_iposctrl->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode->setControlMode(i_joint, VOCAB_CM_POSITION); }    
+    size_t NUMBER_OF_JOINTS{0};
+    m_iposctrl->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode->setControlMode(i_joint, VOCAB_CM_POSITION); }
     
     // ------ homing command  ------ //
     bool ok = m_iremcal->homingWholePart();
