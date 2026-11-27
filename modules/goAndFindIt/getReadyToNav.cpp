@@ -165,7 +165,8 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
     size_t NUMBER_OF_JOINTS{0};
     std::vector<int> joints;
     std::vector<yarp::dev::SelectableControlModeEnum> modes;
-    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    if (yarp::dev::ReturnValue ret = m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS); !ret)
+        yCError(GET_READY_TO_NAV) << "Unable to get the number of joints of part" << part << ":" << ret.toString();
     for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
@@ -199,11 +200,13 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
         tmpLeftArmRPC.close();
     }
 
-    m_ictrlmode[part]->setControlModes(joints, modes);
+    if (yarp::dev::ReturnValue ret = m_ictrlmode[part]->setControlModes(joints, modes); !ret)
+        yCError(GET_READY_TO_NAV) << "Unable to set position control mode for part" << part << ":" << ret.toString();
 
     yarp::os::Time::delay(0.01);  // give time to update control modes value
     std::vector<yarp::dev::ControlModeEnum> currentModes;
-    m_ictrlmode[part]->getControlModes(joints, currentModes);
+    if (yarp::dev::ReturnValue ret = m_ictrlmode[part]->getControlModes(joints, currentModes); !ret)
+        yCError(GET_READY_TO_NAV) << "Unable to get the control modes of part" << part << ":" << ret.toString();
     for (size_t i=0; i<NUMBER_OF_JOINTS; i++)
     {
         if(i >= currentModes.size() || currentModes[i] != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION)
@@ -245,11 +248,16 @@ bool GetReadyToNav::setJointsSpeed(const int part)
     size_t NUMBER_OF_JOINTS{0};
     std::vector<int>    joints;
     std::vector<double> speeds;
-    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    if (yarp::dev::ReturnValue ret = m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS); !ret)
+        yCError(GET_READY_TO_NAV) << "Unable to get the number of joints of part" << part << ":" << ret.toString();
     for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
-        double start, goal;
-        m_iencoder[part]->getEncoder(i_joint,&start);
+        double start{0.0}, goal{0.0};
+        if (yarp::dev::ReturnValue ret = m_iencoder[part]->getEncoder(i_joint,&start); !ret)
+        {
+            yCError(GET_READY_TO_NAV) << "Unable to read encoder" << i_joint << "of part" << part << ":" << ret.toString();
+            return false;
+        }
 
         switch(part)
         {
@@ -276,7 +284,10 @@ bool GetReadyToNav::setJointsSpeed(const int part)
         speeds.push_back(disp/m_time);
     }
 
-    return m_iposctrl[part]->setTrajSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
+    yarp::dev::ReturnValue ret = m_iposctrl[part]->setTrajSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
+    if (!ret)
+        yCError(GET_READY_TO_NAV) << "Unable to set the joint speeds of part" << part << ":" << ret.toString();
+    return static_cast<bool>(ret);
 }
 
 
@@ -291,7 +302,8 @@ bool GetReadyToNav::movePart(const int part)
     size_t NUMBER_OF_JOINTS{0};
     std::vector<int>    joints;
     std::vector<double> positions;
-    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    if (yarp::dev::ReturnValue ret = m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS); !ret)
+        yCError(GET_READY_TO_NAV) << "Unable to get the number of joints of part" << part << ":" << ret.toString();
     for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
@@ -314,7 +326,10 @@ bool GetReadyToNav::movePart(const int part)
         }
     }
 
-    return m_iposctrl[part]->positionMove(NUMBER_OF_JOINTS, joints.data(), positions.data());
+    yarp::dev::ReturnValue ret = m_iposctrl[part]->positionMove(NUMBER_OF_JOINTS, joints.data(), positions.data());
+    if (!ret)
+        yCError(GET_READY_TO_NAV) << "Unable to move part" << part << ":" << ret.toString();
+    return static_cast<bool>(ret);
 }
 
 
@@ -367,10 +382,12 @@ bool GetReadyToNav::areJointsOk()
             continue;
         }
         size_t NUMBER_OF_JOINTS{0};
-        m_iposctrl[i]->getAxes(NUMBER_OF_JOINTS);
+        if (yarp::dev::ReturnValue ret = m_iposctrl[i]->getAxes(NUMBER_OF_JOINTS); !ret)
+            yCError(GET_READY_TO_NAV) << "Unable to get the number of joints of part" << i << ":" << ret.toString();
         for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
         {
-            m_ictrlmode[i]->getControlMode(i_joint, mode);
+            if (yarp::dev::ReturnValue ret = m_ictrlmode[i]->getControlMode(i_joint, mode); !ret)
+                yCError(GET_READY_TO_NAV) << "Unable to get the control mode of joint" << i_joint << "of part" << i << ":" << ret.toString();
             if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
             {
                 yError() << "Error: hardware fault detected";

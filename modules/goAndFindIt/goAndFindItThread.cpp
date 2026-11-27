@@ -387,10 +387,11 @@ bool GoAndFindItThread::goThere()
     }
 
     //navigating to "m_where"
-    m_iNav2D->gotoTargetByLocationName(m_where);
+    if (ReturnValue ret = m_iNav2D->gotoTargetByLocationName(m_where); !ret)
+        yCError(GO_AND_FIND_IT_THREAD) << "Unable to send the navigation goal" << m_where << ":" << ret.toString();
     yCInfo(GO_AND_FIND_IT_THREAD, "Going to location %s", m_where.c_str());
 
-    Nav2D::NavigationStatusEnum currentStatus;
+    Nav2D::NavigationStatusEnum currentStatus{Nav2D::navigation_status_error};
     m_iNav2D->getNavigationStatus(currentStatus);
     double toomuchtime = Time::now() + m_max_nav_time; //five minutes to reach "m_where"
 
@@ -515,10 +516,14 @@ bool GoAndFindItThread::stopSearch()
 {
     if (m_status == GaFI_NAVIGATING)
     {
-        Nav2D::NavigationStatusEnum currentStatus;
-        m_iNav2D->getNavigationStatus(currentStatus);
+        Nav2D::NavigationStatusEnum currentStatus{Nav2D::navigation_status_error};
+        if (ReturnValue ret = m_iNav2D->getNavigationStatus(currentStatus); !ret)
+            yCError(GO_AND_FIND_IT_THREAD) << "Unable to get the navigation status:" << ret.toString();
         if (currentStatus == Nav2D::navigation_status_moving)
-            m_iNav2D->stopNavigation();
+        {
+            if (ReturnValue ret = m_iNav2D->stopNavigation(); !ret)
+                yCError(GO_AND_FIND_IT_THREAD) << "Unable to stop the navigation:" << ret.toString();
+        }
         yCInfo(GO_AND_FIND_IT_THREAD, "Navigation and search stopped");
     }
     else if (m_status == GaFI_SEARCHING)
