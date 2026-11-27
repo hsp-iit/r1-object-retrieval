@@ -162,14 +162,14 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
         return true;
     }
 
-    int NUMBER_OF_JOINTS;
+    size_t NUMBER_OF_JOINTS{0};
     std::vector<int> joints;
-    std::vector<int> modes;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+    std::vector<yarp::dev::SelectableControlModeEnum> modes;
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
-        modes.push_back(VOCAB_CM_POSITION);
+        modes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
     }
 
     //need to stop the arm controllers so that the control mode of the arms can be set to Position
@@ -199,13 +199,14 @@ bool GetReadyToNav::setPosCtrlMode(const int part)
         tmpLeftArmRPC.close();
     }
 
-    m_ictrlmode[part]->setControlModes(NUMBER_OF_JOINTS, joints.data(), modes.data());
+    m_ictrlmode[part]->setControlModes(joints, modes);
 
     yarp::os::Time::delay(0.01);  // give time to update control modes value
-    m_ictrlmode[part]->getControlModes(NUMBER_OF_JOINTS, joints.data(), modes.data());
+    std::vector<yarp::dev::ControlModeEnum> currentModes;
+    m_ictrlmode[part]->getControlModes(joints, currentModes);
     for (size_t i=0; i<NUMBER_OF_JOINTS; i++)
     {
-        if(modes[i] != VOCAB_CM_POSITION)
+        if(i >= currentModes.size() || currentModes[i] != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION)
         {
             std::string part_name="";
             switch(part){
@@ -241,11 +242,11 @@ bool GetReadyToNav::setJointsSpeed(const int part)
         return true;
     }
 
-    int NUMBER_OF_JOINTS;
+    size_t NUMBER_OF_JOINTS{0};
     std::vector<int>    joints;
     std::vector<double> speeds;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         double start, goal;
         m_iencoder[part]->getEncoder(i_joint,&start);
@@ -275,7 +276,7 @@ bool GetReadyToNav::setJointsSpeed(const int part)
         speeds.push_back(disp/m_time);
     }
 
-    return m_iposctrl[part]->setRefSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
+    return m_iposctrl[part]->setTrajSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
 }
 
 
@@ -287,11 +288,11 @@ bool GetReadyToNav::movePart(const int part)
         return true;
     }
 
-    int NUMBER_OF_JOINTS;
+    size_t NUMBER_OF_JOINTS{0};
     std::vector<int>    joints;
     std::vector<double> positions;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
 
@@ -365,9 +366,9 @@ bool GetReadyToNav::areJointsOk()
             yCWarning(GET_READY_TO_NAV, "Part %d is not available", i);
             continue;
         }
-        int NUMBER_OF_JOINTS;
-        m_iposctrl[i]->getAxes(&NUMBER_OF_JOINTS);
-        for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+        size_t NUMBER_OF_JOINTS{0};
+        m_iposctrl[i]->getAxes(NUMBER_OF_JOINTS);
+        for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
         {
             m_ictrlmode[i]->getControlMode(i_joint, &mode);
             if (mode == VOCAB_CM_HW_FAULT)
