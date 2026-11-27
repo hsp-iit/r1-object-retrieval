@@ -6,7 +6,7 @@ Repository to manage the work on the object retrieval with the robot R1.
 [![Docker build](https://github.com/hsp-iit/r1-object-retrieval/actions/workflows/main.yml/badge.svg)](https://github.com/hsp-iit/r1-object-retrieval/actions/workflows/main.yml)
 
 ## Requirements
-* [yarp](https://github.com/robotology/yarp)
+* [yarp](https://github.com/robotology/yarp) 4.0 or later (branch `yarp-4.0`)
 * [icub-main](https://github.com/robotology/icub-main.git)
 * [icub-contrib](https://github.com/robotology/icub-contrib-common.git)
 * [cer](https://github.com/robotology/cer)
