@@ -214,9 +214,9 @@ void DisappointmentPose::onRead(Bottle& b)
 
 void DisappointmentPose::setPosCtrlMode(const int part)
 {
-    int NUMBER_OF_JOINTS;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode[part]->setControlMode(i_joint, VOCAB_CM_POSITION); }
+    size_t NUMBER_OF_JOINTS{0};
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode[part]->setControlMode(i_joint, VOCAB_CM_POSITION); }
 }
 
 
