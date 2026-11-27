@@ -137,7 +137,7 @@ bool DisappointmentPose::configure(ResourceFinder &rf)
 
     if(m_parts_on[RIGHT_ARM])
     {
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/disappointmentPose/right_arm");
         prop.put("remote","/"+robot+"/right_arm");
         if (!m_drivers[RIGHT_ARM].open(prop))
@@ -152,7 +152,7 @@ bool DisappointmentPose::configure(ResourceFinder &rf)
     if(m_parts_on[LEFT_ARM])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/disappointmentPose/left_arm");
         prop.put("remote","/"+robot+"/left_arm");
         if (!m_drivers[LEFT_ARM].open(prop))
@@ -167,7 +167,7 @@ bool DisappointmentPose::configure(ResourceFinder &rf)
     if(m_parts_on[HEAD])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/disappointmentPose/head");
         prop.put("remote","/"+robot+"/head");
         if (!m_drivers[HEAD].open(prop))
