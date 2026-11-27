@@ -33,7 +33,7 @@
 #include <math.h>
 
 //Defaults RGBD sensor
-#define RGBDClient            "RGBDSensorClient"
+#define RGBDClient            "RGBDSensor_nwc_yarp"
 #define RGBDLocalImagePort    "/lookForObject/robotOrient/clientRgbPort:i"
 #define RGBDLocalDepthPort    "/lookForObject/robotOrient/clientDepthPort:i"
 #define RGBDLocalRpcPort      "/lookForObject/robotOrient/clientRpcPort"
