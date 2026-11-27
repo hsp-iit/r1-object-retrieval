@@ -189,10 +189,11 @@ bool RobotOrient::configure()
     {
         double verticalFov{0.0}, horizontalFov{0.0};
         double newVFov{0.0}, newHFov{0.0};
-        bool fovGot = m_iRgbd->getRgbFOV(horizontalFov,verticalFov);
+        yarp::dev::ReturnValue fovRet = m_iRgbd->getRgbFOV(horizontalFov,verticalFov);
+        bool fovGot = static_cast<bool>(fovRet);
         if(!fovGot)
         {
-            yCError(ROBOT_ORIENT,"An error occurred while retrieving the rgb camera FOV");
+            yCError(ROBOT_ORIENT) << "An error occurred while retrieving the rgb camera FOV:" << fovRet.toString();
         }
         else
         {
@@ -205,11 +206,13 @@ bool RobotOrient::configure()
         double min_pos_h {0}, min_pos_v {0};
         double max_pos_h {100}, max_pos_v {100};
 
-        bool limGotV = m_ilimctrl->getPosLimits(0, &min_pos_v, &max_pos_v); //pitch
-        bool limGotH = m_ilimctrl->getPosLimits(1, &min_pos_h, &max_pos_h); //yaw
+        yarp::dev::ReturnValue limRetV = m_ilimctrl->getPosLimits(0, &min_pos_v, &max_pos_v); //pitch
+        yarp::dev::ReturnValue limRetH = m_ilimctrl->getPosLimits(1, &min_pos_h, &max_pos_h); //yaw
+        bool limGotV = static_cast<bool>(limRetV);
+        bool limGotH = static_cast<bool>(limRetH);
         if(!limGotV || !limGotH)
         {
-            yCError(ROBOT_ORIENT,"An error occurred while retrieving the head joint limits");
+            yCError(ROBOT_ORIENT) << "An error occurred while retrieving the head joint limits. pitch:" << limRetV.toString() << "yaw:" << limRetH.toString();
         }
 
         double up = limGotV ? min(fovGot ? newVFov : 20.0 , max_pos_v) : (fovGot ? newVFov : 20.0);
@@ -232,8 +235,9 @@ bool RobotOrient::configure()
     }
 
     double _v_, horizontalFov{0.0};
-    if(!m_iRgbd->getRgbFOV(horizontalFov,_v_))
-        yCError(ROBOT_ORIENT,"An error occurred while retrieving the rgb camera FOV");
+    yarp::dev::ReturnValue fovRet = m_iRgbd->getRgbFOV(horizontalFov,_v_);
+    if(!fovRet)
+        yCError(ROBOT_ORIENT) << "An error occurred while retrieving the rgb camera FOV:" << fovRet.toString();
     
     m_max_turns = ceil(360.0/(visual_span+horizontalFov));
     m_turn_deg = 360.0/m_max_turns;
@@ -304,13 +308,18 @@ void RobotOrient::home()
 {    
     // ------ set head to Position control mode ------ //
     size_t NUMBER_OF_JOINTS{0};
-    m_iposctrl->getAxes(NUMBER_OF_JOINTS);
-    m_ictrlmode->setControlModes(std::vector<yarp::dev::SelectableControlModeEnum>(NUMBER_OF_JOINTS, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION));
+    yarp::dev::ReturnValue ret = m_iposctrl->getAxes(NUMBER_OF_JOINTS);
+    if (!ret)
+        yCError(ROBOT_ORIENT) << "Unable to get the number of head joints:" << ret.toString();
+    ret = m_ictrlmode->setControlModes(std::vector<yarp::dev::SelectableControlModeEnum>(NUMBER_OF_JOINTS, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION));
+    if (!ret)
+        yCError(ROBOT_ORIENT) << "Unable to set the head in position control mode:" << ret.toString();
     
     // ------ homing command  ------ //
-    bool ok = m_iremcal->homingWholePart();
-    if (!ok)  
+    ret = m_iremcal->homingWholePart();
+    if (!ret)
     {
+        yCError(ROBOT_ORIENT) << "Homing of the head failed:" << ret.toString();
         bool isCalib = false;
         m_iremcal->isCalibratorDevicePresent(&isCalib);
         if (!isCalib) // providing better feedback to user by verifying if the calibrator device was set or not. 

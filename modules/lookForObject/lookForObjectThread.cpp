@@ -317,10 +317,14 @@ bool LookForObjectThread::turn()
         double theta = reply.get(0).asFloat32();
         yCInfo(LOOK_FOR_OBJECT_THREAD) << "Turning" << theta << "degrees";
         yarp::dev::Nav2D::Map2DLocation loc;
-        m_iNav2D->getCurrentPosition(loc);
+        yarp::dev::ReturnValue ret = m_iNav2D->getCurrentPosition(loc);
+        if (!ret)
+            yCError(LOOK_FOR_OBJECT_THREAD) << "Unable to get the current robot position:" << ret.toString();
         loc.theta += theta; // <===
-        m_iNav2D->gotoTargetByAbsoluteLocation(loc);
-        yarp::dev::Nav2D::NavigationStatusEnum currentStatus;
+        ret = m_iNav2D->gotoTargetByAbsoluteLocation(loc);
+        if (!ret)
+            yCError(LOOK_FOR_OBJECT_THREAD) << "Unable to send the turning navigation goal:" << ret.toString();
+        yarp::dev::Nav2D::NavigationStatusEnum currentStatus{yarp::dev::Nav2D::navigation_status_error};
         m_iNav2D->getNavigationStatus(currentStatus);
         while (currentStatus != yarp::dev::Nav2D::navigation_status_goal_reached  && !m_ext_stop  )
         {
@@ -402,12 +406,17 @@ void LookForObjectThread::externalStop()
     m_ext_stop = true;
     m_status = LfO_IDLE;
 
-    yarp::dev::Nav2D::NavigationStatusEnum currentStatus;
-    m_iNav2D->getNavigationStatus(currentStatus);
+    yarp::dev::Nav2D::NavigationStatusEnum currentStatus{yarp::dev::Nav2D::navigation_status_error};
+    yarp::dev::ReturnValue ret = m_iNav2D->getNavigationStatus(currentStatus);
+    if (!ret)
+        yCError(LOOK_FOR_OBJECT_THREAD) << "Unable to get the navigation status:" << ret.toString();
     if (currentStatus == yarp::dev::Nav2D::navigation_status_moving)
     {
-        m_iNav2D->stopNavigation();
-        yCInfo(LOOK_FOR_OBJECT_THREAD, "Navigation stopped");
+        ret = m_iNav2D->stopNavigation();
+        if (ret)
+            yCInfo(LOOK_FOR_OBJECT_THREAD, "Navigation stopped");
+        else
+            yCError(LOOK_FOR_OBJECT_THREAD) << "Unable to stop the navigation:" << ret.toString();
     }
 
 }
