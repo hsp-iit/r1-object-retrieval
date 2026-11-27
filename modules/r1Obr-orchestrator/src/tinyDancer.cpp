@@ -45,14 +45,14 @@ bool TinyDancer::configure()
     // Polydriver config
     Property prop;
 
-    prop.put("device","remote_controlboard");
+    prop.put("device","controlBoard_nwc_yarp");
     prop.put("local","/r1Obr-orchestrator/tinyDancer/right_arm");
     prop.put("remote","/"+m_robot+"/right_arm");
 
 
     if(m_parts_on[RIGHT_ARM])
     {
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/r1Obr-orchestrator/tinyDancer/right_arm");
         prop.put("remote","/"+m_robot+"/right_arm");
         if (!m_drivers[RIGHT_ARM].open(prop))
@@ -68,7 +68,7 @@ bool TinyDancer::configure()
     if(m_parts_on[LEFT_ARM])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/r1Obr-orchestrator/tinyDancer/left_arm");
         prop.put("remote","/"+m_robot+"/left_arm");
         if (!m_drivers[LEFT_ARM].open(prop))
@@ -84,7 +84,7 @@ bool TinyDancer::configure()
     if(m_parts_on[HEAD])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/r1Obr-orchestrator/tinyDancer/head");
         prop.put("remote","/"+m_robot+"/head");
         if (!m_drivers[HEAD].open(prop))
@@ -100,7 +100,7 @@ bool TinyDancer::configure()
     if(m_parts_on[TORSO])
     {
         prop.clear();
-        prop.put("device","remote_controlboard");
+        prop.put("device","controlBoard_nwc_yarp");
         prop.put("local","/r1Obr-orchestrator/tinyDancer/torso");
         prop.put("remote","/"+m_robot+"/torso");
         if (!m_drivers[TORSO].open(prop))
