@@ -358,7 +358,7 @@ bool GetReadyToNav::navPosition()
 
 bool GetReadyToNav::areJointsOk()
 {
-    int mode=0;
+    yarp::dev::ControlModeEnum mode{yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN};
     for (int i = 0 ; i<4 ; i++)
     {
         if(!m_parts_on[i])
@@ -370,13 +370,13 @@ bool GetReadyToNav::areJointsOk()
         m_iposctrl[i]->getAxes(NUMBER_OF_JOINTS);
         for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
         {
-            m_ictrlmode[i]->getControlMode(i_joint, &mode);
-            if (mode == VOCAB_CM_HW_FAULT)
+            m_ictrlmode[i]->getControlMode(i_joint, mode);
+            if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
             {
                 yError() << "Error: hardware fault detected";
                 return false;
             }
-            else if (mode == VOCAB_CM_IDLE)
+            else if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
             {
                 yError() << "Error: idle joint detected";
                 return false;
