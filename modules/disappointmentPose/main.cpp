@@ -77,6 +77,7 @@ public:
 
     void setPosition();
     void setPosCtrlMode(const int part);
+    void movePart(const int part, const Bottle& positions, const size_t n_joints);
 };
 
 DisappointmentPose::DisappointmentPose()
@@ -215,8 +216,34 @@ void DisappointmentPose::onRead(Bottle& b)
 void DisappointmentPose::setPosCtrlMode(const int part)
 {
     size_t NUMBER_OF_JOINTS{0};
-    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
-    m_ictrlmode[part]->setControlModes(std::vector<yarp::dev::SelectableControlModeEnum>(NUMBER_OF_JOINTS, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION));
+    ReturnValue ret = m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    if (!ret)
+    {
+        yCError(DISAPPOINTMENT_POSE) << "Unable to get the number of joints of part" << part << ":" << ret.toString();
+        return;
+    }
+    ret = m_ictrlmode[part]->setControlModes(std::vector<SelectableControlModeEnum>(NUMBER_OF_JOINTS, SelectableControlModeEnum::VOCAB_CM_POSITION));
+    if (!ret)
+    {
+        yCError(DISAPPOINTMENT_POSE) << "Unable to set position control mode for part" << part << ":" << ret.toString();
+    }
+}
+
+
+void DisappointmentPose::movePart(const int part, const Bottle& positions, const size_t n_joints)
+{
+    std::vector<int> joints;
+    std::vector<double> refs;
+    for (size_t i_joint=0; i_joint < n_joints; i_joint++)
+    {
+        joints.push_back(i_joint);
+        refs.push_back(positions.get(i_joint).asFloat32());
+    }
+    ReturnValue ret = m_iposctrl[part]->positionMove(joints.size(), joints.data(), refs.data());
+    if (!ret)
+    {
+        yCError(DISAPPOINTMENT_POSE) << "Unable to move part" << part << ":" << ret.toString();
+    }
 }
 
 
@@ -231,34 +258,15 @@ void DisappointmentPose::setPosition()
 
     //right arm
     if(m_parts_on[RIGHT_ARM])
-    {
-        m_iposctrl[RIGHT_ARM]->positionMove(0, m_right_arm_pos.get(0).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(1, m_right_arm_pos.get(1).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(2, m_right_arm_pos.get(2).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(3, m_right_arm_pos.get(3).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(4, m_right_arm_pos.get(4).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(5, m_right_arm_pos.get(5).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(6, m_right_arm_pos.get(6).asFloat32());
-        m_iposctrl[RIGHT_ARM]->positionMove(7, m_right_arm_pos.get(7).asFloat32());
-    }
+        movePart(RIGHT_ARM, m_right_arm_pos, 8);
 
     //left arm
     if(m_parts_on[LEFT_ARM])
-    {
-        m_iposctrl[LEFT_ARM]->positionMove(0, m_left_arm_pos.get(0).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(1, m_left_arm_pos.get(1).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(2, m_left_arm_pos.get(2).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(3, m_left_arm_pos.get(3).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(4, m_left_arm_pos.get(4).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(5, m_left_arm_pos.get(5).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(6, m_left_arm_pos.get(6).asFloat32());
-        m_iposctrl[LEFT_ARM]->positionMove(7, m_left_arm_pos.get(7).asFloat32());
-    }
+        movePart(LEFT_ARM, m_left_arm_pos, 8);
+
     //head
-    if(!m_parts_on[HEAD])
-        return;
-    m_iposctrl[HEAD]->positionMove(0, m_head_pos.get(0).asFloat32());
-    m_iposctrl[HEAD]->positionMove(1, m_head_pos.get(1).asFloat32());
+    if(m_parts_on[HEAD])
+        movePart(HEAD, m_head_pos, 2);
 }
 
 
