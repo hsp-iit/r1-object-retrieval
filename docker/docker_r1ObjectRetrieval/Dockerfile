@@ -26,8 +26,11 @@ ARG user_name=user1
 # RUN python3 -m pip install torchmultimodal-nightly
 ######################################
 
-# Install YOLO requirements
-RUN pip install --break-system-packages ultralytics
+# Install YOLO requirements and download the default model of yarpYolo
+# into its ResourceFinder context "yolo" (YARP_DATA_HOME default: ~/.local/share/yarp)
+RUN pip install --break-system-packages "ultralytics>=8.4,<8.5"
+RUN mkdir -p "$HOME/.local/share/yarp/contexts/yolo" && \
+    python3 -c "from ultralytics.utils.downloads import attempt_download_asset as d; d('$HOME/.local/share/yarp/contexts/yolo/yolo26l.pt')"
 
 # r1-object-retrieval
 WORKDIR ${robotology_install_folder}
