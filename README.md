@@ -53,7 +53,6 @@ You can find here below a list of the main [modules](modules) in this repo and a
 | [lookForObject](modules/lookForObject/README.md) | Module that manages the motions the robot should perfom once arrived in a location to search for the requested object (tilt head and turn)        |
 | [goAndFindIt](modules/goAndFindIt/README.md) | FSM that invokes the two previous modules to navigate the robot in the map and search for objects |
 | [approachObject](modules/approachObject/README.md) | Plug-in module for the search positive outcome: the robot navigates nearer to the found object  |
-| [disappointedPose](modules/disappointmentPose/README.md) | Plug-in module for the search negative outcome: the robot assumes a predefined pose  |
 | [yarpMdetr](modules/yarpMdetr/README.MD) / [yarpYolo](modules/yarpYolo/README.MD) | Object Detection modules: detect objects in an input image |
 | [r1Obr-orchestrator](modules/r1Obr-orchestrator/README.md) | Orchestrator (FSM) of the whole object retrieval application: manages the search, the speech interaction, the integration of the sensor network, and other possible actions that the robot could perform|
 | [sensorNetworkReceiver](modules/sensorNetworkReceiver/README.md) | Interaction module between the r1Obr-orchestrator and the Sensor Network |

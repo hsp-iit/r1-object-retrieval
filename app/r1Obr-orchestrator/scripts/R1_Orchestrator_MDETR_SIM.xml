@@ -75,12 +75,6 @@
       <prefix></prefix>
    </application>
    
-   <!-- negative outcome -->
-   <application>
-      <name>R1_disappointmentPose_SIM</name>
-      <prefix></prefix>
-   </application>
-
    <!-- face expressions -->
    <module>
       <name>faceExpressionImage5GTour</name>
