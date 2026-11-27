@@ -38,6 +38,22 @@ class YarpYolo(yarp.RFModule):
         self.device = rf.find('device').toString() if rf.check('device') else ('0' if torch.cuda.is_available() else 'cpu')
         print('Inference device: {:s}'.format(self.device))
 
+        # Model: a file found by the ResourceFinder in context <model_context>,
+        # e.g. $YARP_DATA_HOME/contexts/yolo/yolo26l.pt (YARP_DATA_HOME default: ~/.local/share/yarp)
+        model_name = rf.find('model').asString() if rf.check('model') else 'yolo26l.pt'
+        model_context = rf.find('model_context').asString() if rf.check('model_context') else 'yolo'
+        model_rf = yarp.ResourceFinder()
+        model_rf.setDefaultContext(model_context)
+        model_rf.configure(['yarpYolo'])
+        model_path = model_rf.findFileByName(model_name)
+        if not model_path:
+            print('Model {:s} not found in context {:s}. Download it with:'.format(model_name, model_context))
+            print('  python3 -c "from ultralytics.utils.downloads import attempt_download_asset as d; '
+                  'd(\'$HOME/.local/share/yarp/contexts/{:s}/{:s}\')"'.format(model_context, model_name))
+            return False
+        print('Loading model {:s}'.format(model_path))
+        self.model = YOLO(model_path)
+
         # Opening ports
         self.cmd_port = yarp.Port()
         commandPortName = rf.find('command_port').asString() if rf.check('command_port') else '/yarpYolo/command/rpc' 
@@ -72,10 +88,6 @@ class YarpYolo(yarp.RFModule):
         self._out_buf_image.resize(self.image_w, self.image_h)
         self._out_buf_array = as_numpy(self._out_buf_image)
 
-        # Defining model
-        self.model = YOLO("yolov8l.pt")
-        # self.model = YOLO("yolov8s.pt")
-        
         # -1: highlight every detection; 999: the requested label is unknown, highlight nothing
         self.label_num = -1
 
@@ -142,10 +154,10 @@ class YarpYolo(yarp.RFModule):
     
     def interruptModule(self):
         print('Interrupt function')
-        self.cmd_port.close()
-        self._input_image_port.close()
-        self._output_image_port.close()
-        self.output_coords_port.close()
+        # configure() may have failed before opening all the ports
+        for port in ('cmd_port', '_input_image_port', '_output_image_port', 'output_coords_port'):
+            if hasattr(self, port):
+                getattr(self, port).close()
         return True
 
     
