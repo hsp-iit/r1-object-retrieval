@@ -96,7 +96,7 @@ bool ApproachObjectThread::threadInit()
     if(!okTransformRf)
     {
         yCWarning(APPROACH_OBJECT_THREAD,"TRANSFORM_CLIENT section missing in ini file Using default values");
-        tcProp.put("filexml_option","ftc_yarp_only.xml");
+        tcProp.put("config_name","ftc_yarp_only.xml");
     }
     else {
         Searchable &tf_config = m_rf.findGroup("TRANSFORM_CLIENT");
@@ -106,14 +106,14 @@ bool ApproachObjectThread::threadInit()
         if (tf_config.check("ft_server_prefix")) {
             tcProp.put("ft_server_prefix", tf_config.find("ft_server_prefix").asString());
         }
-        if(tf_config.check("filexml_option") && !(tf_config.check("testxml_from") || tf_config.check("testxml_context")))
+        if(tf_config.check("config_name") && !(tf_config.check("custom_config_from") || tf_config.check("custom_config_context")))
         {
-            tcProp.put("filexml_option", tf_config.find("filexml_option").asString());
+            tcProp.put("config_name", tf_config.find("config_name").asString());
         }
-        else if(!tf_config.check("filexml_option") && (tf_config.check("testxml_from") && tf_config.check("testxml_context")))
+        else if(!tf_config.check("config_name") && (tf_config.check("custom_config_from") && tf_config.check("custom_config_context")))
         {
-            tcProp.put("testxml_from", tf_config.find("testxml_from").asString());
-            tcProp.put("testxml_context", tf_config.find("testxml_context").asString());
+            tcProp.put("custom_config_from", tf_config.find("custom_config_from").asString());
+            tcProp.put("custom_config_context", tf_config.find("custom_config_context").asString());
         }
         else
         {
