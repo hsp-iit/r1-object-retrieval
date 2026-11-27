@@ -1,0 +1,5 @@
+# Disappointment pose, played when the object is not found
+# (was dances/sadness.ini of r1Obr-orchestrator and the ACTIVE pose of disappointmentPose).
+#     time  right arm: shoulder pitch/roll/yaw, elbow, wrist yaw/roll/pitch   left arm: same   head: pitch yaw
+joints      r_shoulder_pitch r_shoulder_roll r_shoulder_yaw r_elbow r_wrist_yaw r_wrist_roll r_wrist_pitch l_shoulder_pitch l_shoulder_roll l_shoulder_yaw l_elbow l_wrist_yaw l_wrist_roll l_wrist_pitch neck_pitch_joint neck_yaw_joint
+move  2.0   -2.3 8.8 -10.2 20.7   0.0 0.0 0.0     -2.3 8.8 -10.2 20.7   0.0 0.0 0.0     33.0 0.0

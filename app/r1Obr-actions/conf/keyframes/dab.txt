@@ -1,0 +1,6 @@
+# Dab (was dances/dab.ini of r1Obr-orchestrator).
+#     time  right arm: shoulder pitch/roll/yaw, elbow, wrist yaw/roll/pitch   left arm: same   head: pitch yaw
+joints      r_shoulder_pitch r_shoulder_roll r_shoulder_yaw r_elbow r_wrist_yaw r_wrist_roll r_wrist_pitch l_shoulder_pitch l_shoulder_roll l_shoulder_yaw l_elbow l_wrist_yaw l_wrist_roll l_wrist_pitch neck_pitch_joint neck_yaw_joint
+move  4.0   78.2 31.2 -51.0 89.1  0.0 0.0 0.0     80.5 75.2 -47.6 9.0   0.0 0.0 0.0     23.4 -32.4
+pause 2.0
+move  4.0   -9.0 15.0 -10.0 50.5  0.0 0.0 0.0     -9.0 15.0 -10.0 50.5  0.0 0.0 0.0     0.0 0.0

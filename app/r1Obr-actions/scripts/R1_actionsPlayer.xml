@@ -1,0 +1,16 @@
+<application>
+   <name>R1_actionsPlayer</name>
+
+   <dependencies>
+   </dependencies>
+
+   <!-- Plays the predefined actions (dances, navigation pose, ...) of R1SN003.
+        yarpActionsPlayer opens the action files relative to its working directory. -->
+   <module>
+      <name>yarpActionsPlayer</name>
+      <parameters>--filename actionsPlayer_R1SN003.ini --execute</parameters>
+      <workdir>$ENV{ROBOT_CODE}/r1-object-retrieval/app/r1Obr-actions/conf/</workdir>
+      <node>console</node>
+   </module>
+
+</application>

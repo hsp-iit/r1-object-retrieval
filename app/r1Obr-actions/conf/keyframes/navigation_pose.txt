@@ -1,0 +1,4 @@
+# Pose kept while navigating (was [SET_NAVIGATION_POSITION] in goAndFindIt_R1.ini).
+#     time  right arm: shoulder pitch/roll/yaw, elbow, wrist yaw/roll/pitch   left arm: same   head: pitch yaw   torso: heave pitch roll yaw
+joints      r_shoulder_pitch r_shoulder_roll r_shoulder_yaw r_elbow r_wrist_yaw r_wrist_roll r_wrist_pitch l_shoulder_pitch l_shoulder_roll l_shoulder_yaw l_elbow l_wrist_yaw l_wrist_roll l_wrist_pitch neck_pitch_joint neck_yaw_joint torso_heave_eq_joint torso_pitch_eq_joint torso_roll_eq_joint torso_yaw_joint
+move  3.5   -9.0 9.0 -10.0 50.0   0.0 0.0 0.0     -9.0 9.0 -10.0 50.0   0.0 0.0 0.0     0.0 0.0     0.012 0.0 0.0 0.0
