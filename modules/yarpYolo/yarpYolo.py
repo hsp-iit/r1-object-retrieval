@@ -1,4 +1,6 @@
 import sys
+import time
+import ctypes
 import numpy as np
 import cv2
 import yarp
@@ -14,6 +16,18 @@ if device == "0":
 # Initialise YARP
 yarp.Network.init()
 
+
+def as_numpy(img):
+    """Writable numpy view (height, width, 3) on the memory of a yarp.ImageRgb.
+
+    yarp.Image.setExternal() cannot be used to share memory with numpy: it crashes
+    with the YARP 4.0 Python bindings (they release the GIL before it calls the
+    Python buffer API).
+    """
+    h, w, row = img.height(), img.width(), img.getRowSize()
+    buf = (ctypes.c_uint8 * (row * h)).from_address(int(img.getRawImage()))
+    return np.ctypeslib.as_array(buf).reshape(h, row)[:, :w * 3].reshape(h, w, 3)
+
 class YarpYolo(yarp.RFModule):
     
     def configure(self, rf):
@@ -24,6 +38,7 @@ class YarpYolo(yarp.RFModule):
         self.image_w = rf.find('image_width').asInt32() if rf.check('image_width') else 640
         self.image_h = rf.find('image_height').asInt32() if rf.check('image_height') else 480
         self.min_conf = rf.find('min_confidence').asFloat32() if rf.check('min_confidence') else 0.95
+        self.where_timeout = rf.find('where_timeout').asFloat32() if rf.check('where_timeout') else 5.0
 
         # Opening ports
         self.cmd_port = yarp.Port()
@@ -47,26 +62,17 @@ class YarpYolo(yarp.RFModule):
         self.output_coords_port.open(coordsOutPortName)
         print('{:s} opened'.format(coordsOutPortName))
 
-        self.read_coords_port = yarp.BufferedPortBottle()
-        coordsReadPortName = rf.find('read_coord_port').asString() if rf.check('read_coord_port') else '/yarpYolo/read_coords' 
-        self.read_coords_port.open(coordsReadPortName)
-        print('{:s} opened'.format(coordsReadPortName))
-        yarp.Network.connect(coordsOutPortName,coordsReadPortName)
+        # Labels detected in the last processed frame, and number of processed frames:
+        # used to answer the 'where' command
+        self._detected = set()
+        self._frame_count = 0
 
         # Preparing images
-        print('Preparing input image...')
-        self._in_buf_array = np.ones((self.image_h, self.image_w, 3), dtype=np.uint8)
         self._in_buf_image = yarp.ImageRgb()
         self._in_buf_image.resize(self.image_w, self.image_h)
-        self._in_buf_image.setExternal(self._in_buf_array, self._in_buf_array.shape[1], self._in_buf_array.shape[0])
-        print('... ok \n')
-
-        print('Preparing output image...')
         self._out_buf_image = yarp.ImageRgb()
         self._out_buf_image.resize(self.image_w, self.image_h)
-        self._out_buf_array = np.zeros((self.image_h, self.image_w, 3), dtype=np.uint8)
-        self._out_buf_image.setExternal(self._out_buf_array, self._out_buf_array.shape[1], self._out_buf_array.shape[0])
-        print('... ok \n')
+        self._out_buf_array = as_numpy(self._out_buf_image)
 
         # Defining model
         self.model = YOLO("yolov8l.pt")
@@ -105,8 +111,17 @@ class YarpYolo(yarp.RFModule):
                 reply.addString('not found')
                 reply.addString('cannot find (not in the available list): ' + str(label))
                 return True
-            bt=self.read_coords_port.read()
-            if bt.check(label):
+            # Answer with the first frame processed after the request. Polling with sleep lets the
+            # main thread run: a blocking read here would keep the GIL (YARP 4.0 Python bindings)
+            # and prevent the main thread from processing the frame.
+            frame_count = self._frame_count
+            start = time.time()
+            while self._frame_count == frame_count and time.time() - start < self.where_timeout:
+                time.sleep(0.01)
+            if self._frame_count == frame_count:
+                print('No image processed in {:.1f} s'.format(self.where_timeout))
+                reply.addString('not found')
+            elif label in self._detected:
                 reply.addString(label + ' found')
             else:
                 reply.addString('not found')
@@ -134,7 +149,6 @@ class YarpYolo(yarp.RFModule):
         self._input_image_port.close()
         self._output_image_port.close()
         self.output_coords_port.close()
-        self.read_coords_port.close()
         return True
 
     
@@ -195,14 +209,15 @@ class YarpYolo(yarp.RFModule):
                 smtg = 1
         if smtg == 0:
             bout.addString('nothing')
+        self._detected = {bout.get(i).asList().get(0).asString() for i in range(bout.size()) if bout.get(i).isList()}
+        self._frame_count += 1
         self.output_coords_port.write()
  
 
     def updateModule(self):
         received_image = self._input_image_port.read()
-        self._in_buf_image.copy(received_image)   
-        assert self._in_buf_array.__array_interface__['data'][0] == self._in_buf_image.getRawImage().__int__()
-        frame = self._in_buf_array
+        self._in_buf_image.copy(received_image)
+        frame = as_numpy(self._in_buf_image)
         self.plot_inference(frame)
         self._out_buf_array[:,:] = self.imageYolo
         self._output_image_port.write(self._out_buf_image)
