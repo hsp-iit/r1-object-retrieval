@@ -305,7 +305,7 @@ void RobotOrient::home()
     // ------ set head to Position control mode ------ //
     size_t NUMBER_OF_JOINTS{0};
     m_iposctrl->getAxes(NUMBER_OF_JOINTS);
-    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++){ m_ictrlmode->setControlMode(i_joint, VOCAB_CM_POSITION); }
+    m_ictrlmode->setControlModes(std::vector<yarp::dev::SelectableControlModeEnum>(NUMBER_OF_JOINTS, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION));
     
     // ------ homing command  ------ //
     bool ok = m_iremcal->homingWholePart();
