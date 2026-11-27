@@ -66,9 +66,9 @@ bool Nav2Loc::configure(yarp::os::ResourceFinder &rf)
     if(home_config.check("near_distance")) {m_near_distance = home_config.find("near_distance").asFloat32();}
 
     MapGrid2D  map;
-    if(!m_iNav2D->getCurrentNavigationMap(NavigationMapTypeEnum::global_map, map))
+    if(ReturnValue ret = m_iNav2D->getCurrentNavigationMap(NavigationMapTypeEnum::global_map, map); !ret)
     {
-        yCError(NAV_2_LOC, "Error retrieving current global map");
+        yCError(NAV_2_LOC) << "Error retrieving current global map:" << ret.toString();
         return false;
     }
 
@@ -88,9 +88,9 @@ void Nav2Loc::close()
 bool Nav2Loc::goHome()
 {
 
-    if(!m_iNav2D->gotoTargetByAbsoluteLocation(m_home_location))
+    if(ReturnValue ret = m_iNav2D->gotoTargetByAbsoluteLocation(m_home_location); !ret)
     {
-        yCError(NAV_2_LOC, "Error with navigation to home location");
+        yCError(NAV_2_LOC) << "Error with navigation to home location:" << ret.toString();
         return false;
     }
 
@@ -110,25 +110,25 @@ bool Nav2Loc::go(string loc)
     if(loc == "laboratory")
     {
         bool is_inside = false;
-        if(!m_iNav2D->checkInsideArea("laboratory_area", is_inside))
+        if(ReturnValue ret = m_iNav2D->checkInsideArea("laboratory_area", is_inside); !ret)
         {
-            yCError(NAV_2_LOC, "Error checking if robot is inside lab area");
+            yCError(NAV_2_LOC) << "Error checking if robot is inside lab area:" << ret.toString();
             return false;
         }
         if(!is_inside)
         {
-            if(!m_iNav2D->gotoTargetByLocationName("laboratory_path"))
+            if(ReturnValue ret = m_iNav2D->gotoTargetByLocationName("laboratory_path"); !ret)
             {
-                yCError(NAV_2_LOC, "Error with navigation to lab area from outside");
+                yCError(NAV_2_LOC) << "Error with navigation to lab area from outside:" << ret.toString();
                 return false;
             }
         }
         // If we are inside the lab area, we swap to the default behaviour
     }
 
-    if(!m_iNav2D->gotoTargetByLocationName(loc))
+    if(ReturnValue ret = m_iNav2D->gotoTargetByLocationName(loc); !ret)
     {
-        yCError(NAV_2_LOC, "Error with navigation to home location");
+        yCError(NAV_2_LOC) << "Error with navigation to location" << loc << ":" << ret.toString();
         return false;
     }
 
@@ -141,9 +141,9 @@ bool Nav2Loc::stop()
 {
     yCInfo(NAV_2_LOC, "Navigation stopped");
 
-    if(!m_iNav2D->stopNavigation())
+    if(ReturnValue ret = m_iNav2D->stopNavigation(); !ret)
     {
-        yCError(NAV_2_LOC, "Error stopping navigation to home location");
+        yCError(NAV_2_LOC) << "Error stopping navigation:" << ret.toString();
         return false;
     }
 
@@ -162,8 +162,9 @@ bool Nav2Loc::resumeGo()
 
 bool Nav2Loc::areYouArrived()
 {
-    NavigationStatusEnum currentStatus;
-    m_iNav2D->getNavigationStatus(currentStatus);
+    NavigationStatusEnum currentStatus{navigation_status_error};
+    if (ReturnValue ret = m_iNav2D->getNavigationStatus(currentStatus); !ret)
+        yCErrorThrottle(NAV_2_LOC, 5.0) << "Error retrieving the navigation status:" << ret.toString();
 
     return currentStatus == navigation_status_goal_reached;
 }
@@ -172,8 +173,13 @@ bool Nav2Loc::areYouArrived()
 bool Nav2Loc::areYouNearToGoal()
 {
     Map2DLocation robot, target;
-    m_iNav2D->getAbsoluteLocationOfCurrentTarget(target);
-    m_iNav2D->getCurrentPosition(robot);
+    ReturnValue retTarget = m_iNav2D->getAbsoluteLocationOfCurrentTarget(target);
+    ReturnValue retRobot = m_iNav2D->getCurrentPosition(robot);
+    if (!retTarget || !retRobot)
+    {
+        yCErrorThrottle(NAV_2_LOC, 5.0) << "Error retrieving the target or robot location. target:" << retTarget.toString() << "robot:" << retRobot.toString();
+        return false;
+    }
 
     return sqrt(pow((robot.x-target.x), 2) + pow((robot.y-target.y), 2)) < m_near_distance;
 }
@@ -181,16 +187,18 @@ bool Nav2Loc::areYouNearToGoal()
 
 bool Nav2Loc::areYouMoving()
 {
-    NavigationStatusEnum currentStatus;
-    m_iNav2D->getNavigationStatus(currentStatus);
+    NavigationStatusEnum currentStatus{navigation_status_error};
+    if (ReturnValue ret = m_iNav2D->getNavigationStatus(currentStatus); !ret)
+        yCErrorThrottle(NAV_2_LOC, 5.0) << "Error retrieving the navigation status:" << ret.toString();
 
     return currentStatus == navigation_status_moving;
 }
 
 bool Nav2Loc::isNavigationAborted()
 {
-    NavigationStatusEnum currentStatus;
-    m_iNav2D->getNavigationStatus(currentStatus);
+    NavigationStatusEnum currentStatus{navigation_status_error};
+    if (ReturnValue ret = m_iNav2D->getNavigationStatus(currentStatus); !ret)
+        yCErrorThrottle(NAV_2_LOC, 5.0) << "Error retrieving the navigation status:" << ret.toString();
 
     return currentStatus == navigation_status_aborted;
 }

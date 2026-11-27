@@ -100,7 +100,8 @@ bool DialogueManager::configure(ResourceFinder &rf)
         return false;
     }
 
-    m_iLlm->refreshConversation();
+    if (yarp::dev::ReturnValue ret = m_iLlm->refreshConversation(); !ret)
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "Unable to refresh the LLM conversation:" << ret.toString();
 
     // Configure replier LLM - uses a separate LLM instance for context-aware detailed responses
     // This allows maintaining two independent conversation contexts
@@ -121,7 +122,8 @@ bool DialogueManager::configure(ResourceFinder &rf)
         return false;
     }
 
-    m_iLlmReplier->refreshConversation();
+    if (yarp::dev::ReturnValue ret = m_iLlmReplier->refreshConversation(); !ret)
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "Unable to refresh the replier LLM conversation:" << ret.toString();
 
     // Setup audio player status monitoring
     if(config.check("audioplayer_input_port")) {audioplayerStatusPortName = config.find("audioplayer_input_port").asString();}
@@ -227,7 +229,8 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
     {
         m_currentLanguage = language;
         m_speaker->setLanguage(m_currentLanguage);
-        m_iTranscription->setLanguage(m_currentLanguage);
+        if (yarp::dev::ReturnValue ret = m_iTranscription->setLanguage(m_currentLanguage); !ret)
+            yCError(DIALOG_MNG_ORCHESTRATOR) << "Unable to set the transcription language to" << m_currentLanguage << ":" << ret.toString();
     }
 
     // Execute appropriate action based on LLM command type
@@ -302,8 +305,10 @@ void DialogueManager::interactWithDialogMng(const std::string& msgIn)
                 yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithDialogMng. Orchestrator returned NACK.");
                 return;
             }
-            m_iLlm->refreshConversation();
-            m_iLlmReplier->refreshConversation();
+            if (yarp::dev::ReturnValue ret = m_iLlm->refreshConversation(); !ret)
+                yCError(DIALOG_MNG_ORCHESTRATOR) << "Unable to refresh the LLM conversation:" << ret.toString();
+            if (yarp::dev::ReturnValue ret = m_iLlmReplier->refreshConversation(); !ret)
+                yCError(DIALOG_MNG_ORCHESTRATOR) << "Unable to refresh the replier LLM conversation:" << ret.toString();
         }
         default: {
             // Execute command through orchestrator, get response, and seed replier LLM
@@ -376,7 +381,8 @@ yarp::os::Bottle DialogueManager::fromMsgToBottle(const dlgmsg::DialogueMessage&
 dlgmsg::DialogueMessage DialogueManager::coreLLM(const std::string& msgIn)
 {
     yarp::dev::LLM_Message answer;
-    m_iLlm->ask(msgIn, answer);
+    if (yarp::dev::ReturnValue ret = m_iLlm->ask(msgIn, answer); !ret)
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "LLM ask failed:" << ret.toString();
     dlgmsg::DialogueMessage replyMsg;
     if(answer.type != "assistant")
     {
@@ -500,7 +506,8 @@ void DialogueManager::interactWithReplier(const dlgmsg::DialogueMessage& msgIn, 
     // Query replier LLM with full command context for detailed, aware responses
     replyJson = replyMsg;
     yarp::dev::LLM_Message answer;
-    m_iLlmReplier->ask(replyJson.dump(), answer);
+    if (yarp::dev::ReturnValue ret = m_iLlmReplier->ask(replyJson.dump(), answer); !ret)
+        yCError(DIALOG_MNG_ORCHESTRATOR) << "Replier LLM ask failed:" << ret.toString();
     if(answer.type != "assistant")
     {
         yCError(DIALOG_MNG_ORCHESTRATOR, "DialogueManager::interactWithReplier. Unexpected answer type from LLM.");

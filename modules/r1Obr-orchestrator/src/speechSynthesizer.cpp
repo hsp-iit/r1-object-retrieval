@@ -76,10 +76,10 @@ bool SpeechSynthesizer::configure(ResourceFinder &rf, string suffix)
         if(speech_config.check("pitch")) pitch = speech_config.find("pitch").asFloat32();
         if(speech_config.check("speed")) speed = speech_config.find("speed").asFloat32();
 
-        m_iSpeech->setLanguage(language);
-        m_iSpeech->setVoice(voice);
-        m_iSpeech->setPitch(pitch);
-        m_iSpeech->setSpeed(speed);
+        setLanguage(language);
+        setVoice(voice);
+        setPitch(pitch);
+        setSpeed(speed);
     }
 
     return true;
@@ -113,9 +113,9 @@ bool SpeechSynthesizer::say(const string& sentence)
 
     Sound& soundToSend = m_audioOutPort.prepare();
     soundToSend.clear();
-    if(!m_iSpeech->synthesize(sentence,soundToSend))
+    if(ReturnValue ret = m_iSpeech->synthesize(sentence,soundToSend); !ret)
     {
-        yCError(SPEECH_SYNTHESIZER, "Some error occurred synthesizing input string");
+        yCError(SPEECH_SYNTHESIZER) << "Some error occurred synthesizing input string:" << ret.toString();
         return false;
     }
     m_audioOutPort.write();
@@ -132,28 +132,40 @@ bool SpeechSynthesizer::say(const string& sentence)
 // ------------------------------------------------------ //
 bool SpeechSynthesizer::setLanguage(string& language)
 {
-    return m_iSpeech->setLanguage(language);
+    ReturnValue ret = m_iSpeech->setLanguage(language);
+    if (!ret)
+        yCError(SPEECH_SYNTHESIZER) << "Unable to set the language to" << language << ":" << ret.toString();
+    return static_cast<bool>(ret);
 }
 
 
 // ------------------------------------------------------ //
 bool SpeechSynthesizer::setVoice(string& voice)
 {
-    return m_iSpeech->setVoice(voice);
+    ReturnValue ret = m_iSpeech->setVoice(voice);
+    if (!ret)
+        yCError(SPEECH_SYNTHESIZER) << "Unable to set the voice to" << voice << ":" << ret.toString();
+    return static_cast<bool>(ret);
 }
 
 
 // ------------------------------------------------------ //
 bool SpeechSynthesizer::setPitch(double pitch)
 {
-    return m_iSpeech->setPitch(pitch);
+    ReturnValue ret = m_iSpeech->setPitch(pitch);
+    if (!ret)
+        yCError(SPEECH_SYNTHESIZER) << "Unable to set the pitch to" << pitch << ":" << ret.toString();
+    return static_cast<bool>(ret);
 }
 
 
 // ------------------------------------------------------ //
 bool SpeechSynthesizer::setSpeed(double speed)
 {
-    return m_iSpeech->setSpeed(speed);
+    ReturnValue ret = m_iSpeech->setSpeed(speed);
+    if (!ret)
+        yCError(SPEECH_SYNTHESIZER) << "Unable to set the speed to" << speed << ":" << ret.toString();
+    return static_cast<bool>(ret);
 }
 
 
