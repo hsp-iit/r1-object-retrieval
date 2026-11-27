@@ -17,6 +17,7 @@
  */
 
 #include <math.h>
+#include <limits>
 #include "nextLocPlanner.h"
 
 YARP_LOG_COMPONENT(NEXT_LOC_PLANNER, "r1_obr.nextLocPlanner")
@@ -80,17 +81,17 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
     }
 
     MapGrid2D  map;
-    if(!m_iNav2D->getCurrentNavigationMap(NavigationMapTypeEnum::global_map, map))
+    if(ReturnValue ret = m_iNav2D->getCurrentNavigationMap(NavigationMapTypeEnum::global_map, map); !ret)
     {
-        yCError(NEXT_LOC_PLANNER, "Error retrieving current global map");
+        yCError(NEXT_LOC_PLANNER) << "Error retrieving current global map:" << ret.toString();
     }
     m_map_name = map.getMapName();
 
     //Load all the locations in m_all_locations
     vector<string> all_locations;
-    if (!m_iNav2D->getLocationsList(all_locations))
+    if (ReturnValue ret = m_iNav2D->getLocationsList(all_locations); !ret)
     {
-        yCError(NEXT_LOC_PLANNER,"Error getting locations list from map server");
+        yCError(NEXT_LOC_PLANNER) << "Error getting locations list from map server:" << ret.toString();
         return false;
     }
 
@@ -100,7 +101,8 @@ bool NextLocPlanner::configure(ResourceFinder &rf)
         for (string & loc_name : all_locations)
         {
             Map2DLocation loc;
-            m_iNav2D->getLocation(loc_name, loc);
+            if (ReturnValue ret = m_iNav2D->getLocation(loc_name, loc); !ret)
+                yCError(NEXT_LOC_PLANNER) << "Error getting location" << loc_name << "from map server:" << ret.toString();
             if(loc.map_id == m_map_name)
                 m_all_locations.push_back(loc_name);
         }
@@ -492,8 +494,13 @@ double NextLocPlanner::distRobotLocation(const string& location_name)
 {
     Map2DLocation robotLoc;
     Map2DLocation loc;
-    m_iNav2D->getCurrentPosition(robotLoc);
-    m_iNav2D->getLocation(location_name, loc);
+    ReturnValue retRobot = m_iNav2D->getCurrentPosition(robotLoc);
+    ReturnValue retLoc = m_iNav2D->getLocation(location_name, loc);
+    if (!retRobot || !retLoc)
+    {
+        yCError(NEXT_LOC_PLANNER) << "Unable to compute the distance from location" << location_name << ". robot:" << retRobot.toString() << "location:" << retLoc.toString();
+        return std::numeric_limits<double>::infinity();
+    }
 
     return sqrt(pow((robotLoc.x - loc.x), 2) + pow((robotLoc.y - loc.y), 2));
 }
@@ -569,7 +576,8 @@ bool NextLocPlanner::addLocation(string& location_name)
 /****************************************************************/
 bool NextLocPlanner::addLocation(string locName, Map2DLocation loc)
 {
-    m_iNav2D->storeLocation(locName, loc);
+    if (ReturnValue ret = m_iNav2D->storeLocation(locName, loc); !ret)
+        yCError(NEXT_LOC_PLANNER) << "Unable to store location" << locName << "in the map server:" << ret.toString();
     m_all_locations.push_back(locName);
     m_locations_unchecked.push_back(locName);
 
