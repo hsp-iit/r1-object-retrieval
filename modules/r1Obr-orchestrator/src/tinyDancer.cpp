@@ -146,9 +146,9 @@ bool TinyDancer::areJointsOk()
             yCWarning(TINY_DANCER, "Part %d is not available", i);
             continue;
         }
-        int NUMBER_OF_JOINTS;
-        m_iposctrl[i]->getAxes(&NUMBER_OF_JOINTS);
-        for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+        size_t NUMBER_OF_JOINTS{0};
+        m_iposctrl[i]->getAxes(NUMBER_OF_JOINTS);
+        for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
         {
             m_ictrlmode[i]->getControlMode(i_joint, &mode);
             if (mode == VOCAB_CM_HW_FAULT)
@@ -176,23 +176,24 @@ bool TinyDancer::setCtrlMode(const int part, int ctrlMode)
         return true;
     }
 
-    int NUMBER_OF_JOINTS;
+    size_t NUMBER_OF_JOINTS{0};
     vector<int> joints;
-    vector<int> modes;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+    vector<yarp::dev::SelectableControlModeEnum> modes;
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
-        modes.push_back(ctrlMode);
+        modes.push_back(static_cast<yarp::dev::SelectableControlModeEnum>(ctrlMode));
     }
 
-    m_ictrlmode[part]->setControlModes(NUMBER_OF_JOINTS, joints.data(), modes.data());
+    m_ictrlmode[part]->setControlModes(joints, modes);
 
     yarp::os::Time::delay(0.01);  // give time to update control modes value
-    m_ictrlmode[part]->getControlModes(NUMBER_OF_JOINTS, joints.data(), modes.data());
+    vector<yarp::dev::ControlModeEnum> currentModes;
+    m_ictrlmode[part]->getControlModes(joints, currentModes);
     for (size_t i=0; i<NUMBER_OF_JOINTS; i++)
     {
-        if(modes[i] != ctrlMode)
+        if(i >= currentModes.size() || static_cast<int>(currentModes[i]) != ctrlMode)
         {
             yCError(TINY_DANCER) << "Joint " << i << " not in correct control mode for part" << part;
             return false;
@@ -210,11 +211,11 @@ bool TinyDancer::setJointsSpeed(const int part, const double time, Bottle* joint
         yCWarning(TINY_DANCER, "Part %d is not available", part);
         return true;
     }
-    int NUMBER_OF_JOINTS;
+    size_t NUMBER_OF_JOINTS{0};
     vector<int>    joints;
     vector<double> speeds;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         double start, goal;
         m_iencoder[part]->getEncoder(i_joint,&start);
@@ -226,7 +227,7 @@ bool TinyDancer::setJointsSpeed(const int part, const double time, Bottle* joint
         speeds.push_back(disp/time);
     }
 
-    return m_iposctrl[part]->setRefSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
+    return m_iposctrl[part]->setTrajSpeeds(NUMBER_OF_JOINTS, joints.data(), speeds.data());
 }
 
 
@@ -238,11 +239,11 @@ bool TinyDancer::movePart(const int part, Bottle* joint_pos)
         yCWarning(TINY_DANCER, "Part %d is not available", part);
         return true;
     }
-    int NUMBER_OF_JOINTS;
+    size_t NUMBER_OF_JOINTS{0};
     std::vector<int>    joints;
     std::vector<double> positions;
-    m_iposctrl[part]->getAxes(&NUMBER_OF_JOINTS);
-    for (int i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
+    m_iposctrl[part]->getAxes(NUMBER_OF_JOINTS);
+    for (size_t i_joint=0; i_joint < NUMBER_OF_JOINTS; i_joint++)
     {
         joints.push_back(i_joint);
         positions.push_back(joint_pos->get(i_joint).asFloat32());
